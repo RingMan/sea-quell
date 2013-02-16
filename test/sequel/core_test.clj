@@ -16,4 +16,13 @@
 
 (fact (to-sql (select :* (from :user))) => "SELECT * FROM user;")
 
-(fact (to-sql (select [:id :passwd] (from :user))) => "SELECT id, passwd FROM user;")
+(fact (to-sql (select [:id :passwd] (from :user))) =>
+      "SELECT id, passwd FROM user;")
+
+(fact (to-sql (select :* (from :user) (limit 3))) =>
+      "SELECT * FROM user LIMIT 3;")
+(fact (to-sql (select :* (from :user) (offset 4))) =>
+      "SELECT * FROM user OFFSET 4;")
+(fact (to-sql (select :* (from :user) (offset 4) (limit 3))) =>
+      "SELECT * FROM user LIMIT 3 OFFSET 4;")
+

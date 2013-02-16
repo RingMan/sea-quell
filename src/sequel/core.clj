@@ -3,10 +3,9 @@
   (:require [clojure.string :as string])
   (:require [sequel.engine :as eng]))
 
-(def-props as from)
+(def-props as from limit offset)
 
 
-(defn sequel [] :awesome)
 
 (defn field [f]
   ;; DMK TODO: break apart string or keyword db.table.field
@@ -24,9 +23,11 @@
 
 (defn to-sql [stmt]
   ;; DMK TODO: turn this into multimethod based on stmt key
-  (let [{:keys [fields from]} stmt
+  (let [{:keys [fields from limit offset]} stmt
         flds (string/join ", " (map #(name (:field %)) fields))
-        qry (str "SELECT " flds " FROM " (name from) ";")]
+        lim (when limit (str " LIMIT " limit))
+        off (when offset (str " OFFSET " offset))
+        qry (str "SELECT " flds " FROM " (name from) lim off ";")]
     qry))
 
 (defn do-sql [stmt]
