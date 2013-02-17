@@ -22,6 +22,20 @@
 (fact (to-sql (select [:id :passwd] (from :user))) =>
       "SELECT id, passwd FROM user;")
 
+(facts "seaquell supports ALL and DISTINCT modifiers"
+  (fact (to-sql (select :* (modifier :all) (from :user))) =>
+        "SELECT ALL * FROM user;")
+  (fact (to-sql (select :* (all) (from :user))) =>
+        "SELECT ALL * FROM user;")
+  (fact (to-sql (select-all :* (from :user))) =>
+        "SELECT ALL * FROM user;")
+  (fact (to-sql (select :* (modifier :distinct) (from :user))) =>
+        "SELECT DISTINCT * FROM user;")
+  (fact (to-sql (select :* (distinkt) (from :user))) =>
+        "SELECT DISTINCT * FROM user;")
+  (fact (to-sql (select-distinct :* (from :user))) =>
+        "SELECT DISTINCT * FROM user;"))
+
 (facts "seaquell supports LIMIT and OFFSET clauses"
   (fact (to-sql (select :* (from :user) (limit 3))) =>
         "SELECT * FROM user LIMIT 3;")
