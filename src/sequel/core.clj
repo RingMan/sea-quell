@@ -31,4 +31,5 @@
     qry))
 
 (defn do-sql [stmt]
-  (-> (to-sql stmt) (eng/exec)))
+  (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
+    (eng/exec sql-str)))
