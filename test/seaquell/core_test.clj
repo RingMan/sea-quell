@@ -14,6 +14,9 @@
 
 (fact (as :alias) => {:as :alias})
 
+(fact "select does not require a FROM clause"
+      (to-sql (select "7*6")) => "SELECT 7*6;")
+
 (fact (to-sql (select :* (from :user))) => "SELECT * FROM user;")
 
 (fact (to-sql (select [:id :passwd] (from :user))) =>
