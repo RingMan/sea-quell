@@ -3,7 +3,7 @@
   (:require [clojure.string :as string])
   (:require [seaquell.engine :as eng]))
 
-(def-props as from limit offset)
+(def-props as from limit offset where)
 
 
 
@@ -52,12 +52,13 @@
 
 (defn to-sql [stmt]
   ;; DMK TODO: turn this into multimethod based on stmt key
-  (let [{:keys [fields from order-by limit offset]} stmt
+  (let [{:keys [fields from where order-by limit offset]} stmt
         flds (string/join ", " (map #(name (:field %)) fields))
+        where (when where (str " WHERE " where))
         ord (order-clause order-by)
         lim (when limit (str " LIMIT " limit))
         off (when offset (str " OFFSET " offset))
-        qry (str "SELECT " flds " FROM " (name from) ord lim off ";")]
+        qry (str "SELECT " flds " FROM " (name from) where ord lim off ";")]
     qry))
 
 (defn do-sql [stmt]

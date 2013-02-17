@@ -35,6 +35,10 @@
                                           (desc :height)))) =>
         "SELECT * FROM user ORDER BY age ASC, weight ASC, id, passwd, height DESC;"))
 
+(fact "seaquell supports primitive WHERE clause"
+      (to-sql (select :* (from :user) (where "(id > 3)"))) =>
+      "SELECT * FROM user WHERE (id > 3);")
+
 (facts "seaquell honors proper order of clauses"
   (fact "LIMIT precedes OFFSET even if they're reversed in (select)"
         (to-sql (select :* (from :user) (offset 4) (limit 3))) =>
