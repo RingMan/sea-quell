@@ -14,19 +14,19 @@ Mainly, this is a personal experiment.  It's also a wish list for what I'd love 
 * Clear separation of the front-end and back-end where the data itself is the only connection between the two
 
 ## Getting Started
-First, clone `diesel` and make it available to `sequel`.
+First, clone `diesel` and make it available to `sea-quell`.
 
 ```bash
 $ git clone https://github.com/RingMan/diesel.git
 $ cd diesel
 $ lein install
 ```
-Now clone `sequel`, grab its dependencies, and open up a repl.
+Now clone `sea-quell`, grab its dependencies, and open up a repl.
 
 ```bash
 $ cd ..
-$ git clone https://github.com/RingMan/sequel.git
-$ cd sequel
+$ git clone https://github.com/RingMan/sea-quell.git
+$ cd sea-quell
 $ lein deps
 $ lein repl
 ```
@@ -34,7 +34,7 @@ $ lein repl
 To play with query definitions and see them as SQL strings
 
 ```
-user=> (use 'sequel.core)
+user=> (use 'sea-quell.core)
 user=> (def q1 (select :* (from :users)))
 user=> (def q2 (select [:id :passwd] (from :users)))
 user=> (to-sql q1)
