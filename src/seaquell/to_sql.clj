@@ -24,7 +24,13 @@
     (let [items (string/join ", " (flatten (map order-item xs)))]
       (str " ORDER BY " items))))
 
-(defn to-sql [stmt]
+(defmulti to-sql :sql-stmt)
+
+(defmethod to-sql :default [x]
+  (throw (RuntimeException. (str "to-sql not implemented for "
+                                 (:sql-stmt x) " statement"))))
+
+(defmethod to-sql :select [stmt]
   ;; DMK TODO: turn this into multimethod based on stmt key
   (let [{:keys [fields modifier from where group having
                 order-by limit offset]} stmt

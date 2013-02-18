@@ -15,6 +15,9 @@
 
 (fact (as :alias) => {:as :alias})
 
+(fact "to-sql throws for unsupported statements"
+      (to-sql nil) => (throws RuntimeException))
+
 (fact "select does not require a FROM clause"
       (to-sql (select "7*6")) => "SELECT 7*6;")
 
@@ -73,13 +76,15 @@
         "SELECT * FROM user ORDER BY id LIMIT 3;"))
 
 (fact "to-sql generates GROUP BY clause"
-      (to-sql {:fields [{:field :*}]
+      (to-sql {:sql-stmt :select
+               :fields [{:field :*}]
                :from :user
                :group [:make :model]}) =>
       "SELECT * FROM user GROUP BY make, model;")
 
 (fact "to-sql generates HAVING clause"
-      (to-sql {:fields [{:field :visits}]
+      (to-sql {:sql-stmt :select
+               :fields [{:field :visits}]
                :from :user
                :group [:visits]
                :having "visits > 1"
