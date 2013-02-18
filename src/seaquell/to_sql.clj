@@ -34,21 +34,24 @@
 (defn- limit-clause [l] (when l (str " LIMIT " l)))
 (defn- offset-clause [o] (when o (str " OFFSET " o)))
 
-(defmethod to-sql :select [stmt]
-  ;; DMK TODO: turn this into multimethod based on stmt key
-  (let [{:keys [fields modifier from where group having
-                order-by limit offset]} stmt
-        modifier (modifier-map modifier)
-        fields (string/join ", " (map #(name (:field %)) fields))
-        from (when from (str " FROM " (name from)))
-        where (where-clause where)
-        group (when group
-                (str " GROUP BY " (string/join ", " (map #(name %) group))))
-        having (when having
-                 (str " HAVING " having))
-        order-by (order-by-clause order-by)
-        limit (limit-clause limit)
-        offset (offset-clause offset)
-        qry (str "SELECT " modifier fields from where group having
-                 order-by limit offset ";")]
-    qry))
+(defmethod to-sql :select
+  ([stmt]
+   (to-sql stmt true))
+  ([{:keys [fields modifier from where group having
+            order-by limit offset] :as stmt}
+    semi?]
+   (let [modifier (modifier-map modifier)
+         fields (string/join ", " (map #(name (:field %)) fields))
+         from (when from (str " FROM " (name from)))
+         where (where-clause where)
+         group (when group
+                 (str " GROUP BY " (string/join ", " (map #(name %) group))))
+         having (when having
+                  (str " HAVING " having))
+         order-by (order-by-clause order-by)
+         limit (limit-clause limit)
+         offset (offset-clause offset)
+         semi (when semi? ";")
+         qry (str "SELECT " modifier fields from where group having
+                  order-by limit offset semi)]
+     qry)))
