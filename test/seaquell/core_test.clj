@@ -17,57 +17,58 @@
 (fact "select does not require a FROM clause"
       (to-sql (select "7*6")) => "SELECT 7*6;")
 
-(fact (to-sql (select :* (from :user))) => "SELECT * FROM user;")
+(def q (select :* (from :user)))
+
+(fact (to-sql q) => "SELECT * FROM user;")
 
 (fact (to-sql (select [:id :passwd] (from :user))) =>
       "SELECT id, passwd FROM user;")
 
 (facts "seaquell supports ALL and DISTINCT modifiers"
-  (fact (to-sql (select :* (modifier :all) (from :user))) =>
+  (fact (to-sql (select q (modifier :all))) =>
         "SELECT ALL * FROM user;")
-  (fact (to-sql (select :* (all) (from :user))) =>
+  (fact (to-sql (select q (all))) =>
         "SELECT ALL * FROM user;")
   (fact (to-sql (select-all :* (from :user))) =>
         "SELECT ALL * FROM user;")
-  (fact (to-sql (select :* (modifier :distinct) (from :user))) =>
+  (fact (to-sql (select q (modifier :distinct))) =>
         "SELECT DISTINCT * FROM user;")
-  (fact (to-sql (select :* (distinkt) (from :user))) =>
+  (fact (to-sql (select q (distinkt))) =>
         "SELECT DISTINCT * FROM user;")
   (fact (to-sql (select-distinct :* (from :user))) =>
         "SELECT DISTINCT * FROM user;"))
 
 (facts "seaquell supports LIMIT and OFFSET clauses"
-  (fact (to-sql (select :* (from :user) (limit 3))) =>
+  (fact (to-sql (select q (limit 3))) =>
         "SELECT * FROM user LIMIT 3;")
-  (fact (to-sql (select :* (from :user) (offset 4))) =>
+  (fact (to-sql (select q (offset 4))) =>
         "SELECT * FROM user OFFSET 4;"))
 
 (facts "seaquell supports ORDER BY clause"
-  (fact (to-sql (select :* (from :user) (order-by :id))) =>
+  (fact (to-sql (select q (order-by :id))) =>
         "SELECT * FROM user ORDER BY id;")
-  (fact (to-sql (select :* (from :user) (order-by :id :passwd))) =>
+  (fact (to-sql (select q (order-by :id :passwd))) =>
         "SELECT * FROM user ORDER BY id, passwd;")
-  (fact (to-sql (select :* (from :user) (order-by
-                                          (asc :age :weight) :id :passwd
-                                          (desc :height)))) =>
+  (fact (to-sql (select q (order-by (asc :age :weight) :id :passwd
+                                    (desc :height)))) =>
         "SELECT * FROM user ORDER BY age ASC, weight ASC, id, passwd, height DESC;"))
 
 (fact "seaquell supports primitive WHERE clause"
-      (to-sql (select :* (from :user) (where "(id > 3)"))) =>
+      (to-sql (select q (where "(id > 3)"))) =>
       "SELECT * FROM user WHERE (id > 3);")
 
 (fact "select handles group clause"
-      (-> (select :* (group :this :that)) (:group)) => [:this :that])
+      (-> (select q (group :this :that)) (:group)) => [:this :that])
 
 (fact "select handles having clause"
-      (-> (select :* (having :expr)) (:having)) => :expr)
+      (-> (select q (having :expr)) (:having)) => :expr)
 
 (facts "seaquell honors proper order of clauses"
   (fact "LIMIT precedes OFFSET even if they're reversed in (select)"
-        (to-sql (select :* (from :user) (offset 4) (limit 3))) =>
+        (to-sql (select q (offset 4) (limit 3))) =>
         "SELECT * FROM user LIMIT 3 OFFSET 4;")
   (fact "ORDER BY precedes LIMIT even if reversed in (select)"
-        (to-sql (select :* (from :user) (limit 3) (order-by :id))) =>
+        (to-sql (select q (limit 3) (order-by :id))) =>
         "SELECT * FROM user ORDER BY id LIMIT 3;"))
 
 (fact "to-sql generates GROUP BY clause"
@@ -83,8 +84,6 @@
                :having "visits > 1"
                }) =>
       "SELECT visits FROM user GROUP BY visits HAVING visits > 1;")
-
-(def q (select :* (from :user)))
 
 (fact "Passing a statement as first arg of select lets you add clauses to it"
       (-> (select q (where "num > 3")) (to-sql)) =>
