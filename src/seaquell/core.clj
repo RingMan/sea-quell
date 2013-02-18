@@ -1,7 +1,7 @@
-(ns sequel.core
+(ns seaquell.core
   (:use diesel.core)
   (:require [clojure.string :as string])
-  (:require [sequel.engine :as eng]))
+  (:require [seaquell.engine :as eng]))
 
 (def-props as from limit offset)
 

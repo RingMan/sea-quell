@@ -1,4 +1,4 @@
-(ns sequel.engine
+(ns seaquell.engine
   (:require [korma.db :as db]))
 
 (defn exec [sql-str]

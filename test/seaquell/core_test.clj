@@ -1,6 +1,6 @@
-(ns sequel.core-test
+(ns seaquell.core-test
   (:use midje.sweet
-        sequel.core))
+        seaquell.core))
 
 (fact (select :*) => {:sql-stmt :select :fields [-f-]}
       (provided (field :*) => -f-))
