@@ -1,7 +1,7 @@
-sequel
-======
+sea-quell
+=========
 
-sequel = SQL = another attempt at defining a DSL for generating SQL statements
+Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements
 
 Mainly, this is a personal experiment.  It's also a wish list for what I'd love to see:
 
