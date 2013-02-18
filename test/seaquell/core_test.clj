@@ -56,6 +56,12 @@
       (to-sql (select :* (from :user) (where "(id > 3)"))) =>
       "SELECT * FROM user WHERE (id > 3);")
 
+(fact "select handles group clause"
+      (-> (select :* (group :this :that)) (:group)) => [:this :that])
+
+(fact "select handles having clause"
+      (-> (select :* (having :expr)) (:having)) => :expr)
+
 (facts "seaquell honors proper order of clauses"
   (fact "LIMIT precedes OFFSET even if they're reversed in (select)"
         (to-sql (select :* (from :user) (offset 4) (limit 3))) =>
@@ -63,3 +69,17 @@
   (fact "ORDER BY precedes LIMIT even if reversed in (select)"
         (to-sql (select :* (from :user) (limit 3) (order-by :id))) =>
         "SELECT * FROM user ORDER BY id LIMIT 3;"))
+
+(fact "to-sql generates GROUP BY clause"
+      (to-sql {:fields [{:field :*}]
+               :from :user
+               :group [:make :model]}) =>
+      "SELECT * FROM user GROUP BY make, model;")
+
+(fact "to-sql generates HAVING clause"
+      (to-sql {:fields [{:field :visits}]
+               :from :user
+               :group [:visits]
+               :having "visits > 1"
+               }) =>
+      "SELECT visits FROM user GROUP BY visits HAVING visits > 1;")

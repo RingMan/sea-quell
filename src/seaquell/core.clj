@@ -2,7 +2,7 @@
   (:use diesel.core)
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as from limit modifier offset where)
+(def-props as from having limit modifier offset where)
 
 
 
@@ -23,10 +23,14 @@
 ;;; Select Query modifiers
 
 (defn all [] (modifier :all))
+(defn unique [] (modifier :distinct))
 (defn distinkt [] (modifier :distinct))
 
 (defn select-all [& xs] (merge (apply select xs) (all)))
 (defn select-distinct [& xs] (merge (apply select xs) (distinkt)))
+
+(defn group [& xs]
+  {:group xs})
 
 ;;; ORDER BY clause
 
@@ -46,3 +50,6 @@
 (defn do-sql [stmt]
   (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
     (eng/exec sql-str)))
+
+(defn select! [& body]
+  (do-sql (apply select body)))

@@ -26,13 +26,19 @@
 
 (defn to-sql [stmt]
   ;; DMK TODO: turn this into multimethod based on stmt key
-  (let [{:keys [fields modifier from where order-by limit offset]} stmt
+  (let [{:keys [fields modifier from where group having
+                order-by limit offset]} stmt
         modifier (modifier-map modifier)
         flds (string/join ", " (map #(name (:field %)) fields))
         from (when from (str " FROM " (name from)))
         where (when where (str " WHERE " where))
+        group (when group
+                (str " GROUP BY " (string/join ", " (map #(name %) group))))
+        having (when having
+                 (str " HAVING " having))
         ord (order-clause order-by)
         lim (when limit (str " LIMIT " limit))
         off (when offset (str " OFFSET " offset))
-        qry (str "SELECT " modifier flds from where ord lim off ";")]
+        qry (str "SELECT " modifier flds from where group having
+                 ord lim off ";")]
     qry))
