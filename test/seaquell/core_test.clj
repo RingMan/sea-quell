@@ -83,3 +83,9 @@
                :having "visits > 1"
                }) =>
       "SELECT visits FROM user GROUP BY visits HAVING visits > 1;")
+
+(def q (select :* (from :user)))
+
+(fact "Passing a statement as first arg of select lets you add clauses to it"
+      (-> (select q (where "num > 3")) (to-sql)) =>
+      "SELECT * FROM user WHERE num > 3;")

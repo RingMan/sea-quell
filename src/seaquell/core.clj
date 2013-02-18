@@ -12,13 +12,16 @@
 
 (defn fields [& fs] (map field fs))
 
+(defn sql-stmt? [x] (:sql-stmt x))
+
 (defn select [flds & body]
-  (mk-map*
-    {:sql-stmt :select
-     :fields (cond
-               (coll? flds) (map field flds)
-               :else [(field flds)])}
-    body))
+  (let [stmt (if (sql-stmt? flds)
+               flds
+               {:sql-stmt :select
+                :fields (cond
+                          (coll? flds) (map field flds)
+                          :else [(field flds)])})]
+    (mk-map* stmt body)))
 
 ;;; Select Query modifiers
 
