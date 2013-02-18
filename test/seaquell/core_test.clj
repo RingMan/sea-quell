@@ -1,4 +1,5 @@
 (ns seaquell.core-test
+  (:require seaquell.to-sql)
   (:use midje.sweet
         seaquell.core))
 
