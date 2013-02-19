@@ -47,3 +47,9 @@ user=> (use 'korma.db)
 user=> (defdb mydb (sqlite3 {:db "/path/to/sqlite.db"}))
 user=> (do-sql q2)
 ```
+## Testing
+To check your installation or if you choose to contribute, you may want to execute the units tests.
+Sea-quell uses the excellent [midje](https://github.com/marick/Midje) library for this purpose.
+Just type `lein midje` from the command prompt to run the tests.  They should all pass.
+
+Looking at the [tests](https://github.com/RingMan/sea-quell/blob/master/test/seaquell/core_test.clj) is a great way to learn what sea-quell can and can't do.
