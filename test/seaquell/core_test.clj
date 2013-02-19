@@ -1,5 +1,4 @@
 (ns seaquell.core-test
-  (:require [seaquell.to-sql :as to])
   (:use midje.sweet
         seaquell.core))
 
@@ -94,30 +93,3 @@
 (fact "Passing a statement as first arg of select lets you add clauses to it"
       (-> (select q (where "num > 3")) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
-
-(fact (to/select-clauses ["select *" "from tbl" "limit 3" "offset 5"] nil) =>
-      "select * from tbl limit 3 offset 5")
-(fact (to/select-clauses ["select *" nil "from tbl" nil "limit 3" nil "offset 5"] nil) =>
-      "select * from tbl limit 3 offset 5")
-
-(fact (to-sql {:sql-stmt :select
-               :modifier -m- :fields -flds- :from -f- :where -w-
-               :group -gb- :having -h- :order-by -ob- :limit -l- :offset -o-})
-      => ...sql...
-      (provided
-        (to/select-clause -m- -flds-) => -sc-
-        (to/from-clause -f-) => -fc-
-        (to/where-clause -w-) => -wc-
-        (to/group-clause -gb-) => -gbc-
-        (to/having-clause -h-) => -hc-
-        (to/order-by-clause -ob-) => -obc-
-        (to/limit-clause -l-) => -lc-
-        (to/offset-clause -o-) => -oc-
-        (to/select-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
-
-(fact (to/from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
-      (provided (to/join-op-to-sql -j1-) => "j1"
-                (to/join-op-to-sql -j2-) => "j2"
-                (to/join-op-to-sql -j3-) => "j3"))
-
-(fact (to/join-op-to-sql :db.tbl) => "db.tbl")
