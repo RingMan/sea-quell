@@ -114,3 +114,10 @@
         (to/limit-clause -l-) => -lc-
         (to/offset-clause -o-) => -oc-
         (to/select-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
+
+(fact (to/from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
+      (provided (to/join-op-to-sql -j1-) => "j1"
+                (to/join-op-to-sql -j2-) => "j2"
+                (to/join-op-to-sql -j3-) => "j3"))
+
+(fact (to/join-op-to-sql :db.tbl) => "db.tbl")

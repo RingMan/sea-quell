@@ -36,8 +36,13 @@
         fields (string/join ", " (map #(name (:field %)) fields))]
     (str "SELECT " modifier fields)))
 
+(defn join-op-to-sql [x] (name x))
+
 (defn from-clause [from]
-  (when from (str "FROM " (name from))))
+  (when from
+    (let [from (if (coll? from) from [from])]
+      (str "FROM " (string/join " " (map join-op-to-sql from))))))
+
 (defn where-clause [w] (when w (str "WHERE " w)))
 (defn group-clause [group]
   (when group
