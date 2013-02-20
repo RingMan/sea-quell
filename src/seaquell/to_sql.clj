@@ -36,7 +36,52 @@
         fields (string/join ", " (map #(name (:field %)) fields))]
     (str "SELECT " modifier fields)))
 
-(defn join-op-to-sql [x] (name x))
+(defn join-but-nils [sep xs]
+  (string/join sep (keep identity xs)))
+(def join-by-space (partial join-but-nils " "))
+(def join-by-comma (partial join-but-nils ", "))
+
+(defn delimit [l r x]
+  (str l x r))
+(def in-parens (partial delimit "(" ")"))
+(def in-quotes (partial delimit "\"" "\""))
+
+(declare join-op-to-sql)
+
+(defn join-src-to-sql [src]
+  (cond
+    (keyword? src) (name src)
+    (string? src) src
+    (map? src) (let [{:keys [select table as]} src]
+                 (cond
+                   table (str (name table) (when as (str " AS " (name as))))
+                   select (str (in-parens (to-sql select false))
+                               (when as (str " AS " (name as))))))
+    (coll? src) (in-parens (join-by-space (map join-op-to-sql src)))))
+
+(defn expr-to-sql [x]
+  (cond
+    (map? x) (string/join
+               " AND "
+               (map (fn [[k v]] (str (name k) " = " (name v))) x))
+    :else (name x)))
+
+(defn field-to-sql [x]
+  (name x))
+(defn to-sql-keywords [x]
+  (if (keyword? x)
+    (let [parts (string/split (name x) #"-")]
+      (->> parts (map string/upper-case) (join-by-space)))
+    x))
+
+(defn join-op-to-sql [{:keys [source op on using] :as join}]
+  (if source
+    (let [on (when on (str "ON " (expr-to-sql on)))
+          using (when using
+                  (str "USING " (-> (map field-to-sql using)
+                                    (join-by-comma) (in-parens))))]
+      (join-by-space [(to-sql-keywords op) (join-src-to-sql source) (or on using)]))
+    (name join)))
 
 (defn from-clause [from]
   (when from
