@@ -50,31 +50,33 @@
                 (join-op-to-sql -j3-) => "j3"))
 
 (fact (join-op-to-sql :db.tbl) => "db.tbl")
-(fact (join-op-to-sql {:source -src- :op -op- :on -on-}) =>
-      "JOIN src ON expr"
-      (provided (to-sql-keywords -op-) => "JOIN"
-                (join-src-to-sql -src-) => "src"
-                (expr-to-sql -on-) => "expr"))
-(fact (join-op-to-sql {:source -src- :op -op- :using [-u1- -u2-]}) =>
-      "JOIN src USING (-u1-, -u2-)"
-      (provided (to-sql-keywords -op-) => "JOIN"
-                (join-src-to-sql -src-) => "src"
-                (name -u1-) => "-u1-"
-                (name -u2-) => "-u2-"))
+(fact
+  (let [jop {:source -src- :op -op- :on -on-}]
+    (join-op-to-sql jop) => "JOIN src ON expr"
+    (provided (to-sql-keywords -op-) => "JOIN"
+              (join-src-to-sql jop) => "src"
+              (expr-to-sql -on-) => "expr")))
+(fact
+  (let [jop {:source -src- :op -op- :using [-u1- -u2-]}]
+    (join-op-to-sql jop) => "JOIN src USING (-u1-, -u2-)"
+    (provided (to-sql-keywords -op-) => "JOIN"
+              (join-src-to-sql jop) => "src"
+              (name -u1-) => "-u1-"
+              (name -u2-) => "-u2-")))
 
 (facts
-  (join-src-to-sql :kw) => "kw"
-  (join-src-to-sql "any string") => "any string"
-  (join-src-to-sql {:table :db.table}) => "db.table"
-  (join-src-to-sql {:table :db.table :as :T}) => "db.table AS T"
+  (join-src-to-sql {:source "any string"}) => "any string"
+  (join-src-to-sql {:source "any string" :as -as-}) => "any string AS -as-"
+  (join-src-to-sql {:source :db.table}) => "db.table"
+  (join-src-to-sql {:source :db.table :as -as-}) => "db.table AS -as-"
   (fact
-    (join-src-to-sql {:select -q-}) => "(subselect)"
-    (provided (to-sql -q- false) => "subselect"))
+    (join-src-to-sql {:source {:sql-stmt :select}}) => "(subselect)"
+    (provided (to-sql {:sql-stmt :select} false) => "subselect"))
   (fact
-    (join-src-to-sql {:select -q- :as -as-}) => "(subselect) AS -as-"
-    (provided (to-sql -q- false) => "subselect"))
+    (join-src-to-sql {:source {:sql-stmt :select}, :as -as-}) => "(subselect) AS -as-"
+    (provided (to-sql {:sql-stmt :select} false) => "subselect"))
   (fact
-    (join-src-to-sql [-j1- -j2- -j3-]) => "(j1 j2 j3)"
+    (join-src-to-sql {:source [-j1- -j2- -j3-]}) => "(j1 j2 j3)"
     (provided (join-op-to-sql -j1-) => "j1"
               (join-op-to-sql -j2-) => "j2"
               (join-op-to-sql -j3-) => "j3")))

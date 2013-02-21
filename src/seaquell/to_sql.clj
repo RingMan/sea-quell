@@ -82,16 +82,13 @@
 
 (declare join-op-to-sql)
 
-(defn join-src-to-sql [src]
-  (cond
-    (keyword? src) (name src)
-    (string? src) src
-    (map? src) (let [{:keys [select table as]} src]
-                 (cond
-                   table (str (name table) (when as (str " AS " (name as))))
-                   select (str (in-parens (to-sql select false))
-                               (when as (str " AS " (name as))))))
-    (coll? src) (in-parens (join-by-space (map join-op-to-sql src)))))
+(defn join-src-to-sql [{:keys [source as] :as src}]
+  (let [as (when as (str " AS " (name as)))]
+    (cond
+      (keyword? source) (str (name source) as)
+      (string? source) (str source as)
+      (:sql-stmt source) (str (in-parens (to-sql source false)) as)
+      (coll? source) (in-parens (join-by-space (map join-op-to-sql source))))))
 
 (defn to-sql-keywords [x]
   (if (keyword? x)
@@ -105,7 +102,7 @@
           using (when using
                   (str "USING " (-> (map name using)
                                     (join-by-comma) (in-parens))))]
-      (join-by-space [(to-sql-keywords op) (join-src-to-sql source) (or on using)]))
+      (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
     (name join)))
 
 (defn from-clause [from]
