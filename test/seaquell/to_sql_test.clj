@@ -72,6 +72,13 @@
 (fact (having-clause -expr-) => "HAVING expr"
       (provided (expr-to-sql -expr-) => "expr"))
 
+(fact (order-by-clause nil) => nil)
+(fact (order-by-clause [-ord-]) => "ORDER BY ord"
+      (provided (order-item -ord-) => "ord"))
+(fact (order-by-clause [-o1- -o2-]) => "ORDER BY o1, o2"
+      (provided (order-item -o1-) => "o1")
+      (provided (order-item -o2-) => "o2"))
+
 (fact (limit-clause nil) => nil)
 (fact (limit-clause -expr-) => "LIMIT expr"
       (provided (expr-to-sql -expr-) => "expr"))
