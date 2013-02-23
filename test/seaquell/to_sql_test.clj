@@ -57,6 +57,29 @@
               (join-op-to-sql -j2-) => "j2"
               (join-op-to-sql -j3-) => "j3")))
 
+(fact (where-clause nil) => nil)
+(fact (where-clause -expr-) => "WHERE expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+
+(fact (group-clause nil) => nil)
+(fact (group-clause [-expr-]) => "GROUP BY expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+(fact (group-clause [-ex1- -ex2-]) => "GROUP BY ex1, ex2"
+      (provided (expr-to-sql -ex1-) => "ex1"
+                (expr-to-sql -ex2-) => "ex2"))
+
+(fact (having-clause nil) => nil)
+(fact (having-clause -expr-) => "HAVING expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+
+(fact (limit-clause nil) => nil)
+(fact (limit-clause -expr-) => "LIMIT expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+
+(fact (offset-clause nil) => nil)
+(fact (offset-clause -expr-) => "OFFSET expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+
 (facts (expr-to-sql :kw) => "kw"
        (expr-to-sql "any string") => "any string"
        (expr-to-sql {-k1- -v1-}) => "-k1- = -v1-"

@@ -61,6 +61,7 @@
 
 (defn expr-to-sql [x]
   (cond
+    (number? x) (str x)
     (map? x) (string/join
                " AND "
                (map (fn [[k v]] (str (name k) " = " (name v))) x))
@@ -88,14 +89,14 @@
     (let [from (if (coll? from) from [from])]
       (str "FROM " (string/join " " (map join-op-to-sql from))))))
 
-(defn where-clause [w] (when w (str "WHERE " w)))
+(defn where-clause [w] (when w (str "WHERE " (expr-to-sql w))))
 (defn group-clause [group]
   (when group
-    (str "GROUP BY " (string/join ", " (map #(name %) group)))))
+    (str "GROUP BY " (string/join ", " (map expr-to-sql group)))))
 (defn having-clause [having]
-  (when having (str "HAVING " having)))
-(defn limit-clause [l] (when l (str "LIMIT " l)))
-(defn offset-clause [o] (when o (str "OFFSET " o)))
+  (when having (str "HAVING " (expr-to-sql having))))
+(defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
+(defn offset-clause [o] (when o (str "OFFSET " (expr-to-sql o))))
 
 (defn select-clauses [xs semi]
   (str (string/join " " (keep identity xs)) semi))
