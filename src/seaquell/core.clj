@@ -50,6 +50,9 @@
 
 (def to-sql sql/to-sql)
 
+(defn select$ [& body]
+  (to-sql (apply select body)))
+
 (defn do-sql [stmt]
   (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
     (eng/exec sql-str)))
