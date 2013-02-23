@@ -3,6 +3,14 @@
 
 ;;; SQL Generation
 
+(defn expr-to-sql [x]
+  (cond
+    (number? x) (str x)
+    (map? x) (string/join
+               " AND "
+               (map (fn [[k v]] (str (name k) " = " (name v))) x))
+    :else (name x)))
+
 (def modifier-map
   {:all "ALL "
    :distinct "DISTINCT "
@@ -13,11 +21,15 @@
    :desc " DESC"
    nil "" })
 
+(defn order-item? [x] (:expr x))
+
 (defn order-item [x]
-  (let [order (order-map (:order x))]
-    (cond
-      (:expr x) (map #(str (name %) order) (:expr x))
-      :else (name x))))
+  (if (order-item? x)
+    (let [{:keys [collate expr order]} x
+          collate (when collate (str " COLLATE " (name collate)))
+          order (order-map order)]
+      (map #(str (expr-to-sql %) collate order) expr))
+    (expr-to-sql x)))
 
 (defn order-by-clause [xs]
   (when xs
@@ -58,14 +70,6 @@
                    select (str (in-parens (to-sql select false))
                                (when as (str " AS " (name as))))))
     (coll? src) (in-parens (join-by-space (map join-op-to-sql src)))))
-
-(defn expr-to-sql [x]
-  (cond
-    (number? x) (str x)
-    (map? x) (string/join
-               " AND "
-               (map (fn [[k v]] (str (name k) " = " (name v))) x))
-    :else (name x)))
 
 (defn field-to-sql [x]
   (name x))

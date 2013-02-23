@@ -87,6 +87,30 @@
 (fact (offset-clause -expr-) => "OFFSET expr"
       (provided (expr-to-sql -expr-) => "expr"))
 
+(fact (order-item -expr-) => "expr"
+      (provided (order-item? -expr-) => false)
+      (provided (expr-to-sql -expr-) => "expr"))
+
+(fact (order-item {:expr [-expr-]}) => ["expr"]
+      (provided (order-item? {:expr [-expr-]}) => true)
+      (provided (expr-to-sql -expr-) => "expr"))
+
+(fact (order-item {:expr [-ex1- -ex2-]}) => ["ex1" "ex2"]
+      (provided (order-item? {:expr [-ex1- -ex2-]}) => true)
+      (provided (expr-to-sql -ex1-) => "ex1")
+      (provided (expr-to-sql -ex2-) => "ex2"))
+
+(fact (order-item {:expr [-ex1- -ex2-] :order :asc}) => ["ex1 ASC" "ex2 ASC"]
+      (provided (order-item? {:expr [-ex1- -ex2-] :order :asc}) => true)
+      (provided (expr-to-sql -ex1-) => "ex1")
+      (provided (expr-to-sql -ex2-) => "ex2"))
+
+(fact (order-item {:expr [-ex1- -ex2-] :order :asc :collate -coll-}) =>
+      ["ex1 COLLATE -coll- ASC" "ex2 COLLATE -coll- ASC"]
+      (provided (order-item? {:expr [-ex1- -ex2-] :order :asc :collate -coll-}) => true)
+      (provided (expr-to-sql -ex1-) => "ex1")
+      (provided (expr-to-sql -ex2-) => "ex2"))
+
 (facts (expr-to-sql :kw) => "kw"
        (expr-to-sql "any string") => "any string"
        (expr-to-sql {-k1- -v1-}) => "-k1- = -v1-"
