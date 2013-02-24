@@ -2,12 +2,23 @@
   (:use diesel.core)
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as from having limit modifier offset where)
+(def-props as having limit modifier offset on op where)
 
 (defn field [f & body]
   (mk-map* {:field f} body))
 
 (defn fields [& fs] fs)
+
+(defn from [& xs] {:from xs})
+
+(defn join [src & body]
+  (mk-map* {:source src :op :join} body))
+
+(defn src [src & body]
+  (mk-map* {:source src} body))
+
+(defn comma-join [src & body]
+  (mk-map* {:source src :op ","} body))
 
 (defn sql-stmt? [x] (:sql-stmt x))
 

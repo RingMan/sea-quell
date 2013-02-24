@@ -89,3 +89,12 @@
 (fact "Passing a statement as first arg of select lets you add clauses to it"
       (-> (select q (where "num > 3")) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
+
+(fact (from --x--) => {:from [--x--]})
+(fact (from -x- -y- -z-) => {:from [-x- -y- -z-]})
+(fact (join -src- (as -a-) (on -expr-)) => {:source -src- :op :join :as -a- :on -expr-})
+
+(fact (src -src-) => {:source -src-})
+(fact (src -src- (as -as-)) => {:source -src- :as -as-})
+(fact (comma-join -src-) => {:source -src- :op ","})
+(fact (comma-join -src- (as -as-)) => {:source -src- :op "," :as -as-})
