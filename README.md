@@ -34,7 +34,7 @@ $ lein repl
 To play with query definitions and see them as SQL strings
 
 ```
-user=> (use 'sea-quell.core)
+user=> (use 'seaquell.core)
 user=> (def q1 (select :* (from :users)))
 user=> (def q2 (select [:id :passwd] (from :users)))
 user=> (to-sql q1)
