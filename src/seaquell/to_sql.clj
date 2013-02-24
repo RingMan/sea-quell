@@ -11,7 +11,7 @@
                (map (fn [[k v]] (str (name k) " = " (name v))) x))
     :else (name x)))
 
-(def modifier-map
+(def modifier-to-sql
   {:all "ALL "
    :distinct "DISTINCT "
    nil "" })
@@ -42,10 +42,26 @@
   (throw (RuntimeException. (str "to-sql not implemented for "
                                  (:sql-stmt x) " statement"))))
 
+(defn field-to-sql [x]
+  ;(println (format "field-to-sql called with %s" x))
+  (if (:field x)
+    (let [{:keys [field as]} x
+          as (when as (str " AS "(name as)))
+          field (expr-to-sql field)]
+      (str field as))
+    (expr-to-sql x)))
+
+(defn fields-to-sql [fs]
+  ;(println (format "fs is: %s\nclass of fs is: %s" fs (class fs)))
+  (cond
+    (nil? fs) "*"
+    (coll? fs) (string/join ", " (map field-to-sql fs))
+    :else (field-to-sql fs)))
+
 (defn select-clause ^{:testable true}
   [modifier fields]
-  (let [modifier (modifier-map modifier)
-        fields (string/join ", " (map #(name (:field %)) fields))]
+  (let [modifier (modifier-to-sql modifier)
+        fields (fields-to-sql fields)]
     (str "SELECT " modifier fields)))
 
 (defn join-but-nils [sep xs]
@@ -71,8 +87,6 @@
                                (when as (str " AS " (name as))))))
     (coll? src) (in-parens (join-by-space (map join-op-to-sql src)))))
 
-(defn field-to-sql [x]
-  (name x))
 (defn to-sql-keywords [x]
   (if (keyword? x)
     (let [parts (string/split (name x) #"-")]
@@ -83,7 +97,7 @@
   (if source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
-                  (str "USING " (-> (map field-to-sql using)
+                  (str "USING " (-> (map name using)
                                     (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql source) (or on using)]))
     (name join)))

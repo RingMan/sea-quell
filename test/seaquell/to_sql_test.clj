@@ -22,6 +22,26 @@
         (offset-clause -o-) => -oc-
         (select-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
 
+(fact (select-clause -mod- -flds-) => "SELECT mod flds"
+      (provided (modifier-to-sql -mod-) => "mod ")
+      (provided (fields-to-sql -flds-) => "flds"))
+
+(fact (fields-to-sql nil) => "*")
+(fact (fields-to-sql :one-fld) => "fld"
+      (provided (field-to-sql :one-fld) => "fld"))
+(fact (fields-to-sql [-f1-]) => "f1"
+      (provided (field-to-sql -f1-) => "f1"))
+(fact (fields-to-sql [-f1- -f2-]) => "f1, f2"
+      (provided (field-to-sql -f1-) => "f1"
+                (field-to-sql -f2-) => "f2"))
+
+(fact (field-to-sql -expr-) => "expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+(fact (field-to-sql {:field -expr-}) => "expr"
+      (provided (expr-to-sql -expr-) => "expr"))
+(fact (field-to-sql {:field -expr- :as -as-}) => "expr AS -as-"
+      (provided (expr-to-sql -expr-) => "expr"))
+
 (fact (from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
       (provided (join-op-to-sql -j1-) => "j1"
                 (join-op-to-sql -j2-) => "j2"
@@ -34,11 +54,11 @@
                 (join-src-to-sql -src-) => "src"
                 (expr-to-sql -on-) => "expr"))
 (fact (join-op-to-sql {:source -src- :op -op- :using [-u1- -u2-]}) =>
-      "JOIN src USING (u1, u2)"
+      "JOIN src USING (-u1-, -u2-)"
       (provided (to-sql-keywords -op-) => "JOIN"
                 (join-src-to-sql -src-) => "src"
-                (field-to-sql -u1-) => "u1"
-                (field-to-sql -u2-) => "u2"))
+                (name -u1-) => "-u1-"
+                (name -u2-) => "-u2-"))
 
 (facts
   (join-src-to-sql :kw) => "kw"
@@ -115,9 +135,6 @@
        (expr-to-sql "any string") => "any string"
        (expr-to-sql {-k1- -v1-}) => "-k1- = -v1-"
        (expr-to-sql {-k1- -v1-, -k2- -v2-}) => "-k1- = -v1- AND -k2- = -v2-")
-
-(facts (field-to-sql :kw) => "kw"
-       (field-to-sql "any string") => "any string")
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
