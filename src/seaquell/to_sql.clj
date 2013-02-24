@@ -55,6 +55,7 @@
   ;(println (format "fs is: %s\nclass of fs is: %s" fs (class fs)))
   (cond
     (nil? fs) "*"
+    (map? fs) (field-to-sql fs)
     (coll? fs) (string/join ", " (map field-to-sql fs))
     :else (field-to-sql fs)))
 

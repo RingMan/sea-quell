@@ -4,13 +4,10 @@
 
 (def-props as from having limit modifier offset where)
 
+(defn field [f & body]
+  (mk-map* {:field f} body))
 
-
-(defn field [f]
-  ;; DMK TODO: break apart string or keyword db.table.field
-  (if (:field f) f {:field f}))
-
-(defn fields [& fs] (map field fs))
+(defn fields [& fs] fs)
 
 (defn sql-stmt? [x] (:sql-stmt x))
 
@@ -18,9 +15,7 @@
   (let [stmt (if (sql-stmt? flds)
                flds
                {:sql-stmt :select
-                :fields (cond
-                          (coll? flds) (map field flds)
-                          :else [(field flds)])})]
+                :fields flds})]
     (mk-map* stmt body)))
 
 ;;; Select Query modifiers

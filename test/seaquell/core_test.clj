@@ -2,17 +2,13 @@
   (:use midje.sweet
         seaquell.core))
 
-(fact (select :*) => {:sql-stmt :select :fields [-f-]}
-      (provided (field :*) => -f-))
+(fact (select -f-) => {:sql-stmt :select :fields -f-})
 
-(fact (select [:first :last]) =>
+(fact (select [-f1- -f2- (field -f3- (as -as-))]) =>
       {:sql-stmt :select
-       :fields [-f1- -f2-]}
-      (provided
-        (field :first) => -f1-
-        (field :last) => -f2-))
+       :fields [-f1- -f2- {:field -f3- :as -as-}]})
 
-(fact (as :alias) => {:as :alias})
+(fact (as -alias-) => {:as -alias-})
 
 (fact "to-sql throws for unsupported statements"
       (to-sql nil) => (throws RuntimeException))

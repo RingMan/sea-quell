@@ -29,6 +29,8 @@
 (fact (fields-to-sql nil) => "*")
 (fact (fields-to-sql :one-fld) => "fld"
       (provided (field-to-sql :one-fld) => "fld"))
+(fact (fields-to-sql {:field -f1-}) => "fld"
+      (provided (field-to-sql {:field -f1-}) => "fld"))
 (fact (fields-to-sql [-f1-]) => "f1"
       (provided (field-to-sql -f1-) => "f1"))
 (fact (fields-to-sql [-f1- -f2-]) => "f1, f2"
