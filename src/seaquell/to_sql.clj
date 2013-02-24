@@ -1,11 +1,21 @@
 (ns seaquell.to-sql
   (:require [clojure.string :as string]))
 
+(defn delimit [l r x]
+  (str l x r))
+(def in-parens (partial delimit "(" ")"))
+(def in-quotes (partial delimit "\"" "\""))
+
 ;;; SQL Generation
+
+(declare to-sql)
 
 (defn expr-to-sql [x]
   (cond
     (number? x) (str x)
+    (keyword? x) (name x)
+    (string? x) x
+    (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (map? x) (string/join
                " AND "
                (map (fn [[k v]] (str (name k) " = " (name v))) x))
@@ -69,11 +79,6 @@
   (string/join sep (keep identity xs)))
 (def join-by-space (partial join-but-nils " "))
 (def join-by-comma (partial join-but-nils ", "))
-
-(defn delimit [l r x]
-  (str l x r))
-(def in-parens (partial delimit "(" ")"))
-(def in-quotes (partial delimit "\"" "\""))
 
 (declare join-op-to-sql)
 

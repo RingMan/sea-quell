@@ -133,10 +133,14 @@
       (provided (expr-to-sql -ex1-) => "ex1")
       (provided (expr-to-sql -ex2-) => "ex2"))
 
-(facts (expr-to-sql :kw) => "kw"
+(facts (expr-to-sql 78) => "78"
+       (expr-to-sql :kw) => "kw"
        (expr-to-sql "any string") => "any string"
-       (expr-to-sql {-k1- -v1-}) => "-k1- = -v1-"
-       (expr-to-sql {-k1- -v1-, -k2- -v2-}) => "-k1- = -v1- AND -k2- = -v2-")
+       (expr-to-sql {:k1 :v1}) => "k1 = v1"
+       (expr-to-sql {:k1 :v1, :k2 :v2}) => "k1 = v1 AND k2 = v2"
+       (let [q {:sql-stmt :select}]
+         (fact (expr-to-sql q) => "(sql)"
+               (provided (to-sql q false) => "sql"))))
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
