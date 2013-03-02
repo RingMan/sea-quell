@@ -6,6 +6,12 @@
 (def in-parens (partial delimit "(" ")"))
 (def in-quotes (partial delimit "\"" "\""))
 
+(defn as-coll [xs]
+  (cond
+    (map? xs) [xs]
+    (coll? xs) xs
+    :else [xs]))
+
 ;;; SQL Generation
 
 (declare to-sql)
@@ -43,7 +49,7 @@
 
 (defn order-by-clause [xs]
   (when xs
-    (let [items (string/join ", " (flatten (map order-item xs)))]
+    (let [items (string/join ", " (flatten (map order-item (as-coll xs))))]
       (str "ORDER BY " items))))
 
 (defmulti to-sql :sql-stmt)
@@ -100,20 +106,19 @@
   (if source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
-                  (str "USING " (-> (map name using)
+                  (str "USING " (-> (map name (as-coll using))
                                     (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
     (name join)))
 
 (defn from-clause [from]
   (when from
-    (let [from (if (coll? from) from [from])]
-      (str "FROM " (string/join " " (map join-op-to-sql from))))))
+    (str "FROM " (string/join " " (map join-op-to-sql (as-coll from))))))
 
 (defn where-clause [w] (when w (str "WHERE " (expr-to-sql w))))
 (defn group-clause [group]
   (when group
-    (str "GROUP BY " (string/join ", " (map expr-to-sql group)))))
+    (str "GROUP BY " (string/join ", " (map expr-to-sql (as-coll group))))))
 (defn having-clause [having]
   (when having (str "HAVING " (expr-to-sql having))))
 (defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
