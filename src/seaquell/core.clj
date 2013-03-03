@@ -4,8 +4,12 @@
 
 (def-props as having limit modifier offset on op where)
 
-(defn field [f & body]
-  (mk-map* {:field f} body))
+(defn field
+  ([f as aka]
+   (assert (= :as as))
+   (field f aka))
+  ([f aka] {:field f :as (or (:as aka) aka)})
+  ([f] {:field f}))
 
 (defn fields [& fs] fs)
 

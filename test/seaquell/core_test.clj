@@ -10,6 +10,12 @@
 
 (fact (as -alias-) => {:as -alias-})
 
+(facts
+  (field -f-) => {:field -f-}
+  (field -f- -as-) => {:field -f- :as -as-}
+  (field -f- :as -as-) => {:field -f- :as -as-}
+  (field -f- :bad-as -as-) => (throws AssertionError))
+
 (fact "to-sql throws for unsupported statements"
       (to-sql nil) => (throws RuntimeException))
 
