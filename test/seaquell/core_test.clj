@@ -2,11 +2,11 @@
   (:use midje.sweet
         seaquell.core))
 
-(fact (select -f-) => {:sql-stmt :select :fields -f-})
+(fact (select :fld) => {:sql-stmt :select :fields -fs-}
+      (provided (fields :fld) => -fs-))
 
-(fact (select [-f1- -f2- (field -f3- (as -as-))]) =>
-      {:sql-stmt :select
-       :fields [-f1- -f2- {:field -f3- :as -as-}]})
+(fact (select [-f1- -f2- -f3-]) => {:sql-stmt :select :fields -fs-}
+      (provided (fields -f1- -f2- -f3-) => -fs-))
 
 (fact (as -alias-) => {:as -alias-})
 
@@ -15,6 +15,15 @@
   (field -f- -as-) => {:field -f- :as -as-}
   (field -f- :as -as-) => {:field -f- :as -as-}
   (field -f- :bad-as -as-) => (throws AssertionError))
+
+(facts
+  (fields) => []
+  (fields -f-) => [-f-]
+  (fields -f1- :field2 :as :f2) => [-f1- {:field :field2 :as :f2}]
+  (fields -f1- :field2 (as :f2)) => [-f1- {:field :field2 :as :f2}]
+  (fields -f1- (field :field2) (as :f2)) => [-f1- {:field :field2 :as :f2}]
+  (fields -f1- (field :field2 :as :old-f2) (as :f2) -f3-) =>
+  [-f1- {:field :field2 :as :f2} -f3-])
 
 (fact "to-sql throws for unsupported statements"
       (to-sql nil) => (throws RuntimeException))

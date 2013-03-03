@@ -8,10 +8,20 @@
   ([f as aka]
    (assert (= :as as))
    (field f aka))
-  ([f aka] {:field f :as (or (:as aka) aka)})
-  ([f] {:field f}))
+  ([f aka] (merge {:field (or (:field f) f)}
+                  (when aka {:as (or (:as aka) aka)})))
+  ([f] (field f nil)))
 
-(defn fields [& fs] fs)
+(defn fields* [acc [f aka & rem-fs :as fs]]
+  (cond
+    (nil? fs) acc
+    (and (:as aka) (nil? (:field aka)))
+    (recur (conj acc (field f (:as aka))) rem-fs)
+    (= :as aka) (recur (conj acc (field f (first rem-fs))) (next rem-fs))
+    :else (recur (conj acc f) (next fs))))
+
+(defn fields [& fs]
+  (fields* [] fs))
 
 (defn from [& xs] {:from xs})
 
@@ -30,7 +40,7 @@
   (let [stmt (if (sql-stmt? flds)
                flds
                {:sql-stmt :select
-                :fields flds})]
+                :fields (apply fields (sql/as-coll flds))})]
     (mk-map* stmt body)))
 
 ;;; Select Query modifiers
