@@ -135,14 +135,44 @@
       (provided (expr-to-sql -ex1-) => "ex1")
       (provided (expr-to-sql -ex2-) => "ex2"))
 
-(facts (expr-to-sql 78) => "78"
-       (expr-to-sql :kw) => "kw"
-       (expr-to-sql "any string") => "any string"
-       (expr-to-sql {:k1 :v1}) => "k1 = v1"
-       (expr-to-sql {:k1 :v1, :k2 :v2}) => "k1 = v1 AND k2 = v2"
+(facts (expr-to-sql* -prec- nil) => "NULL"
+       (expr-to-sql* -prec- 78) => "78"
+       (expr-to-sql* -prec- 78.9) => "78.9"
+       (expr-to-sql* -prec- true) => "TRUE"
+       (expr-to-sql* -prec- false) => "FALSE"
+       (expr-to-sql* -prec- :kw) => "kw"
+       (expr-to-sql* -prec- "any string") => "'any string'"
+       (expr-to-sql* -prec- {:k1 :v1}) => "k1 = v1"
+       (expr-to-sql* -prec- {:k1 :v1, :k2 :v2}) => "k1 = v1 AND k2 = v2"
        (let [q {:sql-stmt :select}]
-         (fact (expr-to-sql q) => "(sql)"
-               (provided (to-sql q false) => "sql"))))
+         (fact (expr-to-sql* -prec- q) => "(sql)"
+               (provided (to-sql q false) => "sql")))
+       (fact
+         (expr-to-sql* -prec- [:func -a1- -a2-]) => -fn-call-
+         (provided (fn-call-to-sql "FUNC" [-a1- -a2-]) => -fn-call-))
+       (fact
+         (expr-to-sql* -prec- [-bin-op- -a1- -a2-]) => -expr-
+         (provided (normalize-fn-or-op -bin-op-) => -op-
+                   (arith-bin-ops -op-) => -op-
+                   (bin-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
+       (fact
+         (expr-to-sql* -prec- [-rel-op- -a1- -a2-]) => -expr-
+         (provided (normalize-fn-or-op -rel-op-) => -op-
+                   (arith-bin-ops -op-) => nil
+                   (rel-bin-ops -op-) => -op-
+                   (rel-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
+       (fact
+         (expr-to-sql [:func -a1- -a2-]) => -fn-call-
+         (provided (fn-call-to-sql "FUNC" [-a1- -a2-]) => -fn-call-))
+       )
+
+(fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
+      (provided (expr-to-sql -a1-) => "a1"))
+
+(fact (fn-call-to-sql "FN" [-a1- -a2-]) => "FN(a1, a2)"
+      (provided (expr-to-sql -a1-) => "a1"
+                (expr-to-sql -a2-) => "a2"))
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
+

@@ -29,7 +29,7 @@
       (to-sql nil) => (throws RuntimeException))
 
 (fact "select does not require a FROM clause"
-      (to-sql (select "7*6")) => "SELECT 7*6;")
+      (to-sql (select [[* 7 6]])) => "SELECT 7 * 6;")
 
 (def q (select :* (from :user)))
 
@@ -68,8 +68,8 @@
         "SELECT * FROM user ORDER BY age ASC, weight ASC, id, passwd, height DESC;"))
 
 (fact "seaquell supports primitive WHERE clause"
-      (to-sql (select q (where "(id > 3)"))) =>
-      "SELECT * FROM user WHERE (id > 3);")
+      (to-sql (select q (where [> :id 3]))) =>
+      "SELECT * FROM user WHERE id > 3;")
 
 (fact "select handles group clause"
       (-> (select q (group :this :that)) (:group)) => [:this :that])
@@ -97,12 +97,12 @@
                :fields [{:field :visits}]
                :from :user
                :group [:visits]
-               :having "visits > 1"
+               :having [> :visits 1]
                }) =>
       "SELECT visits FROM user GROUP BY visits HAVING visits > 1;")
 
 (fact "Passing a statement as first arg of select lets you add clauses to it"
-      (-> (select q (where "num > 3")) (to-sql)) =>
+      (-> (select q (where [> :num 3])) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
 
 (fact (from --x--) => {:from [--x--]})

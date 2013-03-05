@@ -5,6 +5,7 @@
   (str l x r))
 (def in-parens (partial delimit "(" ")"))
 (def in-quotes (partial delimit "\"" "\""))
+(def in-ticks (partial delimit "'" "'"))
 
 (defn as-coll [xs]
   (cond
@@ -14,18 +15,107 @@
 
 ;;; SQL Generation
 
+(def fn-map
+  {+ "+", - "-", * "*", / "/"
+   < "<", <= "<=", = "=", not= "<>", >= ">=", > ">"
+   not "NOT" max "MAX" min "MIN" count "COUNT" vals "" mod "MOD"})
+
+;; DMK TODO: Think about || operator.  In MySQL, || is a logical OR but it can also
+;; be used for string concatenation.  In sqlite, || is string concatenation.
+(def arith-bin-ops #{"+" "-" "*" "/" "DIV" "%" "MOD" "^" "||" "AND" "XOR" "OR" "<<" ">>" "&" "|"})
+(def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
+                   "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
+                   "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
+(def unary-ops #{"-" "+" "~" "NOT"})
+(def precedence-levels
+  {0 #{"OR"}
+   1 #{"XOR"}
+   2 #{"AND"}
+   3 #{"=" "==" "<=>" "!=" "<>" "IS" "IS NOT" "IN" "NOT IN" "LIKE" "NOT LIKE"
+       "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"}
+   4 #{"<" "<=" ">" ">="}
+   5 #{"|"}
+   6 #{"&"}
+   7 #{"<<" ">>"}
+   8 #{"+" "-"}
+   9 #{"*" "/" "DIV" "%" "MOD"}
+   10 #{"^"}
+   11 #{"||"} })
+
+(def precedence
+  (reduce (fn [m [k v]]
+            (let [level-map (apply hash-map (interleave v (repeat k)))]
+              (merge m level-map)))
+          {} precedence-levels))
+
+(def renamed-ops
+  {"!=" "<>"
+   "NOT=" "<>"
+   "&&" "AND"
+   "VALS" ""})
+
+;; DMK TODO: handle nil values when fn?
+(defn normalize-fn-or-op [op]
+  (if (fn? op)
+    (fn-map op)
+    (let [op (string/upper-case (name op))
+          op (if (= op "-")
+               op
+               (string/join " " (string/split op #"-")))]
+      (or (renamed-ops op) op))))
+
 (declare to-sql)
 
-(defn expr-to-sql [x]
+(declare expr-to-sql expr-to-sql*)
+
+(defn bin-op-to-sql [parent-prec op args]
+  (let [prec (precedence op)
+        ;prec (dec parent-prec)
+        op (str " " op " ")
+        parts (map (partial expr-to-sql* prec) args)
+        expr (string/join op parts)]
+    (if (>= parent-prec prec) (in-parens expr) expr)))
+
+(defn rel-op-to-sql [parent-prec op args]
+  (let [prec (precedence op)
+        pred-op (if (= "<>" op) "OR" "AND")
+        prec (if (> (count args) 2) (precedence pred-op) prec)
+        ;prec (dec parent-prec)
+        pred-op (str " " pred-op " ")
+        op (str " " op " ")
+        parts (map (partial expr-to-sql* prec) args)
+        parts (map (partial string/join op) (partition 2 1 parts))
+        expr (string/join pred-op parts)]
+    (if (>= parent-prec prec) (in-parens expr) expr)))
+
+(defn fn-call-to-sql [func args]
+  (if (#{"EXISTS" "NOT EXISTS"} func)
+    (str func (expr-to-sql (first args)))
+    (str func (in-parens (string/join ", " (map expr-to-sql args))))))
+
+;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
+;; expressions.  Then possbibly extend similar to Korma map predicates.
+
+(defn expr-to-sql* [prec x]
   (cond
+    (nil? x) "NULL"
     (number? x) (str x)
     (keyword? x) (name x)
-    (string? x) x
+    (true? x) "TRUE"
+    (false? x) "FALSE"
+    (string? x) (in-ticks x)
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (map? x) (string/join
                " AND "
                (map (fn [[k v]] (str (name k) " = " (name v))) x))
+    (coll? x) (let [op (normalize-fn-or-op (first x))]
+                (cond
+                  (arith-bin-ops op) (bin-op-to-sql prec op (rest x))
+                  (rel-bin-ops op) (rel-op-to-sql prec op (rest x))
+                  :else (fn-call-to-sql op (rest x))))
     :else (name x)))
+
+(def expr-to-sql (partial expr-to-sql* -1))
 
 (def modifier-to-sql
   {:all "ALL "
