@@ -43,6 +43,12 @@
                 :fields (apply fields (sql/as-coll flds))})]
     (mk-map* stmt body)))
 
+(defn sel-expr [& xs]
+  (select (field xs)))
+
+(defn sel-* [tbl & body]
+  (apply select :* (from tbl) body))
+
 ;;; Select Query modifiers
 
 (defn all [] (modifier :all))
@@ -73,9 +79,21 @@
 (defn select$ [& body]
   (to-sql (apply select body)))
 
+(defn sel$-expr [& body]
+  (to-sql (apply sel-expr body)))
+
+(defn sel$-* [& body]
+  (to-sql (apply sel-* body)))
+
 (defn do-sql [stmt]
   (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
     (eng/exec sql-str)))
 
 (defn select! [& body]
   (do-sql (apply select body)))
+
+(defn sel!-expr [& body]
+  (do-sql (apply sel-expr body)))
+
+(defn sel!-* [& body]
+  (do-sql (apply sel-* body)))
