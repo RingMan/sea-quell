@@ -237,3 +237,19 @@
      (select-clauses [select from where group having
                       order-by limit offset] semi))))
 
+(defmethod to-sql :compound-select
+  ([stmt] (to-sql stmt true))
+  ([{:keys [set-op selects order-by limit offset prepend-op?] :as stmt} semi?]
+  (let [set-op (to-sql-keywords set-op)
+        sep (if set-op (str " " set-op " ") " ")
+        selects (if-not prepend-op?
+                  (cons (first selects)
+                        (map #(assoc % :prepend-op? true) (rest selects)))
+                  selects)
+        select-ops (string/join sep (map #(to-sql % false) selects))
+        select-ops (if prepend-op? (str set-op " " select-ops) select-ops)
+        order-by (order-by-clause order-by)
+        limit (limit-clause limit)
+        offset (offset-clause offset)
+        semi (when semi? ";")]
+    (select-clauses [select-ops order-by limit offset] semi))))
