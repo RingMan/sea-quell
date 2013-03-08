@@ -54,7 +54,7 @@
              :natural-left-outer :natural-right-outer :natural-full-outer)
 
 (defn join [src & body]
-  (mk-map* {:source src :op :join} body))
+  (mk-map* {:source src :op :inner-join} body))
 
 (defn straight-join [src & body]
   (mk-map* {:source src :op :straight_join} body))

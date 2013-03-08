@@ -58,7 +58,7 @@
       (alias-to-sql -as-) => "AS -as-"
       (provided (name-to-sql -as-) => "-as-"))
 
-(fact (from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
+(fact (from-clause [-j1- -j2- -j3-]) => "FROM (j1 j2) j3"
       (provided (join-op-to-sql -j1-) => "j1"
                 (join-op-to-sql {:source -j2- :op ","}) => "j2"
                 (join-op-to-sql {:source -j3- :op ","}) => "j3"))

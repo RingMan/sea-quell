@@ -199,7 +199,8 @@
 (fact (from -x- (as -as-)) => {:from [{:source -x- :as -as-}]})
 (fact (from -x- (as -as-) -rest-) => {:from [{:source -x- :as -as-} -rest-]})
 
-(fact (join -src- (as -a-) (on -expr-)) => {:source -src- :op :join :as -a- :on -expr-})
+(fact (join -src- (as -a-) (on -expr-)) =>
+      {:source -src- :op :inner-join :as -a- :on -expr-})
 
 (fact (mk-join-fns :fancy) =expands-to=>
       (do (clojure.core/defn fancy-join [src & body]

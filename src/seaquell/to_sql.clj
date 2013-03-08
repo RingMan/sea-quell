@@ -12,6 +12,14 @@
 (def join-by-space (partial join-but-nils " "))
 (def join-by-comma (partial join-but-nils ", "))
 
+(defn left-assoc [vs]
+  (let [vs (cons (first vs) (map (partial str " ") (rest vs)))]
+    (loop [ret "" [v & vs] vs]
+      (cond
+        (nil? v) ret
+        (nil? vs) (str ret v)
+        :else (recur (in-parens (str ret v)) vs)))))
+
 (defn as-coll [xs]
   (cond
     (map? xs) [xs]
@@ -313,8 +321,10 @@
 (defn from-clause [from]
   (when from
     (let [from (as-coll from)
-          ops (cons (first from) (map as-join-op (rest from)))]
-      (str "FROM " (string/join " " (map join-op-to-sql ops))))))
+          ops (cons (first from) (map as-join-op (rest from)))
+          [p1 p2 & ps :as parts] (map join-op-to-sql ops)
+          parts (if (and p1 p2) (cons (str p1 " " p2) ps) parts)]
+      (str "FROM " (left-assoc parts)))))
 
 (defn where-clause [w] (when w (str "WHERE " (expr-to-sql w))))
 (defn group-clause [group]
