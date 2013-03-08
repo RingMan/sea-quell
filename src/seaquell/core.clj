@@ -34,7 +34,11 @@
 (defn comma-join [src & body]
   (mk-map* {:source src :op ","} body))
 
-(defn sql-stmt? [x] (:sql-stmt x))
+(defn sql-stmt?
+  ([x] (:sql-stmt x))
+  ([stmt-type x] (= (:sql-stmt x) stmt-type)))
+
+(def select? (partial sql-stmt? :select))
 
 (defn select [flds & body]
   (let [stmt (if (sql-stmt? flds)
@@ -71,6 +75,39 @@
 
 (defn desc [& xs]
   {:order :desc :expr xs})
+
+;;; Compound selects
+
+(def compound-select? (partial sql-stmt? :compound-select))
+
+(defn set-op? [set-op stmt]
+  (and (compound-select? stmt) (= (:set-op stmt) set-op)))
+
+(def union? (partial set-op? :union))
+(def union-all? (partial set-op? :union-all))
+(def intersect? (partial set-op? :intersect))
+(def except? (partial set-op? :except))
+
+(defn selects [& xs]
+  {:selects (vec xs)})
+
+(defn compound-select* [set-op & body]
+  (let [stmt (first body)
+        [stmt body]
+        (if (compound-select? stmt)
+          [stmt (rest body)]
+          (let [[sel body] (partition-by (comp boolean sql-stmt?) body)]
+            ;(println "build comp-select")
+            ;(clojure.pprint/pprint sel)
+            ;(clojure.pprint/pprint body)
+            [{:sql-stmt :compound-select :set-op set-op :selects sel} body]))]
+    (mk-map* stmt body)))
+
+(def union (partial compound-select* :union))
+(def union-all (partial compound-select* :union-all))
+(def intersect (partial compound-select* :intersect))
+(def except (partial compound-select* :except))
+(def compound-select (partial compound-select* nil))
 
 ;;; Convert to string and execute
 
