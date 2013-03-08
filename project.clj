@@ -7,5 +7,6 @@
                  [diesel "0.1.0-SNAPSHOT"]
                  [korma "0.3.0-RC4"]]
   :profiles {:dev {:dependencies [[midje "1.5-beta1"]
-                                  [org.xerial/sqlite-jdbc "3.7.2"]]
+                                  [org.xerial/sqlite-jdbc "3.7.2"]
+                                  [mysql/mysql-connector-java "5.1.23"]]
                    :plugins [[lein-midje "3.0-beta1"]]}})
