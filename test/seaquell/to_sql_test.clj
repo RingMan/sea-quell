@@ -50,6 +50,8 @@
                 (join-op-to-sql -j3-) => "j3"))
 
 (fact (join-op-to-sql :db.tbl) => "db.tbl")
+(fact (join-op-to-sql {:sql-stmt :select}) => "(qry)"
+      (provided (to-sql {:sql-stmt :select} false) => "qry"))
 (fact
   (let [jop {:source -src- :op -op- :on -on-}]
     (join-op-to-sql jop) => "JOIN src ON expr"

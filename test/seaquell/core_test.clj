@@ -105,8 +105,13 @@
       (-> (select q (where [> :num 3])) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
 
-(fact (from --x--) => {:from [--x--]})
-(fact (from -x- -y- -z-) => {:from [-x- -y- -z-]})
+(fact (from -x-) => {:from [-x-]})
+(fact (from -x- :y -z-) => {:from [-x- :y -z-]})
+(fact (from [-seq-] :rest) => {:from [{:source [-seq-]} :rest]})
+(fact (from -x- :as -as-) => {:from [{:source -x- :as -as-}]})
+(fact (from -x- (as -as-)) => {:from [{:source -x- :as -as-}]})
+(fact (from -x- (as -as-) -rest-) => {:from [{:source -x- :as -as-} -rest-]})
+
 (fact (join -src- (as -a-) (on -expr-)) => {:source -src- :op :join :as -a- :on -expr-})
 
 (fact (src -src-) => {:source -src-})

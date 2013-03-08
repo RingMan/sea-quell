@@ -23,7 +23,14 @@
 (defn fields [& fs]
   (fields* [] fs))
 
-(defn from [& xs] {:from xs})
+(defn alias? [x] (and (map? x) (= (keys x) [:as])))
+
+(defn from [& [tbl aka & rem-xs :as xs]]
+  (cond
+    (alias? aka) {:from (cons (merge {:source tbl} aka) rem-xs)}
+    (= :as aka) {:from (cons {:source tbl :as (first rem-xs)} (rest rem-xs))}
+    (sequential? tbl) {:from (cons {:source tbl} (rest xs))}
+    :else {:from xs}))
 
 (defn join [src & body]
   (mk-map* {:source src :op :join} body))

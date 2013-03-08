@@ -193,13 +193,15 @@
     x))
 
 (defn join-op-to-sql [{:keys [source op on using] :as join}]
-  (if source
+  (cond
+    source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
                   (str "USING " (-> (map name (as-coll using))
                                     (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
-    (name join)))
+    (:sql-stmt join) (in-parens (to-sql join false))
+    :else (name join)))
 
 (defn from-clause [from]
   (when from
