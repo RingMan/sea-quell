@@ -144,8 +144,9 @@
        (expr-to-sql* -prec- false) => "FALSE"
        (expr-to-sql* -prec- :kw) => "kw"
        (expr-to-sql* -prec- "any string") => "'any string'"
-       (expr-to-sql* -prec- {:k1 :v1}) => "k1 = v1"
-       (expr-to-sql* -prec- {:k1 :v1, :k2 :v2}) => "k1 = v1 AND k2 = v2"
+       (expr-to-sql* (dec (precedence "AND")) {:k1 :v1}) => "k1 = v1"
+       (expr-to-sql* (dec (precedence "AND")) {:k1 :v1, :k2 :v2}) =>
+       "k1 = v1 AND k2 = v2"
        (let [q {:sql-stmt :select}]
          (fact (expr-to-sql* -prec- q) => "(sql)"
                (provided (to-sql q false) => "sql")))

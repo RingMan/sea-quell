@@ -105,9 +105,7 @@
     (false? x) "FALSE"
     (string? x) (in-ticks x)
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
-    (map? x) (string/join
-               " AND "
-               (map (fn [[k v]] (str (name k) " = " (name v))) x))
+    (map? x) (recur prec (cons :and (map (fn [[k v]] [:= k v]) x)))
     (coll? x) (let [op (normalize-fn-or-op (first x))]
                 (cond
                   (arith-bin-ops op) (bin-op-to-sql prec op (rest x))
