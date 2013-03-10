@@ -93,7 +93,9 @@
 (def union? (partial set-op? :union))
 (def union-all? (partial set-op? :union-all))
 (def intersect? (partial set-op? :intersect))
+(def intersect-all? (partial set-op? :intersect-all))
 (def except? (partial set-op? :except))
+(def except-all? (partial set-op? :except-all))
 
 (defn selects [& xs]
   {:selects (vec xs)})
@@ -113,7 +115,9 @@
 (def union (partial compound-select* :union))
 (def union-all (partial compound-select* :union-all))
 (def intersect (partial compound-select* :intersect))
+(def intersect-all (partial compound-select* :intersect-all))
 (def except (partial compound-select* :except))
+(def except-all (partial compound-select* :except-all))
 (def compound-select (partial compound-select* nil))
 
 ;;; Convert to string and execute
