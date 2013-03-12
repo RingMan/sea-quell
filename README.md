@@ -13,15 +13,11 @@ Mainly, this is a personal experiment.  It's also a wish list for what I'd love 
 * Support for vendor-specific transformations
 * Clear separation of the front-end and back-end where the data itself is the only connection between the two
 
-## Getting Started
-First, clone `diesel` and make it available to `sea-quell`.
+## Travis CI Build Status
+[![Build Status](https://travis-ci.org/RingMan/sea-quell.png)](https://travis-ci.org/RingMan/sea-quell)
 
-```bash
-$ git clone https://github.com/RingMan/diesel.git
-$ cd diesel
-$ lein install
-```
-Now clone `sea-quell`, grab its dependencies, and open up a repl.
+## Getting Started
+Clone `sea-quell`, grab its dependencies, and open up a repl.
 
 ```bash
 $ cd ..
