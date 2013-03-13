@@ -114,6 +114,10 @@
 
 (fact (join -src- (as -a-) (on -expr-)) => {:source -src- :op :join :as -a- :on -expr-})
 
+(fact (mk-join-fns :fancy) =expands-to=>
+      (do (clojure.core/defn fancy-join [src & body]
+            (diesel.core/mk-map* {:source src :op :fancy-join} body))))
+
 (fact (src -src-) => {:source -src-})
 (fact (src -src- (as -as-)) => {:source -src- :as -as-})
 (fact (comma-join -src-) => {:source -src- :op ","})

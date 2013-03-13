@@ -32,8 +32,24 @@
     (sequential? tbl) {:from (cons {:source tbl} (rest xs))}
     :else {:from xs}))
 
+(defmacro mk-join-fns [& xs]
+  (cons 'do
+        (for [x xs]
+          (let [jn (str (name x) "-join")]
+            `(defn ~(symbol jn) ~'[src & body]
+               (mk-map* {:source ~'src :op ~(keyword jn)} ~'body))))))
+
+(mk-join-fns :cross :inner :left :right :full
+             :left-outer :right-outer :full-outer
+             :natural :natural-cross :natural-inner
+             :natural-left :natural-right :natural-full
+             :natural-left-outer :natural-right-outer :natural-full-outer)
+
 (defn join [src & body]
   (mk-map* {:source src :op :join} body))
+
+(defn straight-join [src & body]
+  (mk-map* {:source src :op :straight_join} body))
 
 (defn src [src & body]
   (mk-map* {:source src} body))
