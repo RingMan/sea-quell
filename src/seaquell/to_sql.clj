@@ -15,6 +15,12 @@
 
 ;;; SQL Generation
 
+(defn to-sql-keywords [x]
+  (if (keyword? x)
+    (let [parts (string/split (name x) #"-")]
+      (->> parts (map string/upper-case) (string/join " ")))
+    x))
+
 (def fn-map
   {+ "+", - "-", * "*", / "/"
    < "<", <= "<=", = "=", not= "<>", >= ">=", > ">"
@@ -100,6 +106,9 @@
         prec (precedence op)]
     (if (>= parent-prec prec) (in-parens expr) expr)))
 
+(defn cast-to-sql [e t]
+  (str "CAST(" (expr-to-sql e) " AS " (to-sql-keywords t) ")"))
+
 ;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
 ;; expressions.  Then possbibly extend similar to Korma map predicates.
 
@@ -113,13 +122,15 @@
     (string? x) (in-ticks x)
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (map? x) (recur prec (cons :and (map (fn [[k v]] [:= k v]) x)))
-    (coll? x) (let [op (normalize-fn-or-op (first x))]
+    (coll? x) (let [[op & args] x
+                    op (normalize-fn-or-op op)]
                 (cond
-                  (arith-bin-ops op) (bin-op-to-sql prec op (rest x))
-                  (rel-bin-ops op) (rel-op-to-sql prec op (rest x))
+                  (arith-bin-ops op) (bin-op-to-sql prec op args)
+                  (rel-bin-ops op) (rel-op-to-sql prec op args)
                   (#{"BETWEEN" "NOT BETWEEN"} op)
-                  (between-to-sql prec op (rest x))
-                  :else (fn-call-to-sql op (rest x))))
+                  (between-to-sql prec op args)
+                  (= "CAST" op) (cast-to-sql (first args) (second args))
+                  :else (fn-call-to-sql op args)))
     :else (name x)))
 
 (def expr-to-sql (partial expr-to-sql* -1))
@@ -192,12 +203,6 @@
       (string? source) (str source as)
       (:sql-stmt source) (str (in-parens (to-sql source false)) as)
       (coll? source) (in-parens (join-by-space (map join-op-to-sql source))))))
-
-(defn to-sql-keywords [x]
-  (if (keyword? x)
-    (let [parts (string/split (name x) #"-")]
-      (->> parts (map string/upper-case) (join-by-space)))
-    x))
 
 (defn join-op-to-sql [{:keys [source op on using] :as join}]
   (cond
