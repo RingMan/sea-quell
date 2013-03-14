@@ -31,16 +31,17 @@
   {0 #{"OR"}
    1 #{"XOR"}
    2 #{"AND"}
-   3 #{"=" "==" "<=>" "!=" "<>" "IS" "IS NOT" "IN" "NOT IN" "LIKE" "NOT LIKE"
+   3 #{"BETWEEN" "NOT BETWEEN" "CASE"}
+   4 #{"=" "==" "<=>" "!=" "<>" "IS" "IS NOT" "IN" "NOT IN" "LIKE" "NOT LIKE"
        "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"}
-   4 #{"<" "<=" ">" ">="}
-   5 #{"|"}
-   6 #{"&"}
-   7 #{"<<" ">>"}
-   8 #{"+" "-"}
-   9 #{"*" "/" "DIV" "%" "MOD"}
-   10 #{"^"}
-   11 #{"||"} })
+   5 #{"<" "<=" ">" ">="}
+   6 #{"|"}
+   7 #{"&"}
+   8 #{"<<" ">>"}
+   9 #{"+" "-"}
+   10 #{"*" "/" "DIV" "%" "MOD"}
+   11 #{"^"}
+   12 #{"||"} })
 
 (def precedence
   (reduce (fn [m [k v]]
@@ -93,6 +94,12 @@
     (str func (expr-to-sql (first args)))
     (str func (in-parens (string/join ", " (map expr-to-sql args))))))
 
+(defn between-to-sql [parent-prec op [e1 e2 e3]]
+  (let [expr (str (expr-to-sql* 100 e1) " " op " "
+                  (expr-to-sql* 100 e2) " AND " (expr-to-sql* 100 e3))
+        prec (precedence op)]
+    (if (>= parent-prec prec) (in-parens expr) expr)))
+
 ;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
 ;; expressions.  Then possbibly extend similar to Korma map predicates.
 
@@ -110,6 +117,8 @@
                 (cond
                   (arith-bin-ops op) (bin-op-to-sql prec op (rest x))
                   (rel-bin-ops op) (rel-op-to-sql prec op (rest x))
+                  (#{"BETWEEN" "NOT BETWEEN"} op)
+                  (between-to-sql prec op (rest x))
                   :else (fn-call-to-sql op (rest x))))
     :else (name x)))
 

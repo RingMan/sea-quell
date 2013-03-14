@@ -165,9 +165,8 @@
                    (rel-bin-ops -op-) => -op-
                    (rel-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
        (fact
-         (expr-to-sql [:func -a1- -a2-]) => -fn-call-
-         (provided (fn-call-to-sql "FUNC" [-a1- -a2-]) => -fn-call-))
-       )
+         (expr-to-sql* -prec- [:between -e1- -e2- -e3-]) => -between-
+         (provided (between-to-sql -prec- "BETWEEN" [-e1- -e2- -e3-]) => -between-)))
 
 (fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
       (provided (expr-to-sql -a1-) => "a1"))
@@ -175,6 +174,17 @@
 (fact (fn-call-to-sql "FN" [-a1- -a2-]) => "FN(a1, a2)"
       (provided (expr-to-sql -a1-) => "a1"
                 (expr-to-sql -a2-) => "a2"))
+
+(fact (between-to-sql -1 "BETWEEN" [-e1- -e2- -e3-]) => "e1 BETWEEN e2 AND e3"
+      (provided (expr-to-sql* 100 -e1-) => "e1"
+                (expr-to-sql* 100 -e2-) => "e2"
+                (expr-to-sql* 100 -e3-) => "e3"))
+
+(fact (between-to-sql (inc (precedence "BETWEEN")) "BETWEEN" [-e1- -e2- -e3-])
+      => "(e1 BETWEEN e2 AND e3)"
+      (provided (expr-to-sql* 100 -e1-) => "e1"
+                (expr-to-sql* 100 -e2-) => "e2"
+                (expr-to-sql* 100 -e3-) => "e3"))
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
