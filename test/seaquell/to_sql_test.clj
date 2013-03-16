@@ -169,7 +169,10 @@
          (provided (between-to-sql -prec- "BETWEEN" [-e1- -e2- -e3-]) => -between-))
        (fact
          (expr-to-sql* -prec- [:cast -e1- -type-]) => -cast-
-         (provided (cast-to-sql -e1- -type-) => -cast-)))
+         (provided (cast-to-sql -e1- -type-) => -cast-))
+       (fact
+         (expr-to-sql* -prec- [:case -v- -v1- -e1-]) => -case-
+         (provided (case-to-sql -v- [-v1- -e1-]) => -case-)))
 
 (fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
       (provided (expr-to-sql -a1-) => "a1"))
@@ -192,6 +195,25 @@
 (fact (cast-to-sql -ex- -type-) => "CAST(ex AS type)"
       (provided (expr-to-sql -ex-) => "ex"
                 (to-sql-keywords -type-) => "type"))
+
+(fact (case-to-sql -v- [-v1- -e1-]) => "CASE v WHEN v1 THEN e1 END"
+      (provided (expr-to-sql -v-) => "v"
+                (cases-to-sql [-v1- -e1-]) => "WHEN v1 THEN e1"))
+
+(fact (case-to-sql -v- [-v1- -e1- -else-]) => "CASE v WHEN v1 THEN e1 ELSE e2 END"
+      (provided (expr-to-sql -v-) => "v"
+                (expr-to-sql -else-) => "e2"
+                (cases-to-sql [-v1- -e1-]) => "WHEN v1 THEN e1"))
+
+(fact (cases-to-sql [-v1- -e1-]) => "WHEN v1 THEN e1"
+      (provided (expr-to-sql -v1-) => "v1"
+                (expr-to-sql -e1-) => "e1"))
+
+(fact (cases-to-sql [-v1- -e1- -v2- -e2-]) => "WHEN v1 THEN e1 WHEN v2 THEN e2"
+      (provided (expr-to-sql -v1-) => "v1"
+                (expr-to-sql -e1-) => "e1"
+                (expr-to-sql -v2-) => "v2"
+                (expr-to-sql -e2-) => "e2"))
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")

@@ -109,6 +109,22 @@
 (defn cast-to-sql [e t]
   (str "CAST(" (expr-to-sql e) " AS " (to-sql-keywords t) ")"))
 
+(defn cases-to-sql [cases]
+  (let [cases (partition 2 cases)
+        when-fn (fn [[v e]] (str "WHEN " (expr-to-sql v)
+                               " THEN " (expr-to-sql e)))
+        cases (string/join " " (map when-fn cases))]
+    cases))
+
+(defn case-to-sql [v cases]
+  (let [v (expr-to-sql v)
+        [cases else] (if (even? (count cases))
+                       [cases ""]
+                       [(butlast cases)
+                        (str " ELSE " (expr-to-sql (last cases)))])
+        clauses (cases-to-sql cases)]
+    (str "CASE " v " " clauses else " END")))
+
 ;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
 ;; expressions.  Then possbibly extend similar to Korma map predicates.
 
@@ -130,6 +146,7 @@
                   (#{"BETWEEN" "NOT BETWEEN"} op)
                   (between-to-sql prec op args)
                   (= "CAST" op) (cast-to-sql (first args) (second args))
+                  (= "CASE" op) (case-to-sql (first args) (rest args))
                   :else (fn-call-to-sql op args)))
     :else (name x)))
 
