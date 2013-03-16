@@ -172,7 +172,10 @@
          (provided (cast-to-sql -e1- -type-) => -cast-))
        (fact
          (expr-to-sql* -prec- [:case -v- -v1- -e1-]) => -case-
-         (provided (case-to-sql -v- [-v1- -e1-]) => -case-)))
+         (provided (case-to-sql -v- [-v1- -e1-]) => -case-))
+       (fact
+         (expr-to-sql* -prec- [:cond -p1- -e1-]) => -case-
+         (provided (cond-to-sql [-p1- -e1-]) => -case-)))
 
 (fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
       (provided (expr-to-sql -a1-) => "a1"))
@@ -205,6 +208,12 @@
                 (expr-to-sql -else-) => "e2"
                 (cases-to-sql [-v1- -e1-]) => "WHEN v1 THEN e1"))
 
+(fact (cond-to-sql [-p1- -e1-]) => "CASE WHEN p1 THEN e1 END"
+      (provided (cases-to-sql [-p1- -e1-]) => "WHEN p1 THEN e1"))
+
+(fact (cond-to-sql [-p1- -e1- :else -e2-]) => "CASE WHEN p1 THEN e1 ELSE e2 END"
+      (provided (cases-to-sql [-p1- -e1- :else -e2-]) => "WHEN p1 THEN e1 ELSE e2"))
+
 (fact (cases-to-sql [-v1- -e1-]) => "WHEN v1 THEN e1"
       (provided (expr-to-sql -v1-) => "v1"
                 (expr-to-sql -e1-) => "e1"))
@@ -213,6 +222,11 @@
       (provided (expr-to-sql -v1-) => "v1"
                 (expr-to-sql -e1-) => "e1"
                 (expr-to-sql -v2-) => "v2"
+                (expr-to-sql -e2-) => "e2"))
+
+(fact (cases-to-sql [-p1- -e1- :else -e2-]) => "WHEN p1 THEN e1 ELSE e2"
+      (provided (expr-to-sql -p1-) => "p1"
+                (expr-to-sql -e1-) => "e1"
                 (expr-to-sql -e2-) => "e2"))
 
 (facts (to-sql-keywords "any string") => "any string"

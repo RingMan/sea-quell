@@ -109,10 +109,17 @@
 (defn cast-to-sql [e t]
   (str "CAST(" (expr-to-sql e) " AS " (to-sql-keywords t) ")"))
 
+(defn else? [x]
+  ;; DMK: this implementation avoids problems comparing midje metaconstants
+  (and (keyword? x) (= :else x)))
+
 (defn cases-to-sql [cases]
   (let [cases (partition 2 cases)
-        when-fn (fn [[v e]] (str "WHEN " (expr-to-sql v)
-                               " THEN " (expr-to-sql e)))
+        when-fn (fn [[v e]]
+                  (if (else? v)
+                    (str "ELSE " (expr-to-sql e))
+                    (str "WHEN " (expr-to-sql v)
+                         " THEN " (expr-to-sql e))))
         cases (string/join " " (map when-fn cases))]
     cases))
 
@@ -124,6 +131,10 @@
                         (str " ELSE " (expr-to-sql (last cases)))])
         clauses (cases-to-sql cases)]
     (str "CASE " v " " clauses else " END")))
+
+(defn cond-to-sql [cases]
+  (let [cases (cases-to-sql cases)]
+    (str "CASE " cases " END")))
 
 ;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
 ;; expressions.  Then possbibly extend similar to Korma map predicates.
@@ -147,6 +158,7 @@
                   (between-to-sql prec op args)
                   (= "CAST" op) (cast-to-sql (first args) (second args))
                   (= "CASE" op) (case-to-sql (first args) (rest args))
+                  (= "COND" op) (cond-to-sql args)
                   :else (fn-call-to-sql op args)))
     :else (name x)))
 
