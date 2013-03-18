@@ -24,7 +24,7 @@
 (def fn-map
   {+ "+", - "-", * "*", / "/"
    < "<", <= "<=", = "=", not= "<>", >= ">=", > ">"
-   not "NOT" max "MAX" min "MIN" count "COUNT" vals "" mod "MOD"})
+   not "NOT" max "MAX" min "MIN" count "COUNT" val "" vals "" mod "MOD"})
 
 ;; DMK TODO: Think about || operator.  In MySQL, || is a logical OR but it can also
 ;; be used for string concatenation.  In sqlite, || is string concatenation.
@@ -59,6 +59,7 @@
   {"!=" "<>"
    "NOT=" "<>"
    "&&" "AND"
+   "VAL" ""
    "VALS" ""})
 
 ;; DMK TODO: handle nil values when fn?

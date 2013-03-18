@@ -154,6 +154,12 @@
          (expr-to-sql* -prec- [:func -a1- -a2-]) => -fn-call-
          (provided (fn-call-to-sql "FUNC" [-a1- -a2-]) => -fn-call-))
        (fact
+         (expr-to-sql* -prec- [val -a1- -a2-]) => "(-a1-, -a2-)"
+         (provided (fn-call-to-sql "" [-a1- -a2-]) => "(-a1-, -a2-)"))
+       (fact
+         (expr-to-sql* -prec- [vals -a1- -a2-]) => "(-a1-, -a2-)"
+         (provided (fn-call-to-sql "" [-a1- -a2-]) => "(-a1-, -a2-)"))
+       (fact
          (expr-to-sql* -prec- [-bin-op- -a1- -a2-]) => -expr-
          (provided (normalize-fn-or-op -bin-op-) => -op-
                    (arith-bin-ops -op-) => -op-
