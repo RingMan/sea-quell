@@ -162,6 +162,7 @@
        (fact
          (expr-to-sql* -prec- [-bin-op- -a1- -a2-]) => -expr-
          (provided (normalize-fn-or-op -bin-op-) => -op-
+                   (unary-ops -op-) => nil
                    (arith-bin-ops -op-) => -op-
                    (bin-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
        (fact
@@ -182,6 +183,15 @@
        (fact
          (expr-to-sql* -prec- [:cond -p1- -e1-]) => -case-
          (provided (cond-to-sql [-p1- -e1-]) => -case-)))
+
+(facts "about unary ops"
+       (expr-to-sql* -prec- [-un-op- -e1-]) => "-op- -e1-"
+       (provided (normalize-fn-or-op -un-op-) => -op-
+                 (unary-ops -op-) => -op-
+                 (unary-op-to-sql -op- -e1-) => "-op- -e1-"))
+
+(fact (unary-op-to-sql "NOT" -e1-) => "NOT -e1-"
+      (provided (expr-to-sql* unary-prec -e1-) => "-e1-"))
 
 (fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
       (provided (expr-to-sql -a1-) => "a1"))

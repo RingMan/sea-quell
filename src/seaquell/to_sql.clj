@@ -32,7 +32,7 @@
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
-(def unary-ops #{"-" "+" "~" "NOT"})
+(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "NOT" "!" "SOME"})
 (def precedence-levels
   {0 #{"OR"}
    1 #{"XOR"}
@@ -47,13 +47,15 @@
    9 #{"+" "-"}
    10 #{"*" "/" "DIV" "%" "MOD"}
    11 #{"^"}
-   12 #{"||"} })
+   12 #{"||"}})
 
 (def precedence
   (reduce (fn [m [k v]]
             (let [level-map (apply hash-map (interleave v (repeat k)))]
               (merge m level-map)))
           {} precedence-levels))
+
+(def unary-prec (inc (apply max (keys precedence-levels))))
 
 (def renamed-ops
   {"!=" "<>"
@@ -75,6 +77,9 @@
 (declare to-sql)
 
 (declare expr-to-sql expr-to-sql*)
+
+(defn unary-op-to-sql [op arg]
+  (str op " " (expr-to-sql* unary-prec arg)))
 
 (defn bin-op-to-sql [parent-prec op args]
   (let [prec (precedence op)
@@ -153,6 +158,8 @@
     (coll? x) (let [[op & args] x
                     op (normalize-fn-or-op op)]
                 (cond
+                  (and (unary-ops op) (= 1 (count args)))
+                  (unary-op-to-sql op (first args))
                   (arith-bin-ops op) (bin-op-to-sql prec op args)
                   (rel-bin-ops op) (rel-op-to-sql prec op args)
                   (#{"BETWEEN" "NOT BETWEEN"} op)
