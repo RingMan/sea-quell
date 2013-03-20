@@ -104,7 +104,13 @@
 (defn fn-call-to-sql [func args]
   (if (#{"EXISTS" "NOT EXISTS"} func)
     (str func (expr-to-sql (first args)))
-    (str func (in-parens (string/join ", " (map expr-to-sql args))))))
+    (let [modifier (first args)
+          [modifier args] (if (#{distinct 'distinct} modifier)
+                            ["DISTINCT " (rest args)]
+                            [nil args])]
+      (str func
+           (in-parens (str modifier
+                           (string/join ", " (map expr-to-sql args))))))))
 
 (defn between-to-sql [parent-prec op [e1 e2 e3]]
   (let [expr (str (expr-to-sql* 100 e1) " " op " "

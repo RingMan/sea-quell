@@ -200,6 +200,9 @@
       (provided (expr-to-sql -a1-) => "a1"
                 (expr-to-sql -a2-) => "a2"))
 
+(fact (fn-call-to-sql "FN" [distinct -a1-]) => "FN(DISTINCT a1)"
+      (provided (expr-to-sql -a1-) => "a1"))
+
 (fact (between-to-sql -1 "BETWEEN" [-e1- -e2- -e3-]) => "e1 BETWEEN e2 AND e3"
       (provided (expr-to-sql* 100 -e1-) => "e1"
                 (expr-to-sql* 100 -e2-) => "e2"
