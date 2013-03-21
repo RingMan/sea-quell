@@ -131,12 +131,6 @@
       (provided (expr-to-sql -ex1-) => "ex1")
       (provided (expr-to-sql -ex2-) => "ex2"))
 
-(fact (order-item {:expr [-ex1- -ex2-] :order :asc :collate -coll-}) =>
-      ["ex1 COLLATE -coll- ASC" "ex2 COLLATE -coll- ASC"]
-      (provided (order-item? {:expr [-ex1- -ex2-] :order :asc :collate -coll-}) => true)
-      (provided (expr-to-sql -ex1-) => "ex1")
-      (provided (expr-to-sql -ex2-) => "ex2"))
-
 (facts (expr-to-sql* -prec- nil) => "NULL"
        (expr-to-sql* -prec- 78) => "78"
        (expr-to-sql* -prec- 78.9) => "78.9"
@@ -166,8 +160,8 @@
                    (arith-bin-ops -op-) => -op-
                    (bin-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
        (fact
-         (expr-to-sql* -prec- [-rel-op- -a1- -a2-]) => -expr-
-         (provided (normalize-fn-or-op -rel-op-) => -op-
+         (expr-to-sql* -prec- [:-rel-op- -a1- -a2-]) => -expr-
+         (provided (normalize-fn-or-op :-rel-op-) => -op-
                    (arith-bin-ops -op-) => nil
                    (rel-bin-ops -op-) => -op-
                    (rel-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
@@ -193,11 +187,11 @@
 (fact (unary-op-to-sql "NOT" -e1-) => "NOT -e1-"
       (provided (expr-to-sql* unary-prec -e1-) => "-e1-"))
 
-(fact (fn-call-to-sql "FN" [-a1-]) => "FN(a1)"
-      (provided (expr-to-sql -a1-) => "a1"))
+(fact (fn-call-to-sql "FN" [:-a1-]) => "FN(a1)"
+      (provided (expr-to-sql :-a1-) => "a1"))
 
-(fact (fn-call-to-sql "FN" [-a1- -a2-]) => "FN(a1, a2)"
-      (provided (expr-to-sql -a1-) => "a1"
+(fact (fn-call-to-sql "FN" [:-a1- -a2-]) => "FN(a1, a2)"
+      (provided (expr-to-sql :-a1-) => "a1"
                 (expr-to-sql -a2-) => "a2"))
 
 (fact (fn-call-to-sql "FN" [distinct -a1-]) => "FN(DISTINCT a1)"

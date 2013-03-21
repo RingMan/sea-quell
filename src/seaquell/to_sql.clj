@@ -28,7 +28,8 @@
 
 ;; DMK TODO: Think about || operator.  In MySQL, || is a logical OR but it can also
 ;; be used for string concatenation.  In sqlite, || is string concatenation.
-(def arith-bin-ops #{"+" "-" "*" "/" "DIV" "%" "MOD" "^" "||" "AND" "XOR" "OR" "<<" ">>" "&" "|"})
+(def arith-bin-ops #{"+" "-" "*" "/" "DIV" "%" "MOD" "^" "||"
+                     "AND" "XOR" "OR" "<<" ">>" "&" "|" "COLLATE"})
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
@@ -47,7 +48,8 @@
    9 #{"+" "-"}
    10 #{"*" "/" "DIV" "%" "MOD"}
    11 #{"^"}
-   12 #{"||"}})
+   12 #{"||"}
+   13 #{"COLLATE"}})
 
 (def precedence
   (reduce (fn [m [k v]]
@@ -192,10 +194,9 @@
 
 (defn order-item [x]
   (if (order-item? x)
-    (let [{:keys [collate expr order]} x
-          collate (when collate (str " COLLATE " (name collate)))
+    (let [{:keys [expr order]} x
           order (order-map order)]
-      (map #(str (expr-to-sql %) collate order) expr))
+      (map #(str (expr-to-sql %) order) expr))
     (expr-to-sql x)))
 
 (defn order-by-clause [xs]
