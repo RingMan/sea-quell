@@ -122,3 +122,5 @@
 (fact (src -src- (as -as-)) => {:source -src- :as -as-})
 (fact (comma-join -src-) => {:source -src- :op ","})
 (fact (comma-join -src- (as -as-)) => {:source -src- :op "," :as -as-})
+
+(fact (interval -i- -u-) => {:interval -i- :units -u-})

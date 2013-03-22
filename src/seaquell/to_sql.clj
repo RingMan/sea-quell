@@ -80,6 +80,9 @@
 
 (declare expr-to-sql expr-to-sql*)
 
+(defn interval-to-sql [{:keys [interval units]}]
+  (str "INTERVAL " (expr-to-sql interval) " " (name units)))
+
 (defn unary-op-to-sql [op arg]
   (str op " " (expr-to-sql* unary-prec arg)))
 
@@ -162,6 +165,7 @@
     (false? x) "FALSE"
     (string? x) (in-ticks x)
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
+    (and (map? x) (= #{:interval :units} (set (keys x)))) (interval-to-sql x)
     (map? x) (recur prec (cons :and (map (fn [[k v]] [:= k v]) x)))
     (coll? x) (let [[op & args] x
                     op (normalize-fn-or-op op)]

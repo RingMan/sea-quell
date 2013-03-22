@@ -138,6 +138,9 @@
        (expr-to-sql* -prec- false) => "FALSE"
        (expr-to-sql* -prec- :kw) => "kw"
        (expr-to-sql* -prec- "any string") => "'any string'"
+       (expr-to-sql* -prec- {:interval -e1- :units -u-}) => "INTERVAL -e1- -u-"
+       (provided (interval-to-sql {:interval -e1- :units -u-})
+                 => "INTERVAL -e1- -u-")
        (expr-to-sql* (dec (precedence "AND")) {:k1 :v1}) => "k1 = v1"
        (expr-to-sql* (dec (precedence "AND")) {:k1 :v1, :k2 :v2}) =>
        "k1 = v1 AND k2 = v2"
@@ -239,6 +242,9 @@
       (provided (expr-to-sql -p1-) => "p1"
                 (expr-to-sql -e1-) => "e1"
                 (expr-to-sql -e2-) => "e2"))
+
+(fact (interval-to-sql {:interval -e1- :units -units-}) => "INTERVAL -e1- -units-"
+      (provided (expr-to-sql -e1-) => "-e1-"))
 
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")

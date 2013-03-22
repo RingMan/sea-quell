@@ -23,6 +23,8 @@
 (defn fields [& fs]
   (fields* [] fs))
 
+(defn interval [ival units] {:interval ival :units units})
+
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
 (defn from [& [tbl aka & rem-xs :as xs]]
