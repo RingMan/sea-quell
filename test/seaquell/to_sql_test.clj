@@ -155,16 +155,14 @@
          (provided (fn-call-to-sql "" [-a1- -a2-]) => "(-a1-, -a2-)"))
        (fact
          (expr-to-sql* -prec- [-bin-op- -a1- -a2-]) => -expr-
-         (provided (normalize-fn-or-op -bin-op-) => -op-
-                   (unary-ops -op-) => nil
-                   (arith-bin-ops -op-) => -op-
-                   (bin-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
+         (provided (normalize-fn-or-op -bin-op-) => :-op-
+                   (arith-bin-ops :-op-) => :-op-
+                   (bin-op-to-sql -prec- :-op- [-a1- -a2-]) => -expr-))
        (fact
-         (expr-to-sql* -prec- [:-rel-op- -a1- -a2-]) => -expr-
-         (provided (normalize-fn-or-op :-rel-op-) => -op-
-                   (arith-bin-ops -op-) => nil
-                   (rel-bin-ops -op-) => -op-
-                   (rel-op-to-sql -prec- -op- [-a1- -a2-]) => -expr-))
+         (expr-to-sql* -prec- [-rel-op- -a1- -a2-]) => -expr-
+         (provided (normalize-fn-or-op -rel-op-) => :-op-
+                   (rel-bin-ops :-op-) => :-op-
+                   (rel-op-to-sql -prec- :-op- [-a1- -a2-]) => -expr-))
        (fact
          (expr-to-sql* -prec- [:between -e1- -e2- -e3-]) => -between-
          (provided (between-to-sql -prec- "BETWEEN" [-e1- -e2- -e3-]) => -between-))
