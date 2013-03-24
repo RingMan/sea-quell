@@ -157,9 +157,9 @@
 (defn sel$-* [& body]
   (to-sql (apply sel-* body)))
 
-(defn do-sql [stmt]
+(defn do-sql [stmt & params]
   (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
-    (eng/exec sql-str)))
+    (eng/exec sql-str params)))
 
 (defn select! [& body]
   (do-sql (apply select body)))
