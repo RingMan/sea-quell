@@ -124,3 +124,6 @@
 (fact (comma-join -src- (as -as-)) => {:source -src- :op "," :as -as-})
 
 (fact (interval -i- -u-) => {:interval -i- :units -u-})
+
+(fact (limit -lim-) => {:limit -lim-})
+(fact (limit -off- -lim-) => {:limit -lim- :offset -off-})

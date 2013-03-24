@@ -2,7 +2,7 @@
   (:use diesel.core)
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as having limit modifier offset on op where)
+(def-props as having modifier offset on op where)
 
 (defn field
   ([f as aka]
@@ -100,6 +100,12 @@
 
 (defn desc [& xs]
   {:order :desc :expr xs})
+
+;;; LIMIT clause
+
+(defn limit
+  ([lim] {:limit lim})
+  ([off lim] {:limit lim :offset off}))
 
 ;;; Compound selects
 
