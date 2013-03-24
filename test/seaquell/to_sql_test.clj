@@ -246,6 +246,14 @@
 (fact (interval-to-sql {:interval -e1- :units -units-}) => "INTERVAL -e1- -units-"
       (provided (expr-to-sql -e1-) => "-e1-"))
 
+(facts
+  (map-to-expr {-e1- -e2-}) => [:= -e1- -e2-]
+  (map-to-expr {-e1- -e2- -e3- -e4-}) => [:and [:= -e1- -e2-] [:= -e3- -e4-]]
+  (map-to-expr {-e1- [..op.. -e2-]}) => [:= -e1- [..op.. -e2-]]
+  (provided (predicate? "..OP..") => false)
+  (map-to-expr {-e1- [..op.. -e2-]}) => ["..OP.." -e1- -e2-]
+  (provided (predicate? "..OP..") => true))
+
 (facts (to-sql-keywords "any string") => "any string"
        (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
 

@@ -59,6 +59,12 @@
 
 (def unary-prec (inc (apply max (keys precedence-levels))))
 
+(defn predicate? [x]
+  (contains? (clojure.set/union (disj (precedence-levels 3) "CASE")
+                                (precedence-levels 4)
+                                (precedence-levels 5))
+             x))
+
 (def renamed-ops
   {"!=" "<>"
    "NOT=" "<>"
@@ -153,8 +159,16 @@
   (let [cases (cases-to-sql cases)]
     (str "CASE " cases " END")))
 
-;; DMK TODO: Extend the map? case to allow for equality between two arbitrary
-;; expressions.  Then possbibly extend similar to Korma map predicates.
+(defn map-to-expr [m]
+  (let [xs (map (fn [[k v]]
+                  (if (sequential? v)
+                    (let [op (normalize-fn-or-op (first v))]
+                      (if (predicate? op)
+                        (apply vector op k (rest v))
+                        [:= k v]))
+                    [:= k v]))
+                m)]
+    (if (> (count xs) 1) (cons :and xs) (first xs))))
 
 (defn expr-to-sql* [prec x]
   (cond
@@ -166,7 +180,7 @@
     (string? x) (in-ticks x)
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (and (map? x) (= #{:interval :units} (set (keys x)))) (interval-to-sql x)
-    (map? x) (recur prec (cons :and (map (fn [[k v]] [:= k v]) x)))
+    (map? x) (recur prec (map-to-expr x))
     (coll? x) (let [[op & args] x
                     op (normalize-fn-or-op op)]
                 (cond
