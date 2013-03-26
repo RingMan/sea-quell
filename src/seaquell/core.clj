@@ -59,6 +59,8 @@
 (defn comma-join [src & body]
   (mk-map* {:source src :op ","} body))
 
+(defn using [& xs] {:using xs})
+
 (defn sql-stmt?
   ([x] (:sql-stmt x))
   ([stmt-type x] (= (:sql-stmt x) stmt-type)))

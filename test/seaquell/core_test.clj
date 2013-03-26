@@ -123,6 +123,9 @@
 (fact (comma-join -src-) => {:source -src- :op ","})
 (fact (comma-join -src- (as -as-)) => {:source -src- :op "," :as -as-})
 
+(fact (using -pk-) => {:using [-pk-]})
+(fact (using -pk- -pk2-) => {:using [-pk- -pk2-]})
+
 (fact (interval -i- -u-) => {:interval -i- :units -u-})
 
 (fact (limit -lim-) => {:limit -lim-})
