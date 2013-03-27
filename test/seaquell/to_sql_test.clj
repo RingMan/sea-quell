@@ -138,6 +138,7 @@
        (expr-to-sql* -prec- false) => "FALSE"
        (expr-to-sql* -prec- :kw) => "kw"
        (expr-to-sql* -prec- "any string") => "'any string'"
+       (expr-to-sql* -prec- \c) => "'c'"
        (expr-to-sql* -prec- {:interval -e1- :units -u-}) => "INTERVAL -e1- -u-"
        (provided (interval-to-sql {:interval -e1- :units -u-})
                  => "INTERVAL -e1- -u-")

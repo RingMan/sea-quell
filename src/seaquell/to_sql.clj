@@ -29,7 +29,7 @@
 ;; DMK TODO: Think about || operator.  In MySQL, || is a logical OR but it can also
 ;; be used for string concatenation.  In sqlite, || is string concatenation.
 (def arith-bin-ops #{"+" "-" "*" "/" "DIV" "%" "MOD" "^" "||"
-                     "AND" "XOR" "OR" "<<" ">>" "&" "|" "COLLATE"})
+                     "AND" "XOR" "OR" "<<" ">>" "&" "|" "COLLATE" "ESCAPE"})
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
@@ -49,7 +49,7 @@
    10 #{"*" "/" "DIV" "%" "MOD"}
    11 #{"^"}
    12 #{"||"}
-   13 #{"COLLATE"}})
+   13 #{"COLLATE" "ESCAPE"}})
 
 (def precedence
   (reduce (fn [m [k v]]
@@ -178,6 +178,7 @@
     (true? x) "TRUE"
     (false? x) "FALSE"
     (string? x) (in-ticks x)
+    (char? x) (in-ticks (str x))
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (and (map? x) (= #{:interval :units} (set (keys x)))) (interval-to-sql x)
     (map? x) (recur prec (map-to-expr x))
