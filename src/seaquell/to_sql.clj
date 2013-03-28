@@ -33,7 +33,7 @@
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
-(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "NOT" "!" "SOME"})
+(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "EXISTS" "NOT" "NOT EXISTS" "!" "SOME"})
 (def precedence-levels
   {0 #{"OR"}
    1 #{"XOR"}
@@ -113,15 +113,13 @@
     (if (>= parent-prec prec) (in-parens expr) expr)))
 
 (defn fn-call-to-sql [func args]
-  (if (#{"EXISTS" "NOT EXISTS"} func)
-    (str func (expr-to-sql (first args)))
-    (let [modifier (first args)
-          [modifier args] (if (#{distinct 'distinct} modifier)
-                            ["DISTINCT " (rest args)]
-                            [nil args])]
-      (str func
-           (in-parens (str modifier
-                           (string/join ", " (map expr-to-sql args))))))))
+  (let [modifier (first args)
+        [modifier args] (if (#{distinct 'distinct} modifier)
+                          ["DISTINCT " (rest args)]
+                          [nil args])]
+    (str func
+         (in-parens (str modifier
+                         (string/join ", " (map expr-to-sql args)))))))
 
 (defn between-to-sql [parent-prec op [e1 e2 e3]]
   (let [expr (str (expr-to-sql* 100 e1) " " op " "
