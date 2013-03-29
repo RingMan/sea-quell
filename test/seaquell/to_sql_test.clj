@@ -41,8 +41,20 @@
       (provided (expr-to-sql -expr-) => "expr"))
 (fact (field-to-sql {:field -expr-}) => "expr"
       (provided (expr-to-sql -expr-) => "expr"))
-(fact (field-to-sql {:field -expr- :as -as-}) => "expr AS -as-"
-      (provided (expr-to-sql -expr-) => "expr"))
+(fact (field-to-sql {:field -expr- :as -as-}) => "expr AS as"
+      (provided (expr-to-sql -expr-) => "expr"
+                (alias-to-sql -as-) => " AS as"))
+
+(fact (name-to-sql :-name-) => "-name-"
+      (name-to-sql '-name-) => "-name-"
+      (name-to-sql "-name-") => "-name-"
+      (name-to-sql -raw-) => "-raw-"
+      (provided (raw? -raw-) => true
+                (raw-to-sql -raw-) => "-raw-"))
+
+(fact (alias-to-sql nil) => nil
+      (alias-to-sql -as-) => " AS -as-"
+      (provided (name-to-sql -as-) => "-as-"))
 
 (fact (from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
       (provided (join-op-to-sql -j1-) => "j1"
@@ -63,20 +75,30 @@
     (join-op-to-sql jop) => "JOIN src USING (-u1-, -u2-)"
     (provided (to-sql-keywords -op-) => "JOIN"
               (join-src-to-sql jop) => "src"
-              (name -u1-) => "-u1-"
-              (name -u2-) => "-u2-")))
+              (name-to-sql -u1-) => "-u1-"
+              (name-to-sql -u2-) => "-u2-")))
 
 (facts
+  (join-src-to-sql {:source -raw-}) => "-raw-"
+  (provided (raw? -raw-) => true
+            (raw-to-sql -raw-) => "-raw-")
+  (join-src-to-sql {:source -raw- :as -as-}) => "-raw- AS -as-"
+  (provided (raw? -raw-) => true
+            (raw-to-sql -raw-) => "-raw-"
+            (alias-to-sql -as-) => " AS -as-")
   (join-src-to-sql {:source "any string"}) => "any string"
   (join-src-to-sql {:source "any string" :as -as-}) => "any string AS -as-"
+  (provided (alias-to-sql -as-) => " AS -as-")
   (join-src-to-sql {:source :db.table}) => "db.table"
   (join-src-to-sql {:source :db.table :as -as-}) => "db.table AS -as-"
+  (provided (alias-to-sql -as-) => " AS -as-")
   (fact
     (join-src-to-sql {:source {:sql-stmt :select}}) => "(subselect)"
     (provided (to-sql {:sql-stmt :select} false) => "subselect"))
   (fact
     (join-src-to-sql {:source {:sql-stmt :select}, :as -as-}) => "(subselect) AS -as-"
-    (provided (to-sql {:sql-stmt :select} false) => "subselect"))
+    (provided (to-sql {:sql-stmt :select} false) => "subselect"
+              (alias-to-sql -as-) => " AS -as-"))
   (fact
     (join-src-to-sql {:source [-j1- -j2- -j3-]}) => "(j1 j2 j3)"
     (provided (join-op-to-sql -j1-) => "j1"
@@ -139,6 +161,9 @@
        (expr-to-sql* -prec- :kw) => "kw"
        (expr-to-sql* -prec- "any string") => "'any string'"
        (expr-to-sql* -prec- \c) => "'c'"
+       (expr-to-sql* -prec- -raw-) => "-raw-"
+       (provided (raw? -raw-) => true
+                 (raw-to-sql -raw-) => "-raw-")
        (expr-to-sql* -prec- {:interval -e1- :units -u-}) => "INTERVAL -e1- -u-"
        (provided (interval-to-sql {:interval -e1- :units -u-})
                  => "INTERVAL -e1- -u-")
@@ -244,8 +269,12 @@
                 (expr-to-sql -e1-) => "e1"
                 (expr-to-sql -e2-) => "e2"))
 
+(facts (raw-to-sql {:raw :keyword}) => "keyword"
+       (raw-to-sql {:raw -raw-}) => "-raw-")
+
 (fact (interval-to-sql {:interval -e1- :units -units-}) => "INTERVAL -e1- -units-"
-      (provided (expr-to-sql -e1-) => "-e1-"))
+      (provided (expr-to-sql -e1-) => "-e1-"
+                (to-sql-keywords -units-) => "-units-"))
 
 (facts
   (map-to-expr {-e1- -e2-}) => [:= -e1- -e2-]
@@ -256,5 +285,8 @@
   (provided (predicate? "..OP..") => true))
 
 (facts (to-sql-keywords "any string") => "any string"
-       (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN")
+       (to-sql-keywords :left-outer-join) => "LEFT OUTER JOIN"
+       (to-sql-keywords -raw-) => "-raw-"
+       (provided (raw? -raw-) => true
+                 (raw-to-sql -raw-) => "-raw-"))
 

@@ -15,12 +15,6 @@
 
 ;;; SQL Generation
 
-(defn to-sql-keywords [x]
-  (if (keyword? x)
-    (let [parts (string/split (name x) #"-")]
-      (->> parts (map string/upper-case) (string/join " ")))
-    x))
-
 (def fn-map
   {+ "+", - "-", * "*", / "/"
    < "<", <= "<=", = "=", not= "<>", >= ">=", > ">"
@@ -86,8 +80,22 @@
 
 (declare expr-to-sql expr-to-sql*)
 
+(defn raw? [x] (and (map? x) (= [:raw] (keys x))))
+
+(defn raw-to-sql [{:keys [raw]}]
+  (if (keyword? raw) (name raw) (str raw)))
+
+(defn name-to-sql [x] (if (raw? x) (raw-to-sql x) (name x)))
+
+(defn to-sql-keywords [x]
+  (cond
+    (keyword? x) (let [parts (string/split (name x) #"-")]
+                   (->> parts (map string/upper-case) (string/join " ")))
+    (raw? x) (raw-to-sql x)
+    :else x))
+
 (defn interval-to-sql [{:keys [interval units]}]
-  (str "INTERVAL " (expr-to-sql interval) " " (name units)))
+  (str "INTERVAL " (expr-to-sql interval) " " (to-sql-keywords units)))
 
 (defn unary-op-to-sql [op arg]
   (str op " " (expr-to-sql* unary-prec arg)))
@@ -178,6 +186,7 @@
     (string? x) (in-ticks x)
     (char? x) (in-ticks (str x))
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
+    (raw? x) (raw-to-sql x)
     (and (map? x) (= #{:interval :units} (set (keys x)))) (interval-to-sql x)
     (map? x) (recur prec (map-to-expr x))
     (coll? x) (let [[op & args] x
@@ -227,11 +236,14 @@
   (throw (RuntimeException. (str "to-sql not implemented for "
                                  (:sql-stmt x) " statement"))))
 
+(defn alias-to-sql [as]
+  (when as (str " AS " (name-to-sql as))))
+
 (defn field-to-sql [x]
   ;(println (format "field-to-sql called with %s" x))
   (if (:field x)
     (let [{:keys [field as]} x
-          as (when as (str " AS "(name as)))
+          as (alias-to-sql as)
           field (expr-to-sql field)]
       (str field as))
     (expr-to-sql x)))
@@ -258,8 +270,9 @@
 (declare join-op-to-sql)
 
 (defn join-src-to-sql [{:keys [source as] :as src}]
-  (let [as (when as (str " AS " (name as)))]
+  (let [as (alias-to-sql as)]
     (cond
+      (raw? source) (str (raw-to-sql source) as)
       (keyword? source) (str (name source) as)
       (string? source) (str source as)
       (:sql-stmt source) (str (in-parens (to-sql source false)) as)
@@ -270,7 +283,7 @@
     source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
-                  (str "USING " (-> (map name (as-coll using))
+                  (str "USING " (-> (map name-to-sql (as-coll using))
                                     (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
     (:sql-stmt join) (in-parens (to-sql join false))

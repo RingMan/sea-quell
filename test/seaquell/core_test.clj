@@ -128,5 +128,7 @@
 
 (fact (interval -i- -u-) => {:interval -i- :units -u-})
 
+(fact (raw -raw-) {:raw -raw-})
+
 (fact (limit -lim-) => {:limit -lim-})
 (fact (limit -off- -lim-) => {:limit -lim- :offset -off-})

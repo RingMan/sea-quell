@@ -2,7 +2,7 @@
   (:use diesel.core)
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as having modifier offset on op where)
+(def-props as having modifier offset on op raw where)
 
 (defn field
   ([f as aka]
