@@ -18,7 +18,8 @@
 (def fn-map
   {+ "+", - "-", * "*", / "/"
    < "<", <= "<=", = "=", not= "<>", >= ">=", > ">"
-   not "NOT" max "MAX" min "MIN" count "COUNT" val "" vals "" mod "MOD"})
+   not "NOT" max "MAX" min "MIN" count "COUNT" range ""
+   val "" vals "" mod "MOD"})
 
 ;; DMK TODO: Think about || operator.  In MySQL, || is a logical OR but it can also
 ;; be used for string concatenation.  In sqlite, || is string concatenation.
@@ -26,15 +27,17 @@
                      "AND" "XOR" "OR" "<<" ">>" "&" "|" "COLLATE" "ESCAPE"})
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
-                   "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"})
-(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "EXISTS" "NOT" "NOT EXISTS" "!" "SOME"})
+                   "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS"
+                   "REGEXP" "NOT REGEXP"})
+(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "EXISTS"
+                 "NOT" "NOT EXISTS" "!" "SOME"})
 (def precedence-levels
   {0 #{"OR"}
    1 #{"XOR"}
    2 #{"AND"}
    3 #{"BETWEEN" "NOT BETWEEN" "CASE"}
    4 #{"=" "==" "<=>" "!=" "<>" "IS" "IS NOT" "IN" "NOT IN" "LIKE" "NOT LIKE"
-       "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "REGEXP" "NOT REGEXP"}
+       "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS" "REGEXP" "NOT REGEXP"}
    5 #{"<" "<=" ">" ">="}
    6 #{"|"}
    7 #{"&"}
@@ -63,6 +66,7 @@
   {"!=" "<>"
    "NOT=" "<>"
    "&&" "AND"
+   "RANGE" ""
    "VAL" ""
    "VALS" ""})
 
