@@ -140,7 +140,7 @@
     (if (>= parent-prec prec) (in-parens expr) expr)))
 
 (defn cast-to-sql [e t]
-  (str "CAST(" (expr-to-sql e) " AS " (to-sql-keywords t) ")"))
+  (str "CAST(" (expr-to-sql e) " AS " (expr-to-sql t) ")"))
 
 (defn else? [x]
   ;; DMK: this implementation avoids problems comparing midje metaconstants

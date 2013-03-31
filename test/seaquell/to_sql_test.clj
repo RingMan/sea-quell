@@ -240,7 +240,7 @@
 
 (fact (cast-to-sql -ex- -type-) => "CAST(ex AS type)"
       (provided (expr-to-sql -ex-) => "ex"
-                (to-sql-keywords -type-) => "type"))
+                (expr-to-sql -type-) => "type"))
 
 (fact (case-to-sql -v- [-v1- -e1-]) => "CASE v WHEN v1 THEN e1 END"
       (provided (expr-to-sql -v-) => "v"
