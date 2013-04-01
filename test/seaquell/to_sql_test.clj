@@ -164,6 +164,8 @@
        (expr-to-sql* -prec- -raw-) => "-raw-"
        (provided (raw? -raw-) => true
                  (raw-to-sql -raw-) => "-raw-")
+       (expr-to-sql* -prec- {:binary "abc"}) => "x'0abc'"
+       (expr-to-sql* -prec- {:binary "abcd"}) => "x'abcd'"
        (expr-to-sql* -prec- {:interval -e1- :units -u-}) => "INTERVAL -e1- -u-"
        (provided (interval-to-sql {:interval -e1- :units -u-})
                  => "INTERVAL -e1- -u-")

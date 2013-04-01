@@ -29,8 +29,8 @@
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS"
                    "REGEXP" "NOT REGEXP" "SOUNDS LIKE"})
-(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "EXISTS"
-                 "NOT" "NOT EXISTS" "!" "SOME"})
+(def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "DATE" "EXISTS"
+                 "NOT" "NOT EXISTS" "!" "SOME" "TIME" "TIMESTAMP"})
 (def precedence-levels
   {0 #{"OR"}
    1 #{"XOR"}
@@ -192,6 +192,10 @@
     (char? x) (in-ticks (str x))
     (= :select (:sql-stmt x)) (in-parens (to-sql x false))
     (raw? x) (raw-to-sql x)
+    (and (map? x) (= #{:binary} (set (keys x))))
+    (let [bin (:binary x)
+          zero (when (odd? (count bin)) "0")]
+      (str "x'" zero bin "'"))
     (and (map? x) (= #{:interval :units} (set (keys x)))) (interval-to-sql x)
     (map? x) (recur prec (map-to-expr x))
     (coll? x) (let [[op & args] x
