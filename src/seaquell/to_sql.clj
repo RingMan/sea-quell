@@ -28,7 +28,7 @@
 (def rel-bin-ops #{"<" "<=" "=" "<=>" "<>" ">=" ">"
                    "IN" "NOT IN" "IS" "IS NOT" "LIKE" "NOT LIKE"
                    "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS"
-                   "REGEXP" "NOT REGEXP"})
+                   "REGEXP" "NOT REGEXP" "SOUNDS LIKE"})
 (def unary-ops #{"-" "+" "~" "ALL" "ANY" "BINARY" "EXISTS"
                  "NOT" "NOT EXISTS" "!" "SOME"})
 (def precedence-levels
@@ -37,7 +37,8 @@
    2 #{"AND"}
    3 #{"BETWEEN" "NOT BETWEEN" "CASE"}
    4 #{"=" "==" "<=>" "!=" "<>" "IS" "IS NOT" "IN" "NOT IN" "LIKE" "NOT LIKE"
-       "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS" "REGEXP" "NOT REGEXP"}
+       "GLOB" "NOT GLOB" "MATCH" "NOT MATCH" "OVERLAPS" "REGEXP" "NOT REGEXP"
+       "SOUNDS LIKE"}
    5 #{"<" "<=" ">" ">="}
    6 #{"|"}
    7 #{"&"}
