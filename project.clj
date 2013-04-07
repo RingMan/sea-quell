@@ -1,4 +1,4 @@
-(defproject seaquell "0.1.0"
+(defproject seaquell "0.1.1-SNAPSHOT"
   :description "Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements"
   :url "https://github.com/RingMan/sea-quell"
   :scm {:name "git"
@@ -10,5 +10,6 @@
                  [korma "0.3.0-RC4"]]
   :profiles {:dev {:dependencies [[midje "1.5-beta1"]
                                   [org.xerial/sqlite-jdbc "3.7.2"]
-                                  [mysql/mysql-connector-java "5.1.23"]]
+                                  [mysql/mysql-connector-java "5.1.23"]
+                                  [org.hsqldb/hsqldb "2.2.9"]]
                    :plugins [[lein-midje "3.0-beta1"]]}})
