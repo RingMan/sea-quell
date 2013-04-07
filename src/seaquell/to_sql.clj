@@ -298,9 +298,14 @@
     (:sql-stmt join) (in-parens (to-sql join false))
     :else (name-to-sql join)))
 
+(defn as-join-op [x]
+  (if (:source x) x {:source x :op ","}))
+
 (defn from-clause [from]
   (when from
-    (str "FROM " (string/join " " (map join-op-to-sql (as-coll from))))))
+    (let [from (as-coll from)
+          ops (cons (first from) (map as-join-op (rest from)))]
+      (str "FROM " (string/join " " (map join-op-to-sql ops))))))
 
 (defn where-clause [w] (when w (str "WHERE " (expr-to-sql w))))
 (defn group-clause [group]

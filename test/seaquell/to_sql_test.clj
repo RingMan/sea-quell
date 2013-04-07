@@ -58,8 +58,8 @@
 
 (fact (from-clause [-j1- -j2- -j3-]) => "FROM j1 j2 j3"
       (provided (join-op-to-sql -j1-) => "j1"
-                (join-op-to-sql -j2-) => "j2"
-                (join-op-to-sql -j3-) => "j3"))
+                (join-op-to-sql {:source -j2- :op ","}) => "j2"
+                (join-op-to-sql {:source -j3- :op ","}) => "j3"))
 
 (fact (join-op-to-sql -name-) => "name"
       (provided (name-to-sql -name-) => "name"))

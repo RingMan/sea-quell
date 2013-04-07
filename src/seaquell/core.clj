@@ -59,6 +59,9 @@
 (defn comma-join [src & body]
   (mk-map* {:source src :op ","} body))
 
+(defn nil-join [src & body]
+  (mk-map* {:source src :op nil} body))
+
 (defn using [& xs] {:using xs})
 
 (defn sql-stmt?
