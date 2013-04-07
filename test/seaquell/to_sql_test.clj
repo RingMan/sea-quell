@@ -61,7 +61,8 @@
                 (join-op-to-sql -j2-) => "j2"
                 (join-op-to-sql -j3-) => "j3"))
 
-(fact (join-op-to-sql :db.tbl) => "db.tbl")
+(fact (join-op-to-sql -name-) => "name"
+      (provided (name-to-sql -name-) => "name"))
 (fact (join-op-to-sql {:sql-stmt :select}) => "(qry)"
       (provided (to-sql {:sql-stmt :select} false) => "qry"))
 (fact

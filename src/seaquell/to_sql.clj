@@ -296,7 +296,7 @@
                                     (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
     (:sql-stmt join) (in-parens (to-sql join false))
-    :else (name join)))
+    :else (name-to-sql join)))
 
 (defn from-clause [from]
   (when from
