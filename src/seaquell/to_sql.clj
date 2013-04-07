@@ -90,7 +90,12 @@
 (defn raw-to-sql [{:keys [raw]}]
   (if (keyword? raw) (name raw) (str raw)))
 
-(defn name-to-sql [x] (if (raw? x) (raw-to-sql x) (name x)))
+(defn name-to-sql [x]
+  (cond
+    (raw? x) (raw-to-sql x)
+    (instance? java.util.regex.Pattern x)
+    (string/join "." (map in-quotes (string/split (str x) #"\.")))
+    :else (name x)))
 
 (defn to-sql-keywords [x]
   (cond
@@ -185,7 +190,6 @@
   (cond
     (nil? x) "NULL"
     (number? x) (str x)
-    (keyword? x) (name x)
     (true? x) "TRUE"
     (false? x) "FALSE"
     (string? x) (in-ticks x)
@@ -211,7 +215,7 @@
                   (= "CASE" op) (case-to-sql (first args) (rest args))
                   (= "COND" op) (cond-to-sql args)
                   :else (fn-call-to-sql op args)))
-    :else (name x)))
+    :else (name-to-sql x)))
 
 (def expr-to-sql (partial expr-to-sql* -1))
 
@@ -281,11 +285,10 @@
 (defn join-src-to-sql [{:keys [source as] :as src}]
   (let [as (alias-to-sql as)]
     (cond
-      (raw? source) (str (raw-to-sql source) as)
-      (keyword? source) (str (name source) as)
-      (string? source) (str source as)
       (:sql-stmt source) (str (in-parens (to-sql source false)) as)
-      (coll? source) (in-parens (join-by-space (map join-op-to-sql source))))))
+      (sequential? source)
+      (in-parens (join-by-space (map join-op-to-sql source)))
+      :else (str (name-to-sql source) as))))
 
 (defn join-op-to-sql [{:keys [source op on using] :as join}]
   (cond
