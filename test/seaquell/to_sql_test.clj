@@ -72,7 +72,7 @@
     (join-op-to-sql jop) => "JOIN src ON expr"
     (provided (to-sql-keywords -op-) => "JOIN"
               (join-src-to-sql jop) => "src"
-              (expr-to-sql -on-) => "expr")))
+              (expr-to-sql* (precedence "AND") -on-) => "expr")))
 (fact
   (let [jop {:source -src- :op -op- :using [-u1- -u2-]}]
     (join-op-to-sql jop) => "JOIN src USING (-u1-, -u2-)"

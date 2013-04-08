@@ -307,7 +307,7 @@
 (defn join-op-to-sql [{:keys [source op on using] :as join}]
   (cond
     source
-    (let [on (when on (str "ON " (expr-to-sql on)))
+    (let [on (when on (str "ON " (expr-to-sql* (precedence "AND") on)))
           using (when using
                   (str "USING " (-> (map name-to-sql (as-coll using))
                                     (join-by-comma) (in-parens))))]
