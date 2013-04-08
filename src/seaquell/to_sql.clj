@@ -3,6 +3,7 @@
 
 (defn delimit [l r x]
   (str l x r))
+(def in-brackets (partial delimit "[" "]"))
 (def in-parens (partial delimit "(" ")"))
 (def in-quotes (partial delimit "\"" "\""))
 (def in-ticks (partial delimit "'" "'"))
@@ -107,7 +108,7 @@
   (cond
     (raw? x) (raw-to-sql x)
     (instance? java.util.regex.Pattern x)
-    (string/join "." (map in-quotes (string/split (str x) #"\.")))
+    (string/join "." (map in-brackets (string/split (str x) #"\.")))
     :else (name x)))
 
 (defn to-sql-keywords [x]

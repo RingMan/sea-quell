@@ -48,8 +48,8 @@
 (fact (name-to-sql :-name-) => "-name-"
       (name-to-sql '-name-) => "-name-"
       (name-to-sql "-name-") => "-name-"
-      (name-to-sql #"-name-") => "\"-name-\""
-      (name-to-sql #"-db-.-tbl-.-col-") => "\"-db-\".\"-tbl-\".\"-col-\""
+      (name-to-sql #"-name-") => "[-name-]"
+      (name-to-sql #"-db-.-tbl-.-col-") => "[-db-].[-tbl-].[-col-]"
       (name-to-sql -raw-) => "-raw-"
       (provided (raw? -raw-) => true
                 (raw-to-sql -raw-) => "-raw-"))
