@@ -290,14 +290,20 @@
       (in-parens (join-by-space (map join-op-to-sql source)))
       :else (str (name-to-sql source) as))))
 
-(defn join-op-to-sql [{:keys [source op on using] :as join}]
+(defn join-op-to-sql [{:keys [source op on using indexed-by]
+                       :or {indexed-by ""} :as join}]
   (cond
     source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
                   (str "USING " (-> (map name-to-sql (as-coll using))
-                                    (join-by-comma) (in-parens))))]
-      (join-by-space [(to-sql-keywords op) (join-src-to-sql join) (or on using)]))
+                                    (join-by-comma) (in-parens))))
+          indexed-by (case indexed-by
+                       nil "NOT INDEXED"
+                       "" nil
+                       (str "INDEXED BY " (name-to-sql indexed-by)))]
+      (join-by-space [(to-sql-keywords op) (join-src-to-sql join)
+                      (or on using) indexed-by]))
     (:sql-stmt join) (in-parens (to-sql join false))
     :else (name-to-sql join)))
 

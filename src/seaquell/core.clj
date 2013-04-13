@@ -2,7 +2,7 @@
   (:use diesel.core)
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as binary having modifier offset on op raw where)
+(def-props as binary having indexed-by modifier offset on op raw where)
 
 (defn field
   ([f as aka]
@@ -26,6 +26,8 @@
 (defn interval [ival units] {:interval ival :units units})
 
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
+
+(defn not-indexed [] {:indexed-by nil})
 
 (defn from [& [tbl aka & rem-xs :as xs]]
   (cond
