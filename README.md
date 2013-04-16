@@ -63,3 +63,18 @@ Sea-quell uses the excellent [midje](https://github.com/marick/Midje) library fo
 Just type `lein midje` from the command prompt to run the tests.  They should all pass.
 
 Looking at the [tests](test/seaquell/core_test.clj) is a great way to learn what sea-quell can and can't do.
+
+## A Note About MS Access
+For those of you who work with Microsoft Access, you'll probably want to switch to the `paren-joins` branch.
+Unlike `master`, the `paren-joins` branch is subject to rebasing (you've been warned), but it has a few
+differences that make it work well with Access.
+
+The biggest difference is that multiple joins are parenthesized left-to-right. Next, `join` is the same
+as `inner-join`. I think this is true for most dialects, but Access seems to require one of INNER, RIGHT,
+or LEFT before the JOIN keyword. Join conditions that use logical connectives also get parentheses.
+Again, queries that break without them work when they're added. Finally, I changed the delimiters to square
+brackets (reads nicer).
+
+**IMPORTANT**: When you're doing joins targeting an Access database, you'll need to qualify all column names with
+the table they came from, even if the column name is unambiguous. This may be good practice anyway, but
+Access insists on it.
