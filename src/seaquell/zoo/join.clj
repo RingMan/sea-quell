@@ -61,8 +61,7 @@
 (def q9
   (select [:teamname [count :gtime]]
           (from :eteam (join :goal :on {:teamid :id}))
-          (group :teamname)
-          (order-by :teamname)))
+          (group :teamname)))
 
 (def q10
   (select [:stadium [count :gtime]]
@@ -87,5 +86,4 @@
       team1, (sum (cond (= teamid team1) 1 :else 0)) :as score1
       team2, (sum (cond (= teamid team2) 1 :else 0)) :as score2]
     (from :game (join :goal :on {:matchid :id}))
-    (group :mdate :team1 :team2)
-    (order-by :mdate :matchid :team1 :team2)))
+    (group :mdate :matchid :team1 :team2)))

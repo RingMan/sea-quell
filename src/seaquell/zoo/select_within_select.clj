@@ -17,70 +17,69 @@
 (def q1
   (select
     :name
-    (from :world)
+    (from :bbc)
     (where [> :population
               (select
                 :population
-                (from :world)
+                (from :bbc)
                 (where {:name "Russia"}))])))
 
 (def q2
   (select
-    [:name :continent]
-    (from :world)
-    (where [:in :continent
-                (select :continent
-                        (from :world)
-                        (where [:in :name [vals "belize" "belgium"]]))])))
+    [:name :region]
+    (from :bbc)
+    (where [:in :region
+                (select :region
+                        (from :bbc)
+                        (where [:in :name [vals "India" "Iran"]]))])))
 
 (def q3
   (select
     :name
-    (from :world)
-    (where {:continent "europe"
+    (from :bbc)
+    (where {:region "europe"
             [/ :gdp :population]
             [> (select [[/ :gdp :population]]
-                       (from :world)
+                       (from :bbc)
                        (where {:name "united kingdom"}))]})))
 
-(def pop-canada (select :population :from :world :where {:name "canada"}))
-(def pop-poland (select :population :from :world :where {:name "poland"}))
-(def q4 (select [:name :population] (from :world)
+(def pop-canada (select :population :from :bbc :where {:name "canada"}))
+(def pop-algeria (select :population :from :bbc :where {:name "algeria"}))
+(def q4 (select :name (from :bbc)
                 (where [:and [> :population pop-canada]
-                             [< :population pop-poland]])))
+                             [< :population pop-algeria]])))
 
-(def gdp-of-europe (select :gdp :from :world :where {:continent "europe"}))
+(def gdp-of-europe
+  (select :gdp :from :bbc :where {:region "europe" :gdp [:is-not nil]}))
+
 (def q5
-  (select :name (from :world) (where [> :gdp [:all gdp-of-europe]])))
+  (select :name (from :bbc) (where [> :gdp [:all gdp-of-europe]])))
 
 (def q6
   (select
-    [:continent :name :area]
-    (from :world :as :x)
-    (where [>= :area
-               [:all (select :area (from :world :as :y)
-                             (where {:y.continent :x.continent
-                                     :area [> 0]}))]])))
+    [:region :name :population]
+    (from :bbc :as :x)
+    (where [>= :population
+               [:all (select :population (from :bbc :as :y)
+                             (where {:y.region :x.region
+                                     :population [> 0]}))]])))
 
 (def q7
   (select
-    [:name :continent :population]
-    (from :world)
-    (where [:in :continent
-                (select-distinct
-                  :continent (from :world :as :w1)
-                  (where
-                    [> 25000000
-                       [:all (select
-                               :population (from :world :as :w2)
-                               (where {:w1.continent :w2.continent}))]]))])))
+    [:name :region :population]
+    (from :bbc (as :x))
+    (where [> 25000000
+            [:all (select
+                    :population (from :bbc :as :y)
+                    (where {:x.region :y.region
+                            :y.population [> 0]}))]])))
 
 (def q8
   (select
-    [:name :continent]
-    (from :world :as :w1)
+    [:name :region]
+    (from :bbc :as :w1)
     (where [> :population
               [:all (select [[* :population 3]]
-                            (from :world :as :w2)
-                            (where {:w1.continent :w2.continent
+                            (from :bbc :as :w2)
+                            (where {:w1.region :w2.region
                                     :w1.name [not= :w2.name]}))]])))
