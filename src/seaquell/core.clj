@@ -155,6 +155,16 @@
 (def except-all (partial compound-select* :except-all))
 (def compound-select (partial compound-select* nil))
 
+;;; DELETE statement
+
+(def delete? (partial sql-stmt? :delete))
+
+(defn delete [stmt & body]
+  (let [[stmt body] (if (sql-stmt? stmt)
+                      [stmt body]
+                      [{:sql-stmt :delete} (cons stmt body)])]
+    (mk-map* stmt body)))
+
 ;;; Helpers for composing queries
 (defn and-expr? [x] (and (sequential? x) (#{:and 'and "and"} (first x))))
 (defn or-expr? [x] (and (sequential? x) (#{:or 'or "or"} (first x))))
@@ -369,8 +379,9 @@
   (to-sql (apply sel-* body)))
 
 (defn do-sql [stmt & params]
-  (let [sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
-    (eng/exec sql-str params)))
+  (let [results (if (select? stmt) :results :keys)
+        sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
+    (eng/exec sql-str params results)))
 
 (defn select! [& body]
   (do-sql (apply select body)))
@@ -380,3 +391,10 @@
 
 (defn sel!-* [& body]
   (do-sql (apply sel-* body)))
+
+(defn delete$ [& body]
+  (to-sql (apply delete body)))
+
+(defn delete! [& body]
+  (do-sql (apply delete body)))
+
