@@ -21,7 +21,7 @@
     :else (recur (conj acc f) (next fs))))
 
 (defn fields [& fs]
-  (fields* [] fs))
+  {:fields (fields* [] fs)})
 
 (defn interval [ival units] {:interval ival :units units})
 
@@ -72,11 +72,14 @@
 
 (def select? (partial sql-stmt? :select))
 
+(defn fields? [x] (and (map? x) (= (keys x) [:fields])))
+
 (defn select [flds & body]
-  (let [stmt (if (sql-stmt? flds)
-               flds
-               {:sql-stmt :select
-                :fields (apply fields (sql/as-coll flds))})]
+  (let [stmt (cond
+               (sql-stmt? flds) flds
+               (fields? flds) (merge {:sql-stmt :select} flds)
+               :else {:sql-stmt :select
+                      :fields (fields* [] (sql/as-coll flds))})]
     (mk-map* stmt body)))
 
 (defn sel-expr [& xs]

@@ -3,10 +3,10 @@
         seaquell.core))
 
 (fact (select :fld) => {:sql-stmt :select :fields -fs-}
-      (provided (fields :fld) => -fs-))
+      (provided (fields* [] [:fld]) => -fs-))
 
 (fact (select [-f1- -f2- -f3-]) => {:sql-stmt :select :fields -fs-}
-      (provided (fields -f1- -f2- -f3-) => -fs-))
+      (provided (fields* [] [-f1- -f2- -f3-]) => -fs-))
 
 (fact (as -alias-) => {:as -alias-})
 
@@ -17,13 +17,13 @@
   (field -f- :bad-as -as-) => (throws AssertionError))
 
 (facts
-  (fields) => []
-  (fields -f-) => [-f-]
-  (fields -f1- :field2 :as :f2) => [-f1- {:field :field2 :as :f2}]
-  (fields -f1- :field2 (as :f2)) => [-f1- {:field :field2 :as :f2}]
-  (fields -f1- (field :field2) (as :f2)) => [-f1- {:field :field2 :as :f2}]
+  (fields) => {:fields []}
+  (fields -f-) => {:fields [-f-]}
+  (fields -f1- :field2 :as :f2) => {:fields [-f1- {:field :field2 :as :f2}]}
+  (fields -f1- :field2 (as :f2)) => {:fields [-f1- {:field :field2 :as :f2}]}
+  (fields -f1- (field :field2) (as :f2)) => {:fields [-f1- {:field :field2 :as :f2}]}
   (fields -f1- (field :field2 :as :old-f2) (as :f2) -f3-) =>
-  [-f1- {:field :field2 :as :f2} -f3-])
+  {:fields [-f1- {:field :field2 :as :f2} -f3-]})
 
 (fact "to-sql throws for unsupported statements"
       (to-sql nil) => (throws RuntimeException))
