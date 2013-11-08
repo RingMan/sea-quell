@@ -325,7 +325,7 @@
 (defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
 (defn offset-clause [o] (when o (str "OFFSET " (expr-to-sql o))))
 
-(defn select-clauses [xs semi]
+(defn query-clauses [xs semi]
   (str (string/join " " (keep identity xs)) semi))
 
 (defmethod to-sql :select
@@ -345,7 +345,7 @@
          semi (when semi? ";")
          qry (str "SELECT " modifier fields from where group having
                   order-by limit offset semi)]
-     (select-clauses [select from where group having
+     (query-clauses [select from where group having
                       order-by limit offset] semi))))
 
 (defmethod to-sql :compound-select
@@ -363,7 +363,7 @@
         limit (limit-clause limit)
         offset (offset-clause offset)
         semi (when semi? ";")]
-    (select-clauses [select-ops order-by limit offset] semi))))
+    (query-clauses [select-ops order-by limit offset] semi))))
 
 (defmethod to-sql :delete
   ([{:keys [from where order-by limit offset] :as stmt}]
@@ -373,6 +373,6 @@
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (select-clauses [delete from where order-by limit offset] ";"))))
+     (query-clauses [delete from where order-by limit offset] ";"))))
 
 

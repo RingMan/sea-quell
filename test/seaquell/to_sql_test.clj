@@ -2,9 +2,9 @@
   (:use midje.sweet
         seaquell.to-sql))
 
-(fact (select-clauses ["select *" "from tbl" "limit 3" "offset 5"] nil) =>
+(fact (query-clauses ["select *" "from tbl" "limit 3" "offset 5"] nil) =>
       "select * from tbl limit 3 offset 5")
-(fact (select-clauses ["select *" nil "from tbl" nil "limit 3" nil "offset 5"] nil) =>
+(fact (query-clauses ["select *" nil "from tbl" nil "limit 3" nil "offset 5"] nil) =>
       "select * from tbl limit 3 offset 5")
 
 (fact (to-sql {:sql-stmt :select
@@ -20,7 +20,7 @@
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
-        (select-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
+        (query-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
 
 (fact (select-clause -mod- -flds-) => "SELECT mod flds"
       (provided (modifier-to-sql -mod-) => "mod ")
