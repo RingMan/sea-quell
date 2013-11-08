@@ -282,28 +282,28 @@
 
 (declare join-op-to-sql)
 
-(defn join-src-to-sql [{:keys [source as] :as src}]
-  (let [as (alias-to-sql as)]
+(defn join-src-to-sql [{:keys [source as indexed-by]
+                        :or {indexed-by ""} :as src}]
+  (let [as (alias-to-sql as)
+        indexed-by (case indexed-by
+                     nil "NOT INDEXED"
+                     "" nil
+                     (str "INDEXED BY " (name-to-sql indexed-by)))]
     (cond
       (:sql-stmt source) (join-by-space [(in-parens (to-sql source false)) as])
       (sequential? source)
       (in-parens (join-by-space (map join-op-to-sql source)))
-      :else (join-by-space [(name-to-sql source) as]))))
+      :else (join-by-space [(name-to-sql source) as indexed-by]))))
 
-(defn join-op-to-sql [{:keys [source op on using indexed-by]
-                       :or {indexed-by ""} :as join}]
+(defn join-op-to-sql [{:keys [source op on using] :as join}]
   (cond
     source
     (let [on (when on (str "ON " (expr-to-sql on)))
           using (when using
                   (str "USING " (-> (map name-to-sql (as-coll using))
-                                    (join-by-comma) (in-parens))))
-          indexed-by (case indexed-by
-                       nil "NOT INDEXED"
-                       "" nil
-                       (str "INDEXED BY " (name-to-sql indexed-by)))]
+                                    (join-by-comma) (in-parens))))]
       (join-by-space [(to-sql-keywords op) (join-src-to-sql join)
-                      (or on using) indexed-by]))
+                      (or on using)]))
     (:sql-stmt join) (in-parens (to-sql join false))
     :else (name-to-sql join)))
 

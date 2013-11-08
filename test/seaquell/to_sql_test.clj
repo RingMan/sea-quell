@@ -80,17 +80,17 @@
               (join-src-to-sql jop) => "src"
               (name-to-sql -u1-) => "-u1-"
               (name-to-sql -u2-) => "-u2-")))
+
 (fact
-  (let [jop {:source -src- :op -op- :indexed-by -ix-}]
-    (join-op-to-sql jop) => "JOIN src INDEXED BY ix"
-    (provided (to-sql-keywords -op-) => "JOIN"
-              (join-src-to-sql jop) => "src"
+  (let [src {:source -src- :indexed-by -ix-}]
+    (join-src-to-sql src) => "src INDEXED BY ix"
+    (provided (name-to-sql -src-) => "src"
               (name-to-sql -ix-) => "ix")))
+
 (fact
-  (let [jop {:source -src- :op -op- :indexed-by nil}]
-    (join-op-to-sql jop) => "JOIN src NOT INDEXED"
-    (provided (to-sql-keywords -op-) => "JOIN"
-              (join-src-to-sql jop) => "src")))
+  (let [src {:source -src- :indexed-by nil}]
+    (join-src-to-sql src) => "src NOT INDEXED"
+    (provided (name-to-sql -src-) => "src")))
 
 (facts
   (join-src-to-sql {:source {:sql-stmt :select}}) => "(subselect)"
