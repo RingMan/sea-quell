@@ -306,3 +306,16 @@
        (provided (raw? -raw-) => true
                  (raw-to-sql -raw-) => "-raw-"))
 
+(fact
+  (let [stmt {:sql-stmt :delete :source -src- :indexed-by -ix-
+              :where -w- :order-by -ob- :limit -l- :offset -o-}]
+    (to-sql stmt)
+      => ...sql...
+      (provided
+        (join-src-to-sql stmt) => -src-
+        (where-clause -w-) => -wc-
+        (order-by-clause -ob-) => -obc-
+        (limit-clause -l-) => -lc-
+        (offset-clause -o-) => -oc-
+        (query-clauses ["DELETE FROM -src-" -wc- -obc- -lc- -oc-] ";") => ...sql...)))
+

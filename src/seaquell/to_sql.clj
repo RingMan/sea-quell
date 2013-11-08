@@ -366,13 +366,12 @@
     (query-clauses [select-ops order-by limit offset] semi))))
 
 (defmethod to-sql :delete
-  ([{:keys [from where order-by limit offset] :as stmt}]
-   (let [delete "DELETE"
-         from (from-clause from)
+  ([{:keys [where order-by limit offset] :as stmt}]
+   (let [delete (str "DELETE FROM " (join-src-to-sql stmt))
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (query-clauses [delete from where order-by limit offset] ";"))))
+     (query-clauses [delete where order-by limit offset] ";"))))
 
 

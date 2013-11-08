@@ -162,7 +162,7 @@
 (defn delete [stmt & body]
   (let [[stmt body] (if (sql-stmt? stmt)
                       [stmt body]
-                      [{:sql-stmt :delete} (cons stmt body)])]
+                      [{:sql-stmt :delete :source stmt} body])]
     (mk-map* stmt body)))
 
 ;;; Helpers for composing queries
