@@ -7,6 +7,11 @@
 (def in-quotes (partial delimit "\"" "\""))
 (def in-ticks (partial delimit "'" "'"))
 
+(defn join-but-nils [sep xs]
+  (string/join sep (keep identity xs)))
+(def join-by-space (partial join-but-nils " "))
+(def join-by-comma (partial join-but-nils ", "))
+
 (defn as-coll [xs]
   (cond
     (map? xs) [xs]
@@ -250,7 +255,7 @@
                                  (:sql-stmt x) " statement"))))
 
 (defn alias-to-sql [as]
-  (when as (str " AS " (name-to-sql as))))
+  (when as (str "AS " (name-to-sql as))))
 
 (defn field-to-sql [x]
   ;(println (format "field-to-sql called with %s" x))
@@ -258,7 +263,7 @@
     (let [{:keys [field as]} x
           as (alias-to-sql as)
           field (expr-to-sql field)]
-      (str field as))
+      (join-by-space [field as]))
     (expr-to-sql x)))
 
 (defn fields-to-sql [fs]
@@ -275,20 +280,15 @@
         fields (fields-to-sql fields)]
     (str "SELECT " modifier fields)))
 
-(defn join-but-nils [sep xs]
-  (string/join sep (keep identity xs)))
-(def join-by-space (partial join-but-nils " "))
-(def join-by-comma (partial join-but-nils ", "))
-
 (declare join-op-to-sql)
 
 (defn join-src-to-sql [{:keys [source as] :as src}]
   (let [as (alias-to-sql as)]
     (cond
-      (:sql-stmt source) (str (in-parens (to-sql source false)) as)
+      (:sql-stmt source) (join-by-space [(in-parens (to-sql source false)) as])
       (sequential? source)
       (in-parens (join-by-space (map join-op-to-sql source)))
-      :else (str (name-to-sql source) as))))
+      :else (join-by-space [(name-to-sql source) as]))))
 
 (defn join-op-to-sql [{:keys [source op on using indexed-by]
                        :or {indexed-by ""} :as join}]
