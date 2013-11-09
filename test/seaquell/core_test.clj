@@ -105,6 +105,27 @@
       (-> (select q (where [> :num 3])) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
 
+;;; DELETE statements
+
+(fact (delete -tbl-) => {:sql-stmt :delete, :source -tbl-})
+(fact (delete -tbl- (as -as-)) => {:sql-stmt :delete, :source -tbl-, :as -as-})
+(fact (delete -tbl- (as -as-) (indexed-by -ix-)) =>
+      {:sql-stmt :delete, :source -tbl-, :as -as- :indexed-by -ix-})
+(fact (delete -tbl- (as -as-) (not-indexed)) =>
+      {:sql-stmt :delete, :source -tbl-, :as -as- :indexed-by nil})
+(fact (delete -tbl- (as -as-) (indexed-by -ix-) (where -where-)
+              (order-by -ord-) (limit -lim-) (offset -off-)) =>
+      {:sql-stmt :delete
+       :source -tbl-
+       :as -as-
+       :indexed-by -ix-
+       :where -where-
+       :order-by [-ord-]
+       :limit -lim-
+       :offset -off-})
+
+;;; Clauses
+
 (fact (from -x-) => {:from [-x-]})
 (fact (from -x- :y -z-) => {:from [-x- :y -z-]})
 (fact (from [-seq-] :rest) => {:from [{:source [-seq-]} :rest]})
