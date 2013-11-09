@@ -105,6 +105,49 @@
       (-> (select q (where [> :num 3])) (to-sql)) =>
       "SELECT * FROM user WHERE num > 3;")
 
+;;; INSERT statements
+
+(facts
+  (value -c1- -c2-) => {:values [[-c1- -c2-]]}
+
+  (values -q-) => {:values -q-} (provided (sequential? -q-) => false)
+  (values :default) => {:values :default}
+  (values -r1-) => {:values [-r1-]} (provided (sequential? -r1-) => true)
+  (values -r1- -r2-) => {:values [-r1- -r2-]})
+
+(facts
+  (let [q (select :* (from :t))
+        stmt {:sql-stmt :insert, :op :insert, :source -tbl-}]
+    (insert -tbl- (default-values)) =>
+    (merge stmt {:columns nil, :values :default})
+
+    (insert -tbl- (defaults)) =>
+    (merge stmt {:columns nil, :values :default})
+
+    (insert -tbl- (values :default)) =>
+    (merge stmt {:values :default})
+
+    (insert -tbl- (values q)) =>
+    (merge stmt {:values q})
+
+    (insert -tbl- (value -v1- -v2-)) =>
+    (merge stmt {:values [[-v1- -v2-]]})
+
+    (insert -tbl- (values [-a1- -a2-] [-b1- -b2-])) =>
+    (merge stmt {:values [[-a1- -a2-] [-b1- -b2-]]})
+
+    (insert -tbl- (columns -c1- -c2-) (values [-a1- -a2-] [-b1- -b2-])) =>
+    (merge stmt {:columns [-c1- -c2-] :values [[-a1- -a2-] [-b1- -b2-]]}))
+
+  (let [stmt {:sql-stmt :insert, :op :insert, :source -tbl-,
+              :columns nil, :values :default}]
+    (replace-into -tbl- (defaults)) => (merge stmt {:op :replace})
+    (insert-or-rollback -tbl- (defaults)) => (merge stmt {:op :insert-or-rollback})
+    (insert-or-abort -tbl- (defaults)) => (merge stmt {:op :insert-or-abort})
+    (insert-or-replace -tbl- (defaults)) => (merge stmt {:op :insert-or-replace})
+    (insert-or-fail -tbl- (defaults)) => (merge stmt {:op :insert-or-fail})
+    (insert-or-ignore -tbl- (defaults)) => (merge stmt {:op :insert-or-ignore})))
+
 ;;; DELETE statements
 
 (fact (delete -tbl-) => {:sql-stmt :delete, :source -tbl-})

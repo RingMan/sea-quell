@@ -4,6 +4,7 @@
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
 (def-props as binary having indexed-by modifier offset on op raw where)
+(def-vec-props columns)
 
 (defn field
   ([f as aka]
@@ -164,6 +165,45 @@
                       [stmt body]
                       [{:sql-stmt :delete :source stmt} body])]
     (mk-map* stmt body)))
+
+;;; INSERT statement
+
+(def insert? (partial sql-stmt? :insert))
+
+(defn insert [stmt & body]
+  (let [[stmt body] (if (sql-stmt? stmt)
+                      [stmt body]
+                      [{:sql-stmt :insert :source stmt :op :insert} body])]
+    (mk-map* stmt body)))
+
+(defn replace-into [stmt & body]
+  (merge (apply insert stmt body) {:op :replace}))
+
+(defn insert-or-rollback [stmt & body]
+  (merge (apply insert stmt body) {:op :insert-or-rollback}))
+
+(defn insert-or-abort [stmt & body]
+  (merge (apply insert stmt body) {:op :insert-or-abort}))
+
+(defn insert-or-replace [stmt & body]
+  (merge (apply insert stmt body) {:op :insert-or-replace}))
+
+(defn insert-or-fail [stmt & body]
+  (merge (apply insert stmt body) {:op :insert-or-fail}))
+
+(defn insert-or-ignore [stmt & body]
+  (merge (apply insert stmt body) {:op :insert-or-ignore}))
+
+(defn value [& xs] {:values [xs]})
+
+(defn values
+  ([& [x & xx :as xs]]
+   (if-not (or xx (sequential? x))
+     {:values x}
+     {:values xs})))
+
+(defn defaults [] {:columns nil :values :default})
+(def default-values defaults)
 
 ;;; Helpers for composing queries
 (defn and-expr? [x] (and (sequential? x) (#{:and 'and "and"} (first x))))
@@ -397,4 +437,10 @@
 
 (defn delete! [& body]
   (do-sql (apply delete body)))
+
+(defn insert$ [& body]
+  (to-sql (apply insert body)))
+
+(defn insert! [& body]
+  (do-sql (apply insert body)))
 

@@ -374,4 +374,21 @@
          offset (offset-clause offset)]
      (query-clauses [delete where order-by limit offset] ";"))))
 
+(defmethod to-sql :insert
+  ([{:keys [op source columns values] :as stmt}]
+   (let [insert (str (to-sql-keywords op) " INTO " (expr-to-sql source))
+         columns (when columns
+                   (in-parens
+                     (string/join ", " (map expr-to-sql (as-coll columns)))))
+         values (cond
+                  (= :default values) "DEFAULT VALUES"
+                  (:sql-stmt values) (to-sql values false)
+                  :else (str "VALUES "
+                             (string/join
+                               ", "
+                               (map #(in-parens
+                                       (string/join ", " (map expr-to-sql %)))
+                                    values))))]
+     (query-clauses [insert columns values] ";"))))
+
 
