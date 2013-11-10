@@ -395,15 +395,18 @@
          values  (values-to-sql values)]
      (query-clauses [insert columns values] ";"))))
 
+(defn set-clause [set-cols]
+  (when set-cols
+    (str "SET "
+         (string/join
+           ", "
+           (map (fn [[k v]] (str (expr-to-sql k) "=" (expr-to-sql v)))
+                (sort set-cols))))))
+
 (defmethod to-sql :update
   ([{:keys [op set-cols where order-by limit offset] :as stmt}]
    (let [update (str (to-sql-keywords op) " " (join-src-to-sql stmt))
-         set-cols (when set-cols
-                    (str "SET "
-                         (string/join
-                           ", " (map (fn [[k v]]
-                                       (str (expr-to-sql k) "="
-                                            (expr-to-sql v))) (sort set-cols)))))
+         set-cols (set-clause set-cols)
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)

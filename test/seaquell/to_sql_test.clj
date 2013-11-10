@@ -331,3 +331,19 @@
         (values-to-sql -vs-) => -vals-
         (query-clauses ["INSERT INTO src" -cols- -vals-] ";") => ...sql...)))
 
+(fact
+  (let [stmt {:sql-stmt :update :source -src- :indexed-by -ix- :op -op-
+              :set-cols -s- :where -w- :order-by -ob- :limit -l- :offset -o-}]
+    (to-sql stmt)
+      => ...sql...
+      (provided
+        (to-sql-keywords -op-) => "UPDATE"
+        (join-src-to-sql stmt) => -src-
+        (set-clause -s-) => -sc-
+        (where-clause -w-) => -wc-
+        (order-by-clause -ob-) => -obc-
+        (limit-clause -l-) => -lc-
+        (offset-clause -o-) => -oc-
+        (query-clauses ["UPDATE -src-" -sc- -wc- -obc- -lc- -oc-] ";") =>
+        ...sql...)))
+
