@@ -319,3 +319,15 @@
         (offset-clause -o-) => -oc-
         (query-clauses ["DELETE FROM -src-" -wc- -obc- -lc- -oc-] ";") => ...sql...)))
 
+(fact
+  (let [stmt {:sql-stmt :insert :source -src- :op -op-
+              :columns -cs- :values -vs-}]
+    (to-sql stmt)
+      => ...sql...
+      (provided
+        (to-sql-keywords -op-) => "INSERT"
+        (expr-to-sql -src-) => "src"
+        (columns-to-sql -cs-) => -cols-
+        (values-to-sql -vs-) => -vals-
+        (query-clauses ["INSERT INTO src" -cols- -vals-] ";") => ...sql...)))
+
