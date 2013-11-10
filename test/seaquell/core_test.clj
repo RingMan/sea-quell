@@ -148,6 +148,29 @@
     (insert-or-fail -tbl- (defaults)) => (merge stmt {:op :insert-or-fail})
     (insert-or-ignore -tbl- (defaults)) => (merge stmt {:op :insert-or-ignore})))
 
+;;; UPDATE statements
+
+(facts
+  (let [stmt {:sql-stmt :update :op :update :source -tbl-}]
+    (update -tbl- (set-cols :-c1- :-v1-)) =>
+    (merge stmt {:set-cols {:-c1- :-v1-}})
+
+    (update -tbl- (set-columns :-c1- :-v1-)) =>
+    (merge stmt {:set-cols {:-c1- :-v1-}})
+
+    (update -tbl- (not-indexed) (set-cols :-c1- :-v1-)) =>
+    (merge stmt {:indexed-by nil, :set-cols {:-c1- :-v1-}})
+
+    (update -tbl- (indexed-by -ix-) (set-cols :-c1- :-v1-) (where -expr-)
+            (order-by -ord-) (limit -lim-) (offset -off-)) =>
+    (merge stmt
+           {:indexed-by -ix-
+            :set-cols {:-c1- :-v1-}
+            :where -expr-
+            :order-by [-ord-]
+            :limit -lim-
+            :offset -off-})))
+
 ;;; DELETE statements
 
 (fact (delete -tbl-) => {:sql-stmt :delete, :source -tbl-})

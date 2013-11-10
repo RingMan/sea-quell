@@ -4,6 +4,8 @@
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
 (def-props as binary having indexed-by modifier offset on op raw where)
+(def-map-props set-cols)
+(def set-columns set-cols)
 (def-vec-props columns)
 
 (defn field
@@ -204,6 +206,16 @@
 
 (defn defaults [] {:columns nil :values :default})
 (def default-values defaults)
+
+;;; UPDATE statement
+
+(def update? (partial sql-stmt? :update))
+
+(defn update [stmt & body]
+  (let [[stmt body] (if (sql-stmt? stmt)
+                      [stmt body]
+                      [{:sql-stmt :update :source stmt :op :update} body])]
+    (mk-map* stmt body)))
 
 ;;; Helpers for composing queries
 (defn and-expr? [x] (and (sequential? x) (#{:and 'and "and"} (first x))))
@@ -443,4 +455,10 @@
 
 (defn insert! [& body]
   (do-sql (apply insert body)))
+
+(defn update$ [& body]
+  (to-sql (apply update body)))
+
+(defn update! [& body]
+  (do-sql (apply update body)))
 
