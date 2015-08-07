@@ -1,4 +1,4 @@
-(defproject seaquell "0.2.0"
+(defproject seaquell "0.3.0-SNAPSHOT"
   :description "Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements"
   :url "https://github.com/RingMan/sea-quell"
   :scm {:name "git"

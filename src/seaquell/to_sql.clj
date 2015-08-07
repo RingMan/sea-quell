@@ -1,4 +1,5 @@
 (ns seaquell.to-sql
+  (:require [clojure.set :as set])
   (:require [clojure.string :as string]))
 
 (defn delimit [l r x]
@@ -63,9 +64,9 @@
 (def unary-prec (inc (apply max (keys precedence-levels))))
 
 (defn predicate? [x]
-  (contains? (clojure.set/union (disj (precedence-levels 3) "CASE")
-                                (precedence-levels 4)
-                                (precedence-levels 5))
+  (contains? (set/union (disj (precedence-levels 3) "CASE")
+                        (precedence-levels 4)
+                        (precedence-levels 5))
              x))
 
 (def renamed-ops
