@@ -286,10 +286,10 @@
 (defn join-src-to-sql [{:keys [source as indexed-by]
                         :or {indexed-by ""} :as src}]
   (let [as (alias-to-sql as)
-        indexed-by (case indexed-by
-                     nil "NOT INDEXED"
-                     "" nil
-                     (str "INDEXED BY " (name-to-sql indexed-by)))]
+        indexed-by (cond
+                     (nil? indexed-by) "NOT INDEXED"
+                     (= "" indexed-by) nil
+                     :else (str "INDEXED BY " (name-to-sql indexed-by)))]
     (cond
       (:sql-stmt source) (join-by-space [(in-parens (to-sql source false)) as])
       (sequential? source)
