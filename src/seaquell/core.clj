@@ -430,10 +430,12 @@
 (defn select-from$ [& body]
   (to-sql (apply select-from body)))
 
-(defn do-sql [stmt & params]
-  (let [results (if (select? stmt) :results :keys)
-        sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
-    (eng/exec sql-str params results)))
+(defn do-sql [stmt & body]
+  {:pre [(or (string? stmt) (sql-stmt? stmt))]}
+  (let [m (if (string? stmt)
+            {:sql-str stmt}
+            (assoc stmt :sql-str (to-sql stmt)))]
+    (eng/exec (mk-map* m body))))
 
 (defn select! [& body]
   (do-sql (apply select body)))
