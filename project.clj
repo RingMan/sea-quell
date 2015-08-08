@@ -8,8 +8,10 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [diesel "0.1.1"]
                  [korma "0.3.0-RC4"]]
-  :profiles {:dev {:dependencies [[midje "1.5-beta1"]
-                                  [org.xerial/sqlite-jdbc "3.7.2"]
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+                                  [midje "1.5-beta1"]
+                                  [org.xerial/sqlite-jdbc "3.8.10.1"]
                                   [mysql/mysql-connector-java "5.1.23"]
                                   [org.hsqldb/hsqldb "2.2.9"]]
+                   :source-paths ["dev"]
                    :plugins [[lein-midje "3.0-beta1"]]}})
