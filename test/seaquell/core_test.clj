@@ -1,4 +1,5 @@
 (ns seaquell.core-test
+  (:refer-clojure :exclude [update])
   (:use midje.sweet
         seaquell.core))
 

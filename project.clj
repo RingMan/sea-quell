@@ -5,7 +5,7 @@
         :url "https://github.com/RingMan/sea-quell"}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/java.jdbc "0.4.1"]
                  [diesel "0.1.1"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -17,7 +17,8 @@
                    :plugins [[lein-midje "3.1.3"]]}
              :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
-             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}}
-  :aliases {"test-all" ["with-profile" "dev,1.4:dev,1.5:dev,1.6" "midje"]
-            "check-all" ["with-profile" "1.4:1.5:1.6" "check"]})
+             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}}
+  :aliases {"test-all" ["with-profile" "dev,1.4:dev,1.5:dev,1.6:dev,1.7" "midje"]
+            "check-all" ["with-profile" "1.4:1.5:1.6:1.7" "check"]})
 

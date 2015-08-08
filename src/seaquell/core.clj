@@ -1,6 +1,7 @@
 (ns seaquell.core
-  (:use diesel.core)
-  (:use diesel.edit)
+  (:refer-clojure :exclude [update])
+  (:require [diesel.core :refer :all])
+  (:require [diesel.edit :refer :all])
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
 (def-props as binary having indexed-by modifier offset on op raw where)

@@ -1,4 +1,5 @@
 (ns user
+  (:refer-clojure :exclude [update])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.pprint :refer (pprint)]
