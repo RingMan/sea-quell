@@ -87,9 +87,6 @@
                       :fields (fields* [] (sql/as-coll flds))})]
     (mk-map* stmt body)))
 
-(defn sel-expr [& xs]
-  (select (field xs)))
-
 (defn select-from [tbl & body]
   (apply select :* (from tbl) body))
 
@@ -425,9 +422,6 @@
 (defn select$ [& body]
   (to-sql (apply select body)))
 
-(defn sel$-expr [& body]
-  (to-sql (apply sel-expr body)))
-
 (defn select-from$ [& body]
   (to-sql (apply select-from body)))
 
@@ -440,9 +434,6 @@
 
 (defn select! [& body]
   (do-sql (apply select body)))
-
-(defn sel!-expr [& body]
-  (do-sql (apply sel-expr body)))
 
 (defn select-from! [& body]
   (do-sql (apply select-from body)))
