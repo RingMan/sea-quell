@@ -1,4 +1,5 @@
 (ns seaquell.to-sql-test
+  (:require [clojure.string :as string])
   (:use midje.sweet
         seaquell.to-sql))
 
@@ -82,10 +83,10 @@
               (name-to-sql -u2-) => "-u2-")))
 
 (fact
-  (let [src {:source -src- :indexed-by -ix-}]
+  (let [src {:source -src- :indexed-by :ix}]
     (join-src-to-sql src) => "src INDEXED BY ix"
     (provided (name-to-sql -src-) => "src"
-              (name-to-sql -ix-) => "ix")))
+              (name-to-sql :ix) => "ix")))
 
 (fact
   (let [src {:source -src- :indexed-by nil}]

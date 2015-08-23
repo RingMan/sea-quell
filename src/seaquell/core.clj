@@ -1,6 +1,7 @@
 (ns seaquell.core
-  (:use diesel.core)
-  (:use diesel.edit)
+  (:refer-clojure :exclude [update])
+  (:require [diesel.core :refer :all])
+  (:require [diesel.edit :refer :all])
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
 (def-props as binary having indexed-by modifier offset on op raw where)
@@ -86,10 +87,7 @@
                       :fields (fields* [] (sql/as-coll flds))})]
     (mk-map* stmt body)))
 
-(defn sel-expr [& xs]
-  (select (field xs)))
-
-(defn sel-* [tbl & body]
+(defn select-from [tbl & body]
   (apply select :* (from tbl) body))
 
 ;;; Select Query modifiers
@@ -424,25 +422,21 @@
 (defn select$ [& body]
   (to-sql (apply select body)))
 
-(defn sel$-expr [& body]
-  (to-sql (apply sel-expr body)))
+(defn select-from$ [& body]
+  (to-sql (apply select-from body)))
 
-(defn sel$-* [& body]
-  (to-sql (apply sel-* body)))
-
-(defn do-sql [stmt & params]
-  (let [results (if (select? stmt) :results :keys)
-        sql-str (if (:sql-stmt stmt) (to-sql stmt) stmt)]
-    (eng/exec sql-str params results)))
+(defn do-sql [stmt & body]
+  {:pre [(or (string? stmt) (sql-stmt? stmt))]}
+  (let [m (if (string? stmt)
+            {:sql-str stmt}
+            (assoc stmt :sql-str (to-sql stmt)))]
+    (eng/exec (mk-map* m body))))
 
 (defn select! [& body]
   (do-sql (apply select body)))
 
-(defn sel!-expr [& body]
-  (do-sql (apply sel-expr body)))
-
-(defn sel!-* [& body]
-  (do-sql (apply sel-* body)))
+(defn select-from! [& body]
+  (do-sql (apply select-from body)))
 
 (defn delete$ [& body]
   (to-sql (apply delete body)))

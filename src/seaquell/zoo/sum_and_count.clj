@@ -1,5 +1,6 @@
 (ns seaquell.zoo.sum-and-count
-  (:use seaquell.core))
+  (:refer-clojure :exclude [update])
+  (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/19/2013) to the
 ;; tutorial at http://sqlzoo.net/wiki/SUM_and_COUNT

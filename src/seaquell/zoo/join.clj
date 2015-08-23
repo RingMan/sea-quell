@@ -1,5 +1,6 @@
 (ns seaquell.zoo.join
-  (:use seaquell.core))
+  (:refer-clojure :exclude [update])
+  (:require [seaquell.core :refer :all]))
 
 ;; The following queries are valid solutions (as of 3/31/2013) to the
 ;; tutorial at http://sqlzoo.net/wiki/The_JOIN_operation
