@@ -1,8 +1,6 @@
-(defproject seaquell "0.3.0"
+(defproject seaquell "0.3.1"
   :description "Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements"
   :url "https://github.com/RingMan/sea-quell"
-  :scm {:name "git"
-        :url "https://github.com/RingMan/sea-quell"}
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.7.0"]
