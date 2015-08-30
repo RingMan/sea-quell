@@ -32,6 +32,22 @@
 
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
+(defn with* [m [cte aka & rem-xs :as xs]]
+  (cond
+    (nil? xs) {:with m}
+    (and (:sql-stmt cte) (nil? aka))
+    (merge cte {:with m})
+    (alias? aka)
+    (recur (conj-in m [:ctes] {:cte cte :as (:as aka)}) rem-xs)
+    (= :as aka)
+    (recur (conj-in m [:ctes] {:cte cte :as (first rem-xs)}) (next rem-xs))))
+
+(defn with [& body]
+  (with* {:ctes []} body))
+
+(defn with-recursive [& body]
+  (with* {:ctes [] :recursive true} body))
+
 (defn not-indexed [] {:indexed-by nil})
 
 (defn from [& [tbl aka & rem-xs :as xs]]

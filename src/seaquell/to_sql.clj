@@ -326,6 +326,14 @@
   (when cols
     (in-parens (string/join ", " (map expr-to-sql (as-coll cols))))))
 
+(defn cte-to-sql [{:keys [cte as]}]
+  (str (name cte) " AS " (in-parens (to-sql as false))))
+
+(defn with-clause [{:keys [ctes recursive] :as w}]
+  (when w
+    (str "WITH " (when recursive "RECURSIVE ")
+         (string/join ", " (map cte-to-sql ctes)))))
+
 (defn query-clauses [xs semi]
   (str (string/join " " (keep identity xs)) semi))
 
@@ -333,9 +341,10 @@
   ([stmt]
    (to-sql stmt true))
   ([{:keys [fields modifier from where group having
-            order-by limit offset] :as stmt}
+            order-by limit offset with] :as stmt}
     semi?]
-   (let [select (select-clause modifier fields)
+   (let [with (with-clause with)
+         select (select-clause modifier fields)
          from (from-clause from)
          where (where-clause where)
          group (group-clause group)
@@ -346,8 +355,8 @@
          semi (when semi? ";")
          qry (str "SELECT " modifier fields from where group having
                   order-by limit offset semi)]
-     (query-clauses [select from where group having
-                      order-by limit offset] semi))))
+     (query-clauses
+       [with select from where group having order-by limit offset] semi))))
 
 (defn values-to-sql [values]
   (cond

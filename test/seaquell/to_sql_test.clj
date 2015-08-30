@@ -9,10 +9,11 @@
       "select * from tbl limit 3 offset 5")
 
 (fact (to-sql {:sql-stmt :select
-               :modifier -m- :fields -flds- :from -f- :where -w-
+               :with -wi- :modifier -m- :fields -flds- :from -f- :where -w-
                :group -gb- :having -h- :order-by -ob- :limit -l- :offset -o-})
       => ...sql...
       (provided
+        (with-clause -wi-) => -wic-
         (select-clause -m- -flds-) => -sc-
         (from-clause -f-) => -fc-
         (where-clause -w-) => -wc-
@@ -21,7 +22,8 @@
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
-        (query-clauses [-sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
+        (query-clauses
+          [-wic- -sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
 
 (fact (select-clause -mod- -flds-) => "SELECT mod flds"
       (provided (modifier-to-sql -mod-) => "mod ")
