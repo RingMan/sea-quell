@@ -32,15 +32,25 @@
 
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
-(defn with* [m [cte aka & rem-xs :as xs]]
+(defn cte [t & [cols & rem-body :as body]]
   (cond
-    (nil? xs) {:with m}
-    (and (:sql-stmt cte) (nil? aka))
-    (merge cte {:with m})
-    (alias? aka)
-    (recur (conj-in m [:ctes] {:cte cte :as (:as aka)}) rem-xs)
-    (= :as aka)
-    (recur (conj-in m [:ctes] {:cte cte :as (first rem-xs)}) (next rem-xs))))
+    (:cte t) (mk-map* t body)
+    (vector? cols) (mk-map* {:cte t} (cons {:columns cols} rem-body))
+    :else (mk-map* {:cte t} body)))
+
+(defn with* [m [a1 a2 a3 a4 a5 :as xs]]
+  (let [as? #(= :as %)]
+    ;(println "wif " m a1 a2 a3 a4 a5)
+    (cond
+      (nil? a1) {:with m}
+      (and (:sql-stmt a1) (nil? a2))
+      (merge a1 {:with m})
+      (:cte a1) (recur (conj-in m [:ctes] a1) (rest xs))
+      (alias? a2) (recur (conj-in m [:ctes] (cte a1 a2)) (drop 2 xs))
+      (or (as? a2) (alias? a3)) (recur (conj-in m [:ctes] (cte a1 a2 a3)) (drop 3 xs))
+      (or (as? a3) (alias? a4)) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4)) (drop 4 xs))
+      (as? a4) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4 a5)) (drop 5 xs))
+      :else (throw (RuntimeException. "Illegal with clause")))))
 
 (defn with [& body]
   (with* {:ctes []} body))

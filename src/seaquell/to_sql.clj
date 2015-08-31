@@ -326,8 +326,9 @@
   (when cols
     (in-parens (string/join ", " (map expr-to-sql (as-coll cols))))))
 
-(defn cte-to-sql [{:keys [cte as]}]
-  (str (name cte) " AS " (in-parens (to-sql as false))))
+(defn cte-to-sql [{:keys [cte columns as]}]
+  (str (name cte) (columns-to-sql columns) " AS "
+       (in-parens (to-sql as false))))
 
 (defn with-clause [{:keys [ctes recursive] :as w}]
   (when w
