@@ -359,9 +359,15 @@
                  (map #(in-parens (string/join ", " (map expr-to-sql %)))
                       values)))))
 
-(defmethod to-sql :default [x]
-  (throw (RuntimeException. (str "to-sql not implemented for "
-                                 (:sql-stmt x) " statement"))))
+(defmethod to-sql :default
+  ([x _]
+   (if (:values x)
+     (values-to-sql (:values x))
+     (throw (RuntimeException. (str "to-sql [x _] not implemented for "
+                                    (:sql-stmt x) " statement")))))
+  ([x]
+   (throw (RuntimeException. (str "to-sql not implemented for "
+                                  (:sql-stmt x) " statement")))))
 
 (defmethod to-sql :compound-select
   ([stmt] (to-sql stmt true))

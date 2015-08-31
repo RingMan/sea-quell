@@ -141,7 +141,8 @@
         [stmt body]
         (if (compound-select? stmt)
           [stmt (rest body)]
-          (let [[sel body] (partition-by (comp boolean sql-stmt?) body)]
+          (let [[sel body]
+                (partition-by #(boolean (or (sql-stmt? %) (:values %))) body)]
             ;(println "build comp-select")
             ;(clojure.pprint/pprint sel)
             ;(clojure.pprint/pprint body)
