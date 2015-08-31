@@ -251,10 +251,6 @@
 
 (defmulti to-sql :sql-stmt)
 
-(defmethod to-sql :default [x]
-  (throw (RuntimeException. (str "to-sql not implemented for "
-                                 (:sql-stmt x) " statement"))))
-
 (defn alias-to-sql [as]
   (when as (str "AS " (name-to-sql as))))
 
@@ -326,6 +322,10 @@
 (defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
 (defn offset-clause [o] (when o (str "OFFSET " (expr-to-sql o))))
 
+(defn columns-to-sql [cols]
+  (when cols
+    (in-parens (string/join ", " (map expr-to-sql (as-coll cols))))))
+
 (defn query-clauses [xs semi]
   (str (string/join " " (keep identity xs)) semi))
 
@@ -348,6 +348,20 @@
                   order-by limit offset semi)]
      (query-clauses [select from where group having
                       order-by limit offset] semi))))
+
+(defn values-to-sql [values]
+  (cond
+    (= :default values) "DEFAULT VALUES"
+    (:sql-stmt values) (to-sql values false)
+    :else (str "VALUES "
+               (string/join
+                 ", "
+                 (map #(in-parens (string/join ", " (map expr-to-sql %)))
+                      values)))))
+
+(defmethod to-sql :default [x]
+  (throw (RuntimeException. (str "to-sql not implemented for "
+                                 (:sql-stmt x) " statement"))))
 
 (defmethod to-sql :compound-select
   ([stmt] (to-sql stmt true))
@@ -374,20 +388,6 @@
          limit (limit-clause limit)
          offset (offset-clause offset)]
      (query-clauses [delete where order-by limit offset] ";"))))
-
-(defn columns-to-sql [cols]
-  (when cols
-    (in-parens (string/join ", " (map expr-to-sql (as-coll cols))))))
-
-(defn values-to-sql [values]
-  (cond
-    (= :default values) "DEFAULT VALUES"
-    (:sql-stmt values) (to-sql values false)
-    :else (str "VALUES "
-               (string/join
-                 ", "
-                 (map #(in-parens (string/join ", " (map expr-to-sql %)))
-                      values)))))
 
 (defmethod to-sql :insert
   ([{:keys [op source columns values] :as stmt}]
