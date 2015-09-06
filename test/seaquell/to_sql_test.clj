@@ -350,3 +350,14 @@
         (query-clauses ["UPDATE -src-" -sc- -wc- -obc- -lc- -oc-] ";") =>
         ...sql...)))
 
+(let [any-stmt {:sql-stmt :select :fields "or any other statement"}]
+  (fact
+    (let [stmt {:sql-stmt :explain
+                :statement any-stmt}]
+      (to-sql stmt) => "EXPLAIN SELECT 'or any other statement';"))
+
+  (fact
+    (let [stmt {:sql-stmt :explain-query-plan
+                :statement any-stmt}]
+      (to-sql stmt) => "EXPLAIN QUERY PLAN SELECT 'or any other statement';")))
+

@@ -191,6 +191,18 @@
        :limit -lim-
        :offset -off-})
 
+;;; EXPLAIN statements
+
+(fact (explain -stmt-) => {:sql-stmt :explain, :statement -stmt-})
+(fact (explain-query-plan -stmt-) =>
+      {:sql-stmt :explain-query-plan, :statement -stmt-})
+
+(fact "EXPLAIN is idempotent"
+      (let [ex (explain -stmt-)]
+        (explain ex) => ex)
+      (let [ex (explain-query-plan -stmt-)]
+        (explain-query-plan ex) => ex))
+
 ;;; Clauses
 
 (fact (from -x-) => {:from [-x-]})

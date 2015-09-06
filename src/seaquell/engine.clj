@@ -31,7 +31,7 @@
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
   (let [opts #(->> %1 (map identity) flatten)]
-    (if (re-find #"^(?i)select " sql-str)
+    (if (re-find #"^(?i)(select|explain) " sql-str)
       (apply
         jdbc/query db (cons sql-str params)
         (opts (select-keys q [:as-arrays? :identifiers :row-fn :result-set-fn])))

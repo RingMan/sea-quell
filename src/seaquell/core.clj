@@ -4,7 +4,8 @@
   (:require [diesel.edit :refer :all])
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
-(def-props as binary having indexed-by modifier offset on op raw where)
+(def-props
+  as binary having indexed-by modifier offset on op raw statement where)
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def-vec-props columns)
@@ -240,6 +241,20 @@
   (let [[stmt body] (if (sql-stmt? stmt)
                       [stmt body]
                       [{:sql-stmt :update :source stmt :op :update} body])]
+    (mk-map* stmt body)))
+
+;;; EXPLAIN statements
+
+(defn explain [stmt & body]
+  (let [[stmt body] (if (= (:sql-stmt stmt) :explain)
+                      [stmt body]
+                      [{:sql-stmt :explain :statement stmt} body])]
+    (mk-map* stmt body)))
+
+(defn explain-query-plan [stmt & body]
+  (let [[stmt body] (if (= (:sql-stmt stmt) :explain-query-plan)
+                      [stmt body]
+                      [{:sql-stmt :explain-query-plan :statement stmt} body])]
     (mk-map* stmt body)))
 
 ;;; Helpers for composing queries
@@ -482,4 +497,16 @@
 
 (defn update! [& body]
   (do-sql (apply update body)))
+
+(defn explain$ [& body]
+  (to-sql (apply explain body)))
+
+(defn explain! [& body]
+  (do-sql (apply explain body)))
+
+(defn explain-query-plan$ [& body]
+  (to-sql (apply explain-query-plan body)))
+
+(defn explain-query-plan! [& body]
+  (do-sql (apply explain-query-plan body)))
 

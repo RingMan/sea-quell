@@ -430,3 +430,9 @@
          offset (offset-clause offset)]
      (query-clauses [update set-cols where order-by limit offset] ";"))))
 
+(defmethod to-sql :explain [stmt]
+  (str "EXPLAIN " (to-sql (:statement stmt))))
+
+(defmethod to-sql :explain-query-plan [stmt]
+  (str "EXPLAIN QUERY PLAN " (to-sql (:statement stmt))))
+
