@@ -397,20 +397,22 @@
     (query-clauses [select-ops order-by limit offset] semi))))
 
 (defmethod to-sql :delete
-  ([{:keys [where order-by limit offset] :as stmt}]
-   (let [delete (str "DELETE FROM " (join-src-to-sql stmt))
+  ([{:keys [where order-by limit offset with] :as stmt}]
+   (let [with (with-clause with)
+         delete (str "DELETE FROM " (join-src-to-sql stmt))
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (query-clauses [delete where order-by limit offset] ";"))))
+     (query-clauses [with delete where order-by limit offset] ";"))))
 
 (defmethod to-sql :insert
-  ([{:keys [op source columns values] :as stmt}]
-   (let [insert (str (to-sql-keywords op) " INTO " (expr-to-sql source))
+  ([{:keys [op source columns values with] :as stmt}]
+   (let [with (with-clause with)
+         insert (str (to-sql-keywords op) " INTO " (expr-to-sql source))
          columns (columns-to-sql columns)
          values  (values-to-sql values)]
-     (query-clauses [insert columns values] ";"))))
+     (query-clauses [with insert columns values] ";"))))
 
 (defn set-clause [set-cols]
   (when set-cols
@@ -421,14 +423,15 @@
                 (sort set-cols))))))
 
 (defmethod to-sql :update
-  ([{:keys [op set-cols where order-by limit offset] :as stmt}]
-   (let [update (str (to-sql-keywords op) " " (join-src-to-sql stmt))
+  ([{:keys [op set-cols where order-by limit offset with] :as stmt}]
+   (let [with (with-clause with)
+         update (str (to-sql-keywords op) " " (join-src-to-sql stmt))
          set-cols (set-clause set-cols)
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (query-clauses [update set-cols where order-by limit offset] ";"))))
+     (query-clauses [with update set-cols where order-by limit offset] ";"))))
 
 (defmethod to-sql :explain [stmt]
   (str "EXPLAIN " (to-sql (:statement stmt))))

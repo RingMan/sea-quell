@@ -310,36 +310,42 @@
                  (raw-to-sql -raw-) => "-raw-"))
 
 (fact
-  (let [stmt {:sql-stmt :delete :source -src- :indexed-by -ix-
+  (let [stmt {:sql-stmt :delete :with -wi- :source -src- :indexed-by -ix-
               :where -w- :order-by -ob- :limit -l- :offset -o-}]
     (to-sql stmt)
       => ...sql...
       (provided
+        (with-clause -wi-) => -wic-
         (join-src-to-sql stmt) => -src-
         (where-clause -w-) => -wc-
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
-        (query-clauses ["DELETE FROM -src-" -wc- -obc- -lc- -oc-] ";") => ...sql...)))
+        (query-clauses [-wic- "DELETE FROM -src-" -wc- -obc- -lc- -oc-] ";")
+        => ...sql...)))
 
 (fact
-  (let [stmt {:sql-stmt :insert :source -src- :op -op-
+  (let [stmt {:sql-stmt :insert :with -wi- :source -src- :op -op-
               :columns -cs- :values -vs-}]
     (to-sql stmt)
       => ...sql...
       (provided
+        (with-clause -wi-) => -wic-
         (to-sql-keywords -op-) => "INSERT"
         (expr-to-sql -src-) => "src"
         (columns-to-sql -cs-) => -cols-
         (values-to-sql -vs-) => -vals-
-        (query-clauses ["INSERT INTO src" -cols- -vals-] ";") => ...sql...)))
+        (query-clauses [-wic- "INSERT INTO src" -cols- -vals-] ";")
+        => ...sql...)))
 
 (fact
   (let [stmt {:sql-stmt :update :source -src- :indexed-by -ix- :op -op-
-              :set-cols -s- :where -w- :order-by -ob- :limit -l- :offset -o-}]
+              :set-cols -s- :where -w- :order-by -ob- :limit -l- :offset -o-
+              :with -wi-}]
     (to-sql stmt)
       => ...sql...
       (provided
+        (with-clause -wi-) => -wic-
         (to-sql-keywords -op-) => "UPDATE"
         (join-src-to-sql stmt) => -src-
         (set-clause -s-) => -sc-
@@ -347,8 +353,8 @@
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
-        (query-clauses ["UPDATE -src-" -sc- -wc- -obc- -lc- -oc-] ";") =>
-        ...sql...)))
+        (query-clauses [-wic- "UPDATE -src-" -sc- -wc- -obc- -lc- -oc-] ";")
+        => ...sql...)))
 
 (let [any-stmt {:sql-stmt :select :fields "or any other statement"}]
   (fact
