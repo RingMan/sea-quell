@@ -244,6 +244,21 @@
                       [{:sql-stmt :update :source stmt :op :update} body])]
     (mk-map* stmt body)))
 
+(defn update-or-rollback [stmt & body]
+  (merge (apply update stmt body) {:op :update-or-rollback}))
+
+(defn update-or-abort [stmt & body]
+  (merge (apply update stmt body) {:op :update-or-abort}))
+
+(defn update-or-replace [stmt & body]
+  (merge (apply update stmt body) {:op :update-or-replace}))
+
+(defn update-or-fail [stmt & body]
+  (merge (apply update stmt body) {:op :update-or-fail}))
+
+(defn update-or-ignore [stmt & body]
+  (merge (apply update stmt body) {:op :update-or-ignore}))
+
 ;;; EXPLAIN statements
 
 (defn explain [stmt & body]
