@@ -477,12 +477,6 @@
 
 (def to-sql sql/to-sql)
 
-(defn select$ [& body]
-  (to-sql (apply select body)))
-
-(defn select-from$ [& body]
-  (to-sql (apply select-from body)))
-
 (defn do-sql [stmt & body]
   {:pre [(or (string? stmt) (sql-stmt? stmt))]}
   (let [m (if (string? stmt)
@@ -490,39 +484,30 @@
             (assoc stmt :sql-str (to-sql stmt)))]
     (eng/exec (mk-map* m body))))
 
-(defn select! [& body]
-  (do-sql (apply select body)))
+(def sql$ sql/to-sql)
+(def sql! do-sql)
 
-(defn select-from! [& body]
-  (do-sql (apply select-from body)))
+(defmacro mk-render-fns [syms]
+  (cons 'do
+        (for [sym syms]
+          `(defn ~(symbol (str (name sym) "$")) [& body#]
+             (to-sql (apply ~sym body#))))))
 
-(defn delete$ [& body]
-  (to-sql (apply delete body)))
+(defmacro mk-exec-fns [syms]
+  (cons 'do
+        (for [sym syms]
+          `(defn ~(symbol (str (name sym) "!")) [& body#]
+             (do-sql (apply ~sym body#))))))
 
-(defn delete! [& body]
-  (do-sql (apply delete body)))
-
-(defn insert$ [& body]
-  (to-sql (apply insert body)))
-
-(defn insert! [& body]
-  (do-sql (apply insert body)))
-
-(defn update$ [& body]
-  (to-sql (apply update body)))
-
-(defn update! [& body]
-  (do-sql (apply update body)))
-
-(defn explain$ [& body]
-  (to-sql (apply explain body)))
-
-(defn explain! [& body]
-  (do-sql (apply explain body)))
-
-(defn explain-query-plan$ [& body]
-  (to-sql (apply explain-query-plan body)))
-
-(defn explain-query-plan! [& body]
-  (do-sql (apply explain-query-plan body)))
+(let [stmts
+      '[select select-from compound-select
+        union union-all intersect intersect-all except except-all
+        delete
+        insert insert-or-rollback insert-or-abort insert-or-replace
+        insert-or-fail insert-or-ignore replace-into
+        update update-or-rollback update-or-abort update-or-replace
+        update-or-fail update-or-ignore
+        explain explain-query-plan]]
+  (eval `(mk-render-fns ~stmts))
+  (eval `(mk-exec-fns ~stmts)))
 
