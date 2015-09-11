@@ -376,8 +376,10 @@
      (throw (RuntimeException. (str "to-sql [x _] not implemented for "
                                     (:sql-stmt x) " statement")))))
   ([x]
-   (throw (RuntimeException. (str "to-sql not implemented for "
-                                  (:sql-stmt x) " statement")))))
+   (if (:values x)
+     (str (values-to-sql (:values x)) ";")
+     (throw (RuntimeException. (str "to-sql [x] not implemented for "
+                                    (:sql-stmt x) " statement"))))))
 
 (defmethod to-sql :compound-select
   ([stmt] (to-sql stmt true))

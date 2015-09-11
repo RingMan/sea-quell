@@ -109,12 +109,15 @@
 ;;; INSERT statements
 
 (facts
-  (value -c1- -c2-) => {:values [[-c1- -c2-]]}
+  (value -q-) => {:values -q-} (provided (select? -q-) => true)
+  (value :default) => {:values :default}
+  (let [_c1_ 1, _c2_ 2] (value _c1_ _c2_) => {:values [[_c1_ _c2_]]})
 
-  (values -q-) => {:values -q-} (provided (sequential? -q-) => false)
+  (values -q-) => {:values -q-} (provided (select? -q-) => true)
   (values :default) => {:values :default}
-  (values -r1-) => {:values [-r1-]} (provided (sequential? -r1-) => true)
-  (values -r1- -r2-) => {:values [-r1- -r2-]})
+  (let [_v1_ [1 2], _v2_ [3 4]]
+    (values _v1_) => {:values [_v1_]}
+    (values _v1_ _v2_) => {:values [_v1_ _v2_]}))
 
 (facts
   (let [q (select :* (from :t))
@@ -131,8 +134,9 @@
     (insert -tbl- (values q)) =>
     (merge stmt {:values q})
 
-    (insert -tbl- (value -v1- -v2-)) =>
-    (merge stmt {:values [[-v1- -v2-]]})
+    (let [_v1_ [1 2], _v2_ [3 4]]
+      (insert -tbl- (value _v1_ _v2_)) =>
+      (merge stmt {:values [[_v1_ _v2_]]}))
 
     (insert -tbl- (values [-a1- -a2-] [-b1- -b2-])) =>
     (merge stmt {:values [[-a1- -a2-] [-b1- -b2-]]})

@@ -223,13 +223,21 @@
 (defn insert-or-ignore [stmt & body]
   (merge (apply insert stmt body) {:op :insert-or-ignore}))
 
-(defn value [& xs] {:values [xs]})
+(defn value [& [x & xx :as xs]]
+  (cond
+    (:values x) (mk-map* x xx)
+    (and (select? x) (nil? xx)) {:values x}
+    (= [:default] xs) {:values :default}
+    :else (let [[xs ys] (split-with #(not= :-- %) xs)]
+            (mk-map* {:values [xs]} (rest ys)))))
 
-(defn values
-  ([& [x & xx :as xs]]
-   (if-not (or xx (sequential? x))
-     {:values x}
-     {:values xs})))
+(defn values [& [x & xx :as xs]]
+  (cond
+    (:values x) (mk-map* x xx)
+    (and (select? x) (nil? xx)) {:values x}
+    (= [:default] xs) {:values :default}
+    :else (let [[xs ys] (split-with vector? xs)]
+            (mk-map* {:values xs} ys))))
 
 (defn defaults [] {:columns nil :values :default})
 (def default-values defaults)
@@ -478,7 +486,7 @@
 (def to-sql sql/to-sql)
 
 (defn do-sql [stmt & body]
-  {:pre [(or (string? stmt) (sql-stmt? stmt))]}
+  {:pre [(or (string? stmt) (sql-stmt? stmt) (:values stmt))]}
   (let [m (if (string? stmt)
             {:sql-str stmt}
             (assoc stmt :sql-str (to-sql stmt)))]
@@ -507,6 +515,7 @@
         insert-or-fail insert-or-ignore replace-into
         update update-or-rollback update-or-abort update-or-replace
         update-or-fail update-or-ignore
+        value values
         explain explain-query-plan]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
