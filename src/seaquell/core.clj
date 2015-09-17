@@ -499,6 +499,14 @@
 (def sql$ sql/to-sql)
 (def sql! do-sql)
 
+;; Syntax to support query execution
+
+(def-props db)
+
+(def-vec-props params)
+
+;; Generate <stmt>$ and <stmt>! functions for SQL statements and VALUES
+
 (defmacro mk-render-fns [syms]
   (cons 'do
         (for [sym syms]

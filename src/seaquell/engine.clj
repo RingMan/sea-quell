@@ -2,12 +2,6 @@
   (:require [clojure.java.jdbc :as jdbc])
   (:require [diesel.core :refer [def-props def-vec-props def-bool-props]]))
 
-;; Syntax to support query execution
-
-(def-props db)
-
-(def-vec-props params)
-
 ;; Syntax for jdbc pass-thru options
 
 (def-bool-props as-arrays? transaction? multi?)
