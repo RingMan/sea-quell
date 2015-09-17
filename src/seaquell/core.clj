@@ -194,6 +194,8 @@
                       [{:sql-stmt :delete :source stmt} body])]
     (mk-map* stmt body)))
 
+(def delete-from delete)
+
 ;;; INSERT statement
 
 (def insert? (partial sql-stmt? :insert))
@@ -204,6 +206,8 @@
     (vector? cols) (apply insert stmt :columns cols rem-body)
     (select? (last body)) (apply insert stmt {:values (last body)} (butlast body))
     :else (mk-map* {:sql-stmt :insert :source stmt :op :insert} body)))
+
+(def insert-into insert)
 
 (defn replace-into [stmt & body]
   (merge (apply insert stmt body) {:op :replace}))
@@ -508,11 +512,11 @@
              (do-sql (apply ~sym body#))))))
 
 (let [stmts
-      '[select select-from compound-select
+      '[select select-from compound-select select-distinct select-all
         union union-all intersect intersect-all except except-all
-        delete
+        delete delete-from
         insert insert-or-rollback insert-or-abort insert-or-replace
-        insert-or-fail insert-or-ignore replace-into
+        insert-or-fail insert-or-ignore replace-into insert-into
         update update-or-rollback update-or-abort update-or-replace
         update-or-fail update-or-ignore
         value values
