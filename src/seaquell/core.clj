@@ -8,6 +8,8 @@
   as binary having indexed-by modifier offset on op raw statement where)
 (def-map-props set-cols)
 (def set-columns set-cols)
+(def set-fields set-cols)
+(def set-flds set-cols)
 (def-vec-props columns)
 
 (defn field
