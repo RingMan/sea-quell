@@ -178,16 +178,16 @@
 
 ;;; DELETE statements
 
-(fact (delete -tbl-) => {:sql-stmt :delete, :source -tbl-})
-(fact (delete -tbl- (as -as-)) => {:sql-stmt :delete, :source -tbl-, :as -as-})
-(fact (delete -tbl- (as -as-) (indexed-by -ix-)) =>
-      {:sql-stmt :delete, :source -tbl-, :as -as- :indexed-by -ix-})
-(fact (delete -tbl- (as -as-) (not-indexed)) =>
-      {:sql-stmt :delete, :source -tbl-, :as -as- :indexed-by nil})
-(fact (delete -tbl- (as -as-) (indexed-by -ix-) (where -where-)
+(fact (delete :_tbl_) => {:sql-stmt :delete, :from :_tbl_})
+(fact (delete :_tbl_ (as -as-)) => {:sql-stmt :delete, :from :_tbl_, :as -as-})
+(fact (delete :_tbl_ (as -as-) (indexed-by -ix-)) =>
+      {:sql-stmt :delete, :from :_tbl_, :as -as- :indexed-by -ix-})
+(fact (delete :_tbl_ (as -as-) (not-indexed)) =>
+      {:sql-stmt :delete, :from :_tbl_, :as -as- :indexed-by nil})
+(fact (delete :_tbl_ (as -as-) (indexed-by -ix-) (where -where-)
               (order-by -ord-) (limit -lim-) (offset -off-)) =>
       {:sql-stmt :delete
-       :source -tbl-
+       :from :_tbl_
        :as -as-
        :indexed-by -ix-
        :where -where-

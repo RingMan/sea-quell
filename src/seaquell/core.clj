@@ -191,9 +191,11 @@
 (def delete? (partial sql-stmt? :delete))
 
 (defn delete [stmt & body]
-  (let [[stmt body] (if (sql-stmt? stmt)
-                      [stmt body]
-                      [{:sql-stmt :delete :source stmt} body])]
+  (let [[stmt body] (cond
+                      (sql-stmt? stmt) [stmt body]
+                      (or (= :from stmt) (:from stmt))
+                      [{:sql-stmt :delete} (cons stmt body)]
+                      :else [{:sql-stmt :delete :from stmt} body])]
     (mk-map* stmt body)))
 
 (def delete-from delete)

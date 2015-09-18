@@ -399,9 +399,12 @@
     (query-clauses [select-ops order-by limit offset] semi))))
 
 (defmethod to-sql :delete
-  ([{:keys [where order-by limit offset with] :as stmt}]
+  ([{:keys [from where order-by limit offset with] :as stmt}]
    (let [with (with-clause with)
-         delete (str "DELETE FROM " (join-src-to-sql stmt))
+         from (if (sequential? from) (first from) from)
+         from (merge (select-keys stmt [:as :indexed-by])
+                     (if (map? from) from {:source from}))
+         delete (str "DELETE FROM " (join-src-to-sql from))
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)

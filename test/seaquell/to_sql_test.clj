@@ -310,13 +310,13 @@
                  (raw-to-sql -raw-) => "-raw-"))
 
 (fact
-  (let [stmt {:sql-stmt :delete :with -wi- :source -src- :indexed-by -ix-
+  (let [stmt {:sql-stmt :delete :with -wi- :from -src- :indexed-by -ix-
               :where -w- :order-by -ob- :limit -l- :offset -o-}]
     (to-sql stmt)
       => ...sql...
       (provided
         (with-clause -wi-) => -wic-
-        (join-src-to-sql stmt) => -src-
+        (join-src-to-sql {:source -src- :indexed-by -ix-}) => -src-
         (where-clause -w-) => -wc-
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
