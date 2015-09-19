@@ -412,9 +412,9 @@
      (query-clauses [with delete where order-by limit offset] ";"))))
 
 (defmethod to-sql :insert
-  ([{:keys [op source columns values with] :as stmt}]
+  ([{:keys [op into columns values with] :as stmt}]
    (let [with (with-clause with)
-         insert (str (to-sql-keywords op) " INTO " (expr-to-sql source))
+         insert (str (to-sql-keywords op) " INTO " (expr-to-sql into))
          columns (columns-to-sql columns)
          values  (values-to-sql values)]
      (query-clauses [with insert columns values] ";"))))

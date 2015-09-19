@@ -121,37 +121,39 @@
 
 (facts
   (let [q (select :* (from :t))
-        stmt {:sql-stmt :insert, :op :insert, :source -tbl-}]
-    (insert -tbl- (default-values)) =>
+        _tbl_ :_tbl_
+        stmt {:sql-stmt :insert, :op :insert, :into _tbl_}]
+    (insert _tbl_ (default-values)) =>
     (merge stmt {:columns nil, :values :default})
 
-    (insert -tbl- (defaults)) =>
+    (insert _tbl_ (defaults)) =>
     (merge stmt {:columns nil, :values :default})
 
-    (insert -tbl- (values :default)) =>
+    (insert _tbl_ (values :default)) =>
     (merge stmt {:values :default})
 
-    (insert -tbl- (values q)) =>
+    (insert _tbl_ (values q)) =>
     (merge stmt {:values q})
 
     (let [_v1_ [1 2], _v2_ [3 4]]
-      (insert -tbl- (value _v1_ _v2_)) =>
+      (insert _tbl_ (value _v1_ _v2_)) =>
       (merge stmt {:values [[_v1_ _v2_]]}))
 
-    (insert -tbl- (values [-a1- -a2-] [-b1- -b2-])) =>
+    (insert _tbl_ (values [-a1- -a2-] [-b1- -b2-])) =>
     (merge stmt {:values [[-a1- -a2-] [-b1- -b2-]]})
 
-    (insert -tbl- (columns -c1- -c2-) (values [-a1- -a2-] [-b1- -b2-])) =>
+    (insert _tbl_ (columns -c1- -c2-) (values [-a1- -a2-] [-b1- -b2-])) =>
     (merge stmt {:columns [-c1- -c2-] :values [[-a1- -a2-] [-b1- -b2-]]}))
 
-  (let [stmt {:sql-stmt :insert, :op :insert, :source -tbl-,
+  (let [_tbl_ :_tbl_
+        stmt {:sql-stmt :insert, :op :insert, :into _tbl_,
               :columns nil, :values :default}]
-    (replace-into -tbl- (defaults)) => (merge stmt {:op :replace})
-    (insert-or-rollback -tbl- (defaults)) => (merge stmt {:op :insert-or-rollback})
-    (insert-or-abort -tbl- (defaults)) => (merge stmt {:op :insert-or-abort})
-    (insert-or-replace -tbl- (defaults)) => (merge stmt {:op :insert-or-replace})
-    (insert-or-fail -tbl- (defaults)) => (merge stmt {:op :insert-or-fail})
-    (insert-or-ignore -tbl- (defaults)) => (merge stmt {:op :insert-or-ignore})))
+    (replace-into _tbl_ (defaults)) => (merge stmt {:op :replace})
+    (insert-or-rollback _tbl_ (defaults)) => (merge stmt {:op :insert-or-rollback})
+    (insert-or-abort _tbl_ (defaults)) => (merge stmt {:op :insert-or-abort})
+    (insert-or-replace _tbl_ (defaults)) => (merge stmt {:op :insert-or-replace})
+    (insert-or-fail _tbl_ (defaults)) => (merge stmt {:op :insert-or-fail})
+    (insert-or-ignore _tbl_ (defaults)) => (merge stmt {:op :insert-or-ignore})))
 
 ;;; UPDATE statements
 

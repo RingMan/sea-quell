@@ -207,9 +207,11 @@
 (defn insert [stmt & [cols & rem-body :as body]]
   (cond
     (sql-stmt? stmt) (mk-map* stmt body)
+    (= :into stmt) (apply insert body)
+    (:into stmt) (apply insert (:into stmt) body)
     (vector? cols) (apply insert stmt :columns cols rem-body)
     (select? (last body)) (apply insert stmt {:values (last body)} (butlast body))
-    :else (mk-map* {:sql-stmt :insert :source stmt :op :insert} body)))
+    :else (mk-map* {:sql-stmt :insert :into stmt :op :insert} body)))
 
 (def insert-into insert)
 

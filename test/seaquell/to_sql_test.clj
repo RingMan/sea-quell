@@ -325,7 +325,7 @@
         => ...sql...)))
 
 (fact
-  (let [stmt {:sql-stmt :insert :with -wi- :source -src- :op -op-
+  (let [stmt {:sql-stmt :insert :with -wi- :into -src- :op -op-
               :columns -cs- :values -vs-}]
     (to-sql stmt)
       => ...sql...
