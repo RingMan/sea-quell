@@ -3,10 +3,13 @@
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
   (:refer-clojure :exclude [update])
   (:require [clojure.java.jdbc :as jdb])
-  (:require [diesel.core :refer [properties]])
+  (:require [diesel.core :refer [mk-map*]])
   (:use midje.sweet
         seaquell.core
         seaquell.engine))
+
+(defn properties [& body]
+  (mk-map* {} body))
 
 (def sq3 {:classname "org.sqlite.JDBC"
           :subprotocol "sqlite"
