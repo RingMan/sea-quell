@@ -49,7 +49,7 @@
       (select :s (from :x) (where {:ind 0}))))
 
 (fact
-  (jdb/query sq3 (to-sql sudoku-solver) :row-fn :s :result-set-fn first)
+  (jdb/query sq3 (to-sql sudoku-solver) {:row-fn :s, :result-set-fn first})
   => (str "53467891267219534819834256785976142342685379"
           "1713924856961537284287419635345286179"))
 
@@ -76,7 +76,7 @@
     (select [[:group_concat '(rtrim t) (binary "0a")]] (from :a))))
 
 (fact
-  (jdb/query sq3 (to-sql mandelbrot) :result-set-fn (comp val first first))
+  (jdb/query sq3 (to-sql mandelbrot) {:result-set-fn (comp val first first)})
   =>
 "                                    ....#
                                    ..#*..

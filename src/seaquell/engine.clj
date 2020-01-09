@@ -24,12 +24,11 @@
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
-  (let [opts #(->> %1 (map identity) flatten)]
-    (if (re-find #"^(?i)(select|values|explain) " sql-str)
-      (apply
-        jdbc/query db (cons sql-str params)
-        (opts (select-keys q [:as-arrays? :identifiers :row-fn :result-set-fn])))
-      (apply
-        jdbc/execute! db (cons sql-str params)
-        (opts (select-keys q [:multi? :transaction?]))))))
+  (if (re-find #"^(?i)(select|values|explain) " sql-str)
+    (jdbc/query
+      db (cons sql-str params)
+      (select-keys q [:as-arrays? :identifiers :row-fn :result-set-fn]))
+    (jdbc/execute!
+      db (vec (cons sql-str params))
+      (select-keys q [:multi? :transaction?]))))
 
