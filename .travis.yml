@@ -4,6 +4,8 @@ before_script: sqlite3 -version
 script: lein test-all
 jdk:
   - openjdk8
+  - openjdk11
+  - oraclejdk11
 branches:
   only:
     - master
