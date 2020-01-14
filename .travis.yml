@@ -1,11 +1,9 @@
 language: clojure
-lein: lein2
+lein: lein
 before_script: sqlite3 -version
-script: lein2 test-all
+script: lein test-all
 jdk:
-  - openjdk7
-  - oraclejdk7
-  - oraclejdk8
+  - openjdk8
 branches:
   only:
     - master
