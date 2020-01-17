@@ -353,9 +353,7 @@
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)
-         semi (when semi? ";")
-         qry (str "SELECT " modifier fields from where group having
-                  order-by limit offset semi)]
+         semi (when semi? ";")]
      (query-clauses
        [with select from where group having order-by limit offset] semi))))
 
