@@ -1,7 +1,7 @@
 (ns seaquell.window-fn-test
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update partition-by])
   (:require [clojure.java.jdbc :as jdb])
   (:require [diesel.core :refer [mk-map*]])
   (:use midje.sweet

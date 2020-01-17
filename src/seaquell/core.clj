@@ -1,5 +1,6 @@
 (ns seaquell.core
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update partition-by])
+  (:require [clojure.core :as c])
   (:require [diesel.core :refer :all])
   (:require [diesel.edit :refer [conj-in]])
   (:require [seaquell [util :refer :all] [to-sql :as sql] [engine :as eng]]))
@@ -10,7 +11,7 @@
 (def set-columns set-cols)
 (def set-fields set-cols)
 (def set-flds set-cols)
-(def-vec-props columns)
+(def-vec-props columns partition-by)
 
 (defn field [f & more]
   (if (field? f)
@@ -147,7 +148,7 @@
         (if (compound-select? stmt)
           [stmt (rest body)]
           (let [[sel body]
-                (partition-by #(boolean (or (sql-stmt? %) (:values %))) body)]
+                (c/partition-by #(boolean (or (sql-stmt? %) (:values %))) body)]
             ;(println "build comp-select")
             ;(clojure.pprint/pprint sel)
             ;(clojure.pprint/pprint body)

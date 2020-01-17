@@ -1,5 +1,5 @@
 (ns seaquell.zoo.self-join
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/20/2013) to the

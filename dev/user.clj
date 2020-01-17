@@ -1,6 +1,8 @@
 (ns user
-  (:refer-clojure :exclude [update])
-  (:require [clojure.java.io :as io]
+  (:refer-clojure :rename {update clj-update,
+                           partition-by clj-partition-by})
+  (:require [clojure.core :as c]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.pprint :refer (pprint)]
             [clojure.repl :refer :all]

@@ -1,5 +1,5 @@
 (ns seaquell.zoo.select-within-select
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are valid solutions (as of 3/31/2013) to the

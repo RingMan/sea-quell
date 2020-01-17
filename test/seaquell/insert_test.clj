@@ -1,5 +1,5 @@
 (ns seaquell.insert-test
-  (:refer-clojure :exclude [update])
+  (:refer-clojure :exclude [update partition-by])
   (:use midje.sweet
         seaquell.core))
 
