@@ -40,16 +40,16 @@
   => "INSERT INTO tbl SELECT * FROM otherTbl;"
 
   ;; alternate verbs
-  (to-sql (replace-into :tbl (values [1 2 3])))
+  (replace-into$ :tbl (values [1 2 3]))
   => "REPLACE INTO tbl VALUES (1, 2, 3);"
-  (to-sql (insert-or-replace :tbl (values [1 2 3])))
+  (insert-or-replace$ :tbl (values [1 2 3]))
   => "INSERT OR REPLACE INTO tbl VALUES (1, 2, 3);"
-  (to-sql (insert-or-rollback :tbl (values [1 2 3])))
+  (insert-or-rollback$ :tbl (values [1 2 3]))
   => "INSERT OR ROLLBACK INTO tbl VALUES (1, 2, 3);"
-  (to-sql (insert-or-abort :tbl (values [1 2 3])))
+  (insert-or-abort$ :tbl (values [1 2 3]))
   => "INSERT OR ABORT INTO tbl VALUES (1, 2, 3);"
-  (to-sql (insert-or-fail :tbl (values [1 2 3])))
+  (insert-or-fail$ :tbl (values [1 2 3]))
   => "INSERT OR FAIL INTO tbl VALUES (1, 2, 3);"
-  (to-sql (insert-or-ignore :tbl (values [1 2 3])))
+  (insert-or-ignore$ :tbl (values [1 2 3]))
   => "INSERT OR IGNORE INTO tbl VALUES (1, 2, 3);"
   )

@@ -25,14 +25,14 @@
 (fact
   "You can use the ALL modifier"
   (let [sql "SELECT ALL fld FROM t;"]
-    (to-sql (select-all :fld (from :t))) => sql
+    (select-all$ :fld (from :t)) => sql
     (select$ :fld (all) (from :t)) => sql
     (select$ :fld (modifier :all) (from :t)) => sql))
 
 (fact
   "You can use the DISTINCT modifier"
   (let [sql "SELECT DISTINCT fld FROM t;"]
-    (to-sql (select-distinct :fld (from :t))) => sql
+    (select-distinct$ :fld (from :t)) => sql
     (select$ :fld (unique) (from :t)) => sql
     (select$ :fld (distinkt) (from :t)) => sql
     (select$ :fld (modifier :distinct) (from :t)) => sql))

@@ -19,14 +19,14 @@
   => "UPDATE tbl INDEXED BY ix SET a=1, b=2 WHERE c > 5;"
   
   ;; alternate verbs
-  (to-sql (update-or-rollback :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]})))
+  (update-or-rollback$ :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR ROLLBACK tbl SET a=1, b=2 WHERE c > 5;"
-  (to-sql (update-or-abort :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]})))
+  (update-or-abort$ :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR ABORT tbl SET a=1, b=2 WHERE c > 5;"
-  (to-sql (update-or-replace :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]})))
+  (update-or-replace$ :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR REPLACE tbl SET a=1, b=2 WHERE c > 5;"
-  (to-sql (update-or-fail :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]})))
+  (update-or-fail$ :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR FAIL tbl SET a=1, b=2 WHERE c > 5;"
-  (to-sql (update-or-ignore :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]})))
+  (update-or-ignore$ :tbl (set-cols {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR IGNORE tbl SET a=1, b=2 WHERE c > 5;"
   )
