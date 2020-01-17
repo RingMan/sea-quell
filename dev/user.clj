@@ -5,7 +5,8 @@
             [clojure.pprint :refer (pprint)]
             [clojure.repl :refer :all]
             [clojure.test :as test]
-            [clojure.tools.namespace.repl :refer (clear refresh refresh-all)])
+            [clojure.tools.namespace.repl :refer (refresh refresh-all)])
+  (:require [integrant.repl :refer [clear go halt prep init reset reset-all]])
   (:require [clojure.java.jdbc :as jdb])
   (:require [seaquell.core :refer :all])
   (:require [seaquell.engine :refer :all]))
@@ -19,17 +20,5 @@
 
 (def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname "/home/david/clj/sqlite/test.db"})
 
-(defn start
-  "Start the application"
-  []
-  )
-
-(defn stop
-  "Stop the application"
-  []
-  )
-
-(defn reset []
-  (stop)
-  (refresh :after 'user/start))
+(integrant.repl/set-prep! (constantly {}))
 
