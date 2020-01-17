@@ -10,7 +10,7 @@
 
 (fact (to-sql {:sql-stmt :select
                :with -wi- :modifier -m- :fields -flds- :from -f- :where -w-
-               :group -gb- :having -h- :order-by -ob- :limit -l- :offset -o-})
+               :group -gb- :having -h- :window -win- :order-by -ob- :limit -l- :offset -o-})
       => ...sql...
       (provided
         (with-clause -wi-) => -wic-
@@ -19,11 +19,12 @@
         (where-clause -w-) => -wc-
         (group-clause -gb-) => -gbc-
         (having-clause -h-) => -hc-
+        (window-clause -win-) => -winc-
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
         (query-clauses
-          [-wic- -sc- -fc- -wc- -gbc- -hc- -obc- -lc- -oc-] ";") => ...sql...))
+          [-wic- -sc- -fc- -wc- -gbc- -hc- -winc- -obc- -lc- -oc-] ";") => ...sql...))
 
 (fact (select-clause -mod- -flds-) => "SELECT mod flds"
       (provided (modifier-to-sql -mod-) => "mod ")

@@ -5,7 +5,7 @@
   (:require [seaquell [to-sql :as sql] [engine :as eng]]))
 
 (def-props
-  as binary having indexed-by modifier offset on op raw statement where)
+  as binary having indexed-by modifier offset on op raw statement where window)
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def set-fields set-cols)
