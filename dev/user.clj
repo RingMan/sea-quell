@@ -5,11 +5,16 @@
             [clojure.pprint :refer (pprint)]
             [clojure.repl :refer :all]
             [clojure.test :as test]
-            [clojure.tools.namespace.repl :refer (refresh refresh-all)])
-  (:require [integrant.repl :refer [clear go halt prep init reset reset-all]])
-  (:require [clojure.java.jdbc :as jdb])
-  (:require [seaquell.core :refer :all])
-  (:require [seaquell.engine :refer :all]))
+            [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [integrant.repl :refer [clear go halt prep init reset reset-all]]
+            [midje.repl :refer [autotest]]
+            [clojure.java.jdbc :as jdb]
+            [diesel.core :refer [mk-map mk-map* edit] :as dsl]
+            #_[seaquell.core :refer :all :rename {update sql-update}]
+            [seaquell.core :refer :all]
+            [seaquell.to-sql :as sql]
+            [seaquell.engine :as eng :refer :all]
+            [seaquell.util :as u]))
 
 (def q1 (select ['(avg Price) :as :AvgPrice '(count Price) :as :CntPrice] (from :cars)))
 
@@ -18,7 +23,8 @@
     ['(sqrt (sum (/ (* (- price q.AvgPrice) (- price q.AvgPrice)) (- q.CntPrice 1)))) :as :sdev]
     (from :cars (join q1 :as :q))))
 
-(def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname "/home/david/clj/sqlite/test.db"})
+#_(def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname "/home/david/clj/sqlite/test.db"})
+(def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname ":memory:"})
 
 (integrant.repl/set-prep! (constantly {}))
 
