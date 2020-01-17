@@ -6,7 +6,7 @@
   (:require [seaquell [util :refer :all] [to-sql :as sql] [engine :as eng]]))
 
 (def-props
-  as binary having indexed-by modifier offset on op raw statement where window)
+  as binary filter-where having indexed-by modifier offset on op raw statement where)
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def set-fields set-cols)
@@ -119,6 +119,66 @@
 
 (defn group [& xs]
   {:group xs})
+
+;;; WINDOW clause
+
+(defn windef [win & props]
+  (cond
+    (windef? win) (mk-map* win props)
+    (keyword? win) (mk-map* {:base-win win} props)
+    :else (mk-map* {:base-win nil} (cons win props))))
+
+(defn over
+  ([win]
+   (cond
+     (windef? win) win
+     (keyword? win) {:over win}
+     :else (windef win)))
+  ([win & more] (apply windef win more)))
+
+(defn win [w & [a1 a2 :as body]]
+  (cond
+    (:win w) (mk-map* w body)
+    (alias? a1) ()
+    :else (mk-map* {:win w} body)))
+
+(defn window* [m [a1 a2 a3 a4 a5 :as xs]]
+  (cond
+    (empty? xs) {:window m}
+    (or (raw? a1) (:win a1)) (recur (conj-in m [:wins] a1) (rest xs))
+    ; (win :w (as <window-def>))
+    (alias? a2) (recur (conj-in m [:wins] (win a1 a2)) (drop 2 xs))
+    ; (win :w :as <window-def>)
+    (as? a2) (recur (conj-in m [:wins] (win a1 a2 a3)) (drop 3 xs))
+    :else (throw (RuntimeException. "Illegal window clause"))))
+
+(defn window [& args]
+  (window* {:wins []} args))
+
+;;; Frame spec stuf
+
+(def-props kind lo-bound hi-bound exclude)
+
+(defn frame [f] {:frame f})
+
+(defn unbounded [x]
+  {:bound ({:following :unbounded-following,
+            :preceding :unbounded-preceding} x)})
+
+(def unbounded-preceding {:bound :unbounded-preceding})
+(def unbounded-following {:bound :unbounded-following})
+(def current-row {:bound :current-row})
+(defn preceding [expr] {:bound {:preceding expr}})
+(defn following [expr] {:bound {:following expr}})
+
+(defn bounds
+  ([lo] (bounds lo current-row))
+  ([lo hi] {:lo-bound (:bound lo) :hi-bound (:bound hi)}))
+
+(def exclude-no-others {:exclude :no-others})
+(def exclude-current-row {:exclude :current-row})
+(def exclude-group {:exclude :group})
+(def exclude-ties {:exclude :ties})
 
 ;;; ORDER BY clause
 

@@ -1,7 +1,7 @@
 (ns seaquell.to-sql
   (:require [clojure.set :as set])
   (:require [clojure.string :as string])
-  (:require [seaquell.util :as u :refer [field? raw?]]))
+  (:require [seaquell.util :as u :refer [field? raw? windef?]]))
 
 (defn delimit [l r x]
   (str l x r))
@@ -253,13 +253,22 @@
 (defn alias-to-sql [as]
   (when as (str "AS " (name-to-sql as))))
 
+(declare windef-to-sql filter-clause)
+
+(defn over-clause [oc]
+  (cond
+    (:over oc) (str "OVER " (expr-to-sql (:over oc)))
+    (windef? oc) (str "OVER (" (windef-to-sql oc) ")")))
+
 (defn field-to-sql [x]
   ;(println (format "field-to-sql called with %s" x))
   (if (field? x)
-    (let [{:keys [field as]} x
+    (let [{:keys [field as filter-where]} x
           as (alias-to-sql as)
-          field (expr-to-sql field)]
-      (join-by-space [field as]))
+          field (expr-to-sql field)
+          fc (filter-clause filter-where)
+          oc (over-clause x)]
+      (join-by-space [field fc oc as]))
     (expr-to-sql x)))
 
 (defn fields-to-sql [fs]
@@ -318,8 +327,50 @@
     (str "GROUP BY " (string/join ", " (map expr-to-sql (as-coll group))))))
 (defn having-clause [having]
   (when having (str "HAVING " (expr-to-sql having))))
-(defn window-clause [window]
-  (when window (str "WINDOW " (expr-to-sql window))))
+
+(defn filter-clause [fw]
+  (when fw (str "FILTER (" (where-clause fw) ")")))
+
+(defn partition-by-clause [part-by]
+  (when part-by
+    (str "PARTITION BY "
+         (string/join ", " (map expr-to-sql (as-coll part-by))))))
+
+(defn bound-to-sql [bound]
+  (cond
+    (nil? bound) nil
+    (:preceding bound) (str (expr-to-sql (:preceding bound)) " PRECEDING")
+    (:following bound) (str (expr-to-sql (:following bound)) " FOLLOWING")
+    :else (normalize-fn-or-op bound)))
+
+(defn frame-to-sql [{:keys [frame bound lo-bound hi-bound exclude] :as f}]
+  (when frame
+    (let [frame (string/upper-case (name frame))
+          lo (bound-to-sql lo-bound)
+          hi (bound-to-sql hi-bound)
+          bound (bound-to-sql bound)
+          ex (when exclude (str "EXCLUDE " (normalize-fn-or-op exclude)))
+          bound (if (and lo hi) (str "BETWEEN " lo " AND " hi) bound)]
+      (join-by-space [frame bound ex]))))
+
+(defn windef-to-sql [{:keys [base-win partition-by order-by] :as w}]
+  (if (raw? w)
+    (expr-to-sql w)
+    (let [base-win (when base-win (name base-win))
+          pb (partition-by-clause partition-by)
+          ob (order-by-clause order-by)
+          fr (frame-to-sql w)]
+      (join-by-space [base-win pb ob fr]))))
+
+(defn win-to-sql [{:keys [win as] :as w}]
+  (if (raw? w)
+    (expr-to-sql w)
+    (str (name win) " AS " (in-parens (windef-to-sql as)))))
+
+(defn window-clause [{:keys [wins] :as w}]
+  (when w
+    (str "WINDOW " (join-by-comma (map win-to-sql wins)))))
+
 (defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
 (defn offset-clause [o] (when o (str "OFFSET " (expr-to-sql o))))
 

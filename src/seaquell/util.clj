@@ -10,6 +10,8 @@
 
 (defn fields? [x] (and (map? x) (= (keys x) [:fields])))
 
+(defn windef? [w] (and (map? w) (contains? w :base-win)))
+
 (defn sql-stmt?
   ([x] (:sql-stmt x))
   ([stmt-type x] (= (:sql-stmt x) stmt-type)))
