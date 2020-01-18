@@ -45,13 +45,17 @@
   (let [as? #(= :as %)]
     ;(println "wif " m a1 a2 a3 a4 a5)
     (cond
-      (nil? a1) {:with m}
+      (empty? xs) {:with m}
       (and (:sql-stmt a1) (nil? a2))
       (merge a1 {:with m})
       (:cte a1) (recur (conj-in m [:ctes] a1) (rest xs))
+      ; (cte :tbl (as :t))
       (alias? a2) (recur (conj-in m [:ctes] (cte a1 a2)) (drop 2 xs))
+      ; (cte :tbl :as :t) or (cte :tbl [:c1 :c2] (as :t))
       (or (as? a2) (alias? a3)) (recur (conj-in m [:ctes] (cte a1 a2 a3)) (drop 3 xs))
+      ; (cte :tbl [:c1 :c2] :as :t) or (cte :tbl :columns [:c1 :c2] (as :t))
       (or (as? a3) (alias? a4)) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4)) (drop 4 xs))
+      ; (cte :tbl :columns [:c1 :c2] as :t)
       (as? a4) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4 a5)) (drop 5 xs))
       :else (throw (RuntimeException. "Illegal with clause")))))
 
