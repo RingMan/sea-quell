@@ -238,3 +238,18 @@
 
 (fact (limit -lim-) => {:limit -lim-})
 (fact (limit -off- -lim-) => {:limit -lim- :offset -off-})
+
+;;; Fragments
+
+(fact
+  "cte fn lets you define common table entities with or without column names"
+  (let [cte-no-cols {:cte -tbl- :as -q-}
+        cte-with-cols {:cte -tbl- :columns [-c1- -c2-] :as -q-}]
+    (cte -tbl- (as -q-)) => cte-no-cols
+    (cte -tbl- :as -q-) => cte-no-cols
+    (cte -tbl- (columns -c1- -c2-) (as -q-)) => cte-with-cols
+    (cte -tbl- (columns -c1- -c2-) :as -q-) => cte-with-cols
+    (cte -tbl- :columns [-c1- -c2-] (as -q-)) => cte-with-cols
+    (cte -tbl- :columns [-c1- -c2-] :as -q-) => cte-with-cols
+    (cte -tbl- [-c1- -c2-] (as -q-)) => cte-with-cols
+    (cte -tbl- [-c1- -c2-] :as -q-) => cte-with-cols))
