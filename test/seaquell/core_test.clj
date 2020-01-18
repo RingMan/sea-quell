@@ -1,7 +1,8 @@
 (ns seaquell.core-test
   (:refer-clojure :exclude [update])
   (:use midje.sweet
-        seaquell.core))
+        seaquell.core)
+  (:require [seaquell.util :refer [select?]]))
 
 (fact (select :fld) => {:sql-stmt :select :fields -fs-}
       (provided (fields* [] [:fld]) => -fs-))

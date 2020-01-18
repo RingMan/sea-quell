@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [update])
   (:require [diesel.core :refer :all])
   (:require [diesel.edit :refer :all])
-  (:require [seaquell [to-sql :as sql] [engine :as eng]]))
+  (:require [seaquell [util :refer :all] [to-sql :as sql] [engine :as eng]]))
 
 (def-props
   as binary having indexed-by modifier offset on op raw statement where window)
@@ -32,8 +32,6 @@
   {:fields (fields* [] fs)})
 
 (defn interval [ival units] {:interval ival :units units})
-
-(defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
 (defn cte [t & [cols & rem-body :as body]]
   (cond
@@ -104,14 +102,6 @@
 
 (defn using [& xs] {:using xs})
 
-(defn sql-stmt?
-  ([x] (:sql-stmt x))
-  ([stmt-type x] (= (:sql-stmt x) stmt-type)))
-
-(def select? (partial sql-stmt? :select))
-
-(defn fields? [x] (and (map? x) (= (keys x) [:fields])))
-
 (defn select [flds & body]
   (let [stmt (cond
                (sql-stmt? flds) flds
@@ -154,18 +144,6 @@
 
 ;;; Compound selects
 
-(def compound-select? (partial sql-stmt? :compound-select))
-
-(defn set-op? [set-op stmt]
-  (and (compound-select? stmt) (= (:set-op stmt) set-op)))
-
-(def union? (partial set-op? :union))
-(def union-all? (partial set-op? :union-all))
-(def intersect? (partial set-op? :intersect))
-(def intersect-all? (partial set-op? :intersect-all))
-(def except? (partial set-op? :except))
-(def except-all? (partial set-op? :except-all))
-
 (defn selects [& xs]
   {:selects (vec xs)})
 
@@ -192,8 +170,6 @@
 
 ;;; DELETE statement
 
-(def delete? (partial sql-stmt? :delete))
-
 (defn delete [stmt & body]
   (let [[stmt body] (cond
                       (sql-stmt? stmt) [stmt body]
@@ -205,8 +181,6 @@
 (def delete-from delete)
 
 ;;; INSERT statement
-
-(def insert? (partial sql-stmt? :insert))
 
 (defn insert [stmt & [cols & rem-body :as body]]
   (cond
@@ -257,8 +231,6 @@
 (def default-values defaults)
 
 ;;; UPDATE statement
-
-(def update? (partial sql-stmt? :update))
 
 (defn update [stmt & body]
   (let [[stmt body] (if (sql-stmt? stmt)
