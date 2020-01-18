@@ -1,6 +1,7 @@
 (ns seaquell.to-sql
   (:require [clojure.set :as set])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string])
+  (:require [seaquell.util :as u :refer [raw?]]))
 
 (defn delimit [l r x]
   (str l x r))
@@ -90,8 +91,6 @@
 (declare to-sql)
 
 (declare expr-to-sql expr-to-sql*)
-
-(defn raw? [x] (and (map? x) (= [:raw] (keys x))))
 
 (defn raw-to-sql [{:keys [raw]}]
   (if (keyword? raw) (name raw) (str raw)))

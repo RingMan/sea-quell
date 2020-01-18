@@ -1,5 +1,7 @@
 (ns seaquell.util)
 
+(defn raw? [x] (and (map? x) (= [:raw] (keys x))))
+
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
 (defn fields? [x] (and (map? x) (= (keys x) [:fields])))

@@ -1,5 +1,6 @@
 (ns seaquell.to-sql-test
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [seaquell.util :refer [raw?]])
   (:use midje.sweet
         seaquell.to-sql))
 
