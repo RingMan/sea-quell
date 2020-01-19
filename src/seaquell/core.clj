@@ -22,7 +22,7 @@
 
 (defn fields* [acc [f aka & rem-fs :as fs]]
   (cond
-    (nil? fs) acc
+    (empty? fs) acc
     (and (:as aka) (nil? (:field aka)))
     (recur (conj acc (field f (:as aka))) rem-fs)
     (= :as aka) (recur (conj acc (field f (first rem-fs))) (next rem-fs))
