@@ -383,8 +383,9 @@
 
 (defmethod to-sql :compound-select
   ([stmt] (to-sql stmt true))
-  ([{:keys [set-op selects order-by limit offset prepend-op?] :as stmt} semi?]
-  (let [set-op (to-sql-keywords set-op)
+  ([{:keys [set-op selects order-by limit offset prepend-op? with] :as stmt} semi?]
+  (let [with (with-clause with)
+        set-op (to-sql-keywords set-op)
         sep (if set-op (str " " set-op " ") " ")
         selects (if-not prepend-op?
                   (cons (first selects)
@@ -396,7 +397,7 @@
         limit (limit-clause limit)
         offset (offset-clause offset)
         semi (when semi? ";")]
-    (query-clauses [select-ops order-by limit offset] semi))))
+    (query-clauses [with select-ops order-by limit offset] semi))))
 
 (defmethod to-sql :delete
   ([{:keys [from where order-by limit offset with] :as stmt}]
