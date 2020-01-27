@@ -1,6 +1,7 @@
 (ns seaquell.engine
-  (:require [clojure.java.jdbc :as jdbc])
-  (:require [diesel.core :refer [def-props def-vec-props def-bool-props]]))
+  (:require [clojure.java.jdbc :as jdbc]
+            [diesel.core :refer [def-props def-vec-props def-bool-props]]
+            [seaquell.util :as u]))
 
 ;; Syntax for jdbc pass-thru options
 
@@ -24,7 +25,7 @@
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
-  (if (re-find #"^(?i)(select|values|explain) " sql-str)
+  (if (or (u/select? q) (u/compound-select? q) (re-find #"^(?i)(select|values|explain) " sql-str))
     (jdbc/query
       db (cons sql-str params)
       (select-keys q [:as-arrays? :identifiers :row-fn :result-set-fn]))

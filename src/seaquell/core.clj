@@ -309,7 +309,7 @@
         insert-or-fail insert-or-ignore replace-into insert-into
         update update-or-rollback update-or-abort update-or-replace
         update-or-fail update-or-ignore
-        value values
+        value values with
         explain explain-query-plan]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
