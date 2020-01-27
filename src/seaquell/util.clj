@@ -30,3 +30,10 @@
 (def except? (partial set-op? :except))
 (def except-all? (partial set-op? :except-all))
 
+;; Functions to convert binary blob to hex string
+
+(defn hexify [b] (Integer/toHexString (if (neg? b) (+ b 256) b)))
+
+(defn as-hex-string [^bytes bs]
+  (apply str (map #(hexify (aget bs %)) (range (alength bs)))))
+
