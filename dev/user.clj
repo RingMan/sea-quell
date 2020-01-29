@@ -28,6 +28,7 @@
             [seaquell.raw :as r]
             [seaquell.sqlite :as sq3 :refer [db-spec tables]]
             [seaquell.spec :as ss]
+            [seaquell.syntax :as syn]
             [seaquell.util :as u]))
 
 (def colors #{:black :white :red :green :blue :cyan :magenta :yellow})
