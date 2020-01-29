@@ -4,6 +4,8 @@
 
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
+(defn as? [x] (= :as x))
+
 (defn fields? [x] (and (map? x) (= (keys x) [:fields])))
 
 (defn sql-stmt?
