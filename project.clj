@@ -19,11 +19,9 @@
                                    [org.xerial/sqlite-jdbc "3.30.1"]]
                     ;:plugins [[lein-midje "3.2.2"]]
                     }
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
-             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}}
   :aliases {
             ;"test-all" ["with-profile" "dev,1.7:dev,1.8:dev,1.9" "midje"]
-            "test-all" ["with-profile" "test,1.7:test,1.8:test,1.9:test" "midje"]
-            "check-all" ["with-profile" "1.7:1.8:1.9:test" "check"]})
+            "test-all" ["with-profile" "test,1.9:test" "midje"]
+            "check-all" ["with-profile" "1.9:test" "check"]})
 

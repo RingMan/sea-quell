@@ -6,6 +6,7 @@
             [clojure.string :as str]
             [clojure.pprint :refer (pprint)]
             [clojure.repl :refer :all]
+            [clojure.spec.alpha :as s]
             [clojure.test :as test]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [integrant.repl :refer [clear go halt prep init reset reset-all]]
@@ -17,6 +18,7 @@
             [seaquell.core :refer :all]
             [seaquell.to-sql :as sql]
             [seaquell.engine :as eng :refer :all]
+            [seaquell.spec :as ss]
             [seaquell.util :as u]))
 
 (def q1 (select ['(avg Price) :as :AvgPrice '(count Price) :as :CntPrice] (from :cars)))
