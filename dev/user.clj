@@ -20,6 +20,7 @@
             [seaquell.core :refer :all]
             [seaquell.to-sql :as sql]
             [seaquell.engine :as eng :refer :all]
+            [seaquell.raw :as r]
             [seaquell.sqlite :as sq3 :refer [db-spec tables schema]]
             [seaquell.spec :as ss]
             [seaquell.util :as u]))
