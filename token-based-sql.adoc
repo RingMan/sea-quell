@@ -1,0 +1,201 @@
+= SQL as a Token Sequence
+
+Adding syntax is somewhat challenging. Sometimes it doesn't match very well
+with the original. Also, dialects are different and keep changing. That said,
+it's extremely useful to represent SQL as data and be able to manipulate it
+instead of some huge string.
+
+== DSL Syntax to DSL Data to AST to Puncuated AST to SQL String
+
+Since the AST is essentially linear, maybe with some nested parenthesized
+lists, transforming to a string should be dead easy. Parameterizing should
+also be easy, especially if it's clear what kind of token something is.
+
+Walking the DSL data structure to parameterize is much more challenging.
+
+== SQL String to AST to DSL syntax
+
+== Statement Sequence
+
+A statement sequence is just an ordered collection of statements (either
+vector or list). When rendered, statements are separated by a semi-colon and a
+new line.
+
+== Statements
+
+Statements can still be thought of as maps, where each key corresponds to a
+clause. Maps are easier to manipulate than vectors or lists.
+
+But for rendering, need to know allowable order of clauses.
+
+For select it might be
+ [:select :from :where :group-by :having :window :order-by :limit :offset]
+
+Each clause can just be a sequence of tokens
+
+== Clauses
+
+== Punctuation
+
+Could use keywords or characters to represent punctuation. Although commas may
+need to be a character since it can't be used as a keyword or symbol literal.
+
+ [:references :foreign-tbl \( :c1 \, :c2 \, :c3 \, \)]
+ [:references :foreign-tbl :( :c1 \, :c2 \, :c3 \, :)]
+
+From what I've seen parentheses, commas, and semi-colons seem to be the main
+punctuation.
+
+However, PostgreSQL also uses `:` for array slices, `[` and `]` for arrays. It
+also uses `::` for casting. And also `{` and `}` have been seen.
+
+== Identifiers and Keywords
+
+Some tokens represent SQL keywords. Others represent identifiers like schema,
+table, index, or field names or aliases.
+
+Some possible strategies:
+
+=== Use Capitalization
+
+ * capitalize all keywords
+ * use lower case for identifiers
+ * reads pretty well
+ * harder to type
+
+ [:SELECT :* :FROM :tbl :WHERE :x < 3]
+ '[SELECT * FROM tbl WHERE x < 3]
+ [:BeginTransaction]
+ [:RollbackTransactionToSavepoint :my-save-point]
+ [:RollbackTransactionToSavepoint :my-save-point]
+
+=== Supply a Set of Keywords
+
+Use a lookup set to determine if something is a keyword or an identifier.
+Would need a way of overriding this.
+
+=== Rendering Identifiers and Keywords
+
+Add methods to renderer to format keywords and identifiers. Keywords likely
+only need changes in capitalization. Although, splitting words on hyphens,
+underscores, or camel case may be needed as well.
+
+For identifiers, may need to convert illegal characters (hyphens to
+underscores, for example).
+
+== Quoting
+
+Introduce a renderer protocol. Add methods to protocol for quoting an
+identifier, or quoting a string.
+
+== Tokens
+
+ * keyword
+  ** :k/distinct ;k for keyword
+  ** :s/group-by ;s for sql
+  ** :insert ;look up in keyword set
+ * identifier
+  ** :myTbl ;unquoted identifier; assume user wants it that way
+  ** :id/update ;a keyword that user wants to use as an identifier
+  ** :t/table
+  ** :f/field
+  ** :c/column
+  ** :r/result
+  ** :w/window-name
+  ** :q/query-name
+  ** :v/view-name
+  ** :t/trigger-name (are they named?)
+  ** :ix/index-name
+  ** :fn/function-name (sql or user-defined or both?)
+ * punctuation
+  ** left paren, right paren, comma
+ * operator
+  ** quoted symbol (e.g., '+)
+  ** unquoted symbol (e.g., <)
+  ** keyword (e.g., :||)
+  ** namespaced keyword (e.g., :op/operator)
+ * literal
+  ** string
+  ** number
+  ** blob
+  ** true, false, nil
+  ** CURRENT_TIME, CURRENT_DATE, CURRENT_TIMESTAMP
+ * comment
+
+ [:alter :table :schema.tbl :rename :to :new-tbl]
+ (-- this is a comment)
+
+== Some Thoughts
+
+A vector represents a sequence of SQL elements. A list indicates a
+parenthesized list of SQL elements. Also need a way to indicate whether the
+elements in a list are separated by commas.
+
+Nested vectors are effectively flattened or linearized. A vector represents
+either a sequence of SQL tokens or elements, a call to a SQL function, or the
+application of an operator to one or more operands. Hmm, not so sure about the
+last two.
+
+A SQL function call looks just a Clojure function call. Except it's wrapped in
+a vector and the elements are keywords or quoted symbols.
+
+== Metadata, ANSI sequences, Formatting, Comments
+
+It would be nice if the SQL stream could accomodate all the elements from the
+title. Metadata, ANSI sequences, and comments could all be maps with a special
+key or tag to indicate their purpose. Metadata could mark the beginning of
+statements and clauses and such. ANSI sequences could be used for pretty
+printing a SQL token stream. Comments could be rendered or skipped. Character
+literals could be used for formatting, including use of tabs and newlines or
+even spaces between elements. The formatting characters could be placed based
+on the metadata markers. Anyway, rendering this would be very literal.
+Characters would render exactly. Each other type of element would be passed to
+a handler fn that returns a string.
+
+== Config vs Protocol
+
+I think the actual algorithm for rendering may not be so different across
+dialects. A lot can be controlled via configuration. For example, provide a
+set of SQL keywords, a set of SQL function names, a set of unary operators and
+binary operators.
+
+== Duality Between Vectors and Maps
+
+SQL is very linear. The first keyword indicates what kind of statement.
+Clauses must occur in a particular order. For raw SQL vectors and lists seem
+to make the most sense. IMO, however, nested vectors are more difficult to
+manipulate programmatically. You can make a path to deeply nested elements,
+but only by numeric index, which is sensitive to reordering. Paths to values
+in maps are much easier to read and write and don't suffer from reordering.
+They're mostly sensitive to changing the names of keys or the structure of the
+map.
+
+You can encode raw SQL in such a way as to be convertible to a map. Each
+nested vector represents a clause. The first symbol in the nested vector
+becomes the key. The rest of the vector becomes the value.
+
+== Opinions About SQL from Clojure
+
+Many Clojure applications are for back-end web applications that talk to
+databases. When SQL is used to query those databases, it's my strong
+preference to write the SQL from inside Clojure. I really like how nice it is
+to build up and modify data structures with a well-chosen data spec and set of
+functions. What I also really like is the idea of having a dialect agnostic
+way of generating SQL. In this case, the author knows what dialect they're
+targeting.
+
+Writing a custom DSL is hard enough with just one dialect. Dialects change and
+grow over time. It's next to impossible to attain full coverage of all the
+quirks, bells and whistles offered by every vendor.
+
+ * Let me use DSL for the core bread and butter stuff. I just like how it
+   reads and how easy it is to work with.
+ * Let me extend your DSL with new statements and clauses
+ * Let me extend an existing statement to insert new clauses
+ * Let me freely mix map-based SQL and vector-based SQL.
+ * I should be able to create any valid SQL statement for any dialect
+ * I don't expect the library to transform 'generic' SQL into a dialect
+ * I want full control over how it renders: how identifiers and keywords are
+   tranformed, whether and how things are quoted, etc.
+ * It should be easy to use if you already know SQL
+
