@@ -6,6 +6,8 @@
 
 (defn as? [x] (= :as x))
 
+(defn field? [x] (and (map? x) (contains? x :field)))
+
 (defn fields? [x] (and (map? x) (= (keys x) [:fields])))
 
 (defn sql-stmt?

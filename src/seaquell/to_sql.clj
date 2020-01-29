@@ -1,7 +1,7 @@
 (ns seaquell.to-sql
   (:require [clojure.set :as set])
   (:require [clojure.string :as string])
-  (:require [seaquell.util :as u :refer [raw?]]))
+  (:require [seaquell.util :as u :refer [field? raw?]]))
 
 (defn delimit [l r x]
   (str l x r))
@@ -255,7 +255,7 @@
 
 (defn field-to-sql [x]
   ;(println (format "field-to-sql called with %s" x))
-  (if (:field x)
+  (if (field? x)
     (let [{:keys [field as]} x
           as (alias-to-sql as)
           field (expr-to-sql field)]

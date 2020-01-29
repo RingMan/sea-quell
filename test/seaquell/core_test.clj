@@ -14,9 +14,11 @@
 
 (facts
   (field -f-) => {:field -f-}
-  (field -f- -as-) => {:field -f- :as -as-}
+  (field -f- (as -as-)) => {:field -f- :as -as-}
   (field -f- :as -as-) => {:field -f- :as -as-}
-  (field -f- :bad-as -as-) => (throws AssertionError))
+  (field (field nil)) => {:field nil}
+  (field (field false)) => {:field false}
+  (field (field -f-)) => {:field -f-})
 
 (facts
   (fields) => {:fields []}

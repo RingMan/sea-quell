@@ -12,20 +12,16 @@
 (def set-flds set-cols)
 (def-vec-props columns)
 
-(defn field
-  ([f as aka]
-   (assert (= :as as))
-   (field f aka))
-  ([f aka] (merge {:field (or (:field f) f)}
-                  (when aka {:as (or (:as aka) aka)})))
-  ([f] (field f nil)))
+(defn field [f & more]
+  (if (field? f)
+    (mk-map* f more)
+    (mk-map* {:field f} more)))
 
 (defn fields* [acc [f aka & rem-fs :as fs]]
   (cond
     (empty? fs) acc
-    (and (:as aka) (nil? (:field aka)))
-    (recur (conj acc (field f (:as aka))) rem-fs)
-    (= :as aka) (recur (conj acc (field f (first rem-fs))) (next rem-fs))
+    (alias? aka) (recur (conj acc (field f aka)) rem-fs)
+    (as? aka) (recur (conj acc (field f :as (first rem-fs))) (next rem-fs))
     :else (recur (conj acc f) (next fs))))
 
 (defn fields [& fs]
