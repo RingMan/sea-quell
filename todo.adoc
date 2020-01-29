@@ -1,0 +1,194 @@
+= Seaquell To Do
+
+There are some fairly powerful abilities but I don't remember them when too
+much time goes by. In general, show more examples and write more tests to show
+the usage.
+
+== Grab db and params from statement for explain
+
+When `explain!` is executed, use `db` and `params` from the target statement as
+defaults to improve usability in REPL sessions.
+
+Make sure to document and/or show tests/examples that use the defaults
+
+== Show use of with clause inside call to select
+
+ (select ... (with ...))
+
+== Fix exec fn (done)
+
+ * for select and compound-select queries containing a with clause (done)
+ * add tests demonstrating WITH clause and compound selects
+ * add tests demonstrating with$
+ * add tests demonstrating with! and mixing in `db` and `params` to the final
+   select
+ * add tests with union!, intersect!, etc and mixing in `db` and `params`.
+
+== Boolean TRUE, FALSE
+
+Check if TRUE and FALSE aliases are supported by DSL.
+
+== Goals
+
+The overall goal is to provide complete coverage for sqlite. However, there is
+a progression:
+
+ * SELECT
+  ** Window functions
+  ** Row values
+  ** Full ORDER BY support
+ * INSERT, UPDATE, DELETE
+ * UPSERT
+ * EXPLAIN, EXPLAIN QUERY PLAN
+ * ATTACH, DETACH
+ * CREATE, ALTER TABLE, DROP
+ * Transactions
+ * Other
+
+Other databases:
+
+ * PostgreSQL
+ * MySQL
+ * MariaDB
+ * Microsoft SQL Server
+ * Microsoft Access
+ * Oracle
+ * DB2
+ * H2
+ * etc
+
+=== Fill in SQLite Gaps
+
+Support the features listed in https://sqlite.org/omitted.html
+
+ * RIGHT and FULL OUTER JOIN
+ * Complete ALTER TABLE support
+ * Complete TRIGGER support
+ * Writing to VIEWs (if it needs any extra syntax)
+ * GRANT and REVOKE
+
+== UPSERT Statement
+
+The UPDATE part is a subset of the regular UPDATE statement. Change how the
+function processes its first argument. Allow :source to be nil.
+
+== Use clojure.spec to document and validate data structures
+
+Write a function spec for exec fn in engine
+
+Use multi-spec for statements
+
+== Raw SQL
+
+When using maps to represent entities, it's most challenging to try and insert
+raw SQL between clauses.
+
+ * Use tests to show usage and coverage of `raw`
+ * Integrate experimental raw sql vectors
+
+It is a goal of this project to provide DSL syntax to express any SQLite
+SELECT, INSERT, UPDATE, or DELETE statement.
+
+The EXPLAIN statements also have DSL support.
+
+Statements that are simple will likely have eventual DSL support. However, for
+more complicated statements, it isn't always clear what clauses it would have
+and how to define syntax for those. I envision that each statement will have a
+corresponding function to create it, but much of the SQL "body" will be
+espressed using raw SQL.
+
+It is also a goal to allow users to create any SQL statement of any dialect
+without having to resort to strings as a last resort.
+
+== Full Coverage Examples and Tests
+
+For each supported construct, want enough tests and examples to provide 100%
+coverage of the syntax diagrams. This is immensely useful
+
+Make sure there are good examples on compound-select. I really like the DSL,
+but it's not obvious how to use it at first.  Once you see examples, however,
+the syntax makes a lot of sense and feels very natural.
+
+With clauses also deserve special attention. There are already two insane
+examples, but could also use some simpler ones.
+
+Window functions will also need plenty of coverage.
+
+Same is true for expressions, provide examples of every possible type. Cover
+the whole syntax tree.
+
+== Explain Statement Creation, Rendering, Execution Trilogy
+
+Make it very clear about select, select$, select! variations of each
+statement.
+
+Also show use of to-sql, do-sql, sql$, and sql!.
+
+Show use of db and params and how they can live in a query definition or be
+tacked on easily later.
+
+Should there be with$ and with! as well? I think maybe so.  Anything that
+could act as a top-level SQL command.
+
+Show or explain use of pass-through options to jdbc.
+
+ * Use of db
+ * Use of params
+ * Use of :row-fn :result-set-fn and other opts passed to jdbc
+
+
+== Show Value and Values Examples
+
+Make it clear that it can be used as a top-level select statement. In
+particular, show use of `value` with the :-- option to set the db:
+
+ (value! 1 2 3 :-- (db conn))
+ (value! 1 2 :? :-- (db conn) (params 3))
+ (values! [1 2] [3 4] (db conn))
+
+ (sql! (value 1 2 3) (db conn))
+ (sql! (value 1 2 :?) (db conn) (params 3))
+ (sql! (values [1 2] [3 4]) (db conn))
+
+== Show How to use Row Values
+
+Show examples of using row values based on https://sqlite.org/rowvalue.html
+
+Row values are usable in update statements, but they have to be wrapped in a
+map because set-cols uses mk-map* under the hood.
+
+This doesn't work:
+
+ (set-cols [val :x :y] [val 1 2])
+
+This does:
+
+ (set-cols {[val :x :y] [val 1 2]})
+
+== Add Help in REPL
+
+Perhaps add help fn that lists groups of fns for certain things.
+
+ user> (help) ; give help on help
+ user> (help :statements) ; give help on statements in general
+ user> (help :select-core) ; give help on core select as defined by sqlite
+ user> (help :compound-select) ; give help on compound select usage
+ user> (help :select) ; give help on a particular statement
+ user> (help :fields) ; give help on selecting fields
+ user> (help :expressions) ; give help on defining expressions
+ user> (help :literals) ; give help on literals in expressions
+ user> (help :parameters) ; give help on defining expressions
+ user> (help :join) ; give help on joins
+ user> (help :with) ; give help on with
+ user> (help :window) ; give help on window functions
+ user> (help :predicates) ;show available predicate fns
+ user> (help :edit) ;show available edit fns
+ user> (help :transactions) ;show available edit fns
+ user> (help :exec) ;how to execute queries with and without results
+ user> (help :render) ;how to render queries to a SQL string
+ user> (help :ast :<some-construct>) ;describe spec for some SQL construct
+
+== Convert to jdbc.next
+
+Probably want to do this or provide execution protocols to use either the
+original or the next seamlessly.
