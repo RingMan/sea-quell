@@ -157,9 +157,7 @@
 
 ;;; Frame spec stuf
 
-(def-props kind lo-bound hi-bound exclude)
-
-(defn frame [f] {:frame f})
+(def-props frame lo-bound hi-bound exclude)
 
 (defn unbounded [x]
   {:bound ({:following :unbounded-following,
