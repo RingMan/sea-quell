@@ -152,19 +152,18 @@
       (provided (order-item? -expr-) => false)
       (provided (expr-to-sql -expr-) => "expr"))
 
-(fact (order-item {:expr [-expr-]}) => ["expr"]
-      (provided (order-item? {:expr [-expr-]}) => true)
+(fact (order-item {:expr -expr-}) => "expr"
+      (provided (order-item? {:expr -expr-}) => true)
       (provided (expr-to-sql -expr-) => "expr"))
 
-(fact (order-item {:expr [-ex1- -ex2-]}) => ["ex1" "ex2"]
+#_(fact (order-item {:expr [-ex1- -ex2-]}) => ["ex1" "ex2"]
       (provided (order-item? {:expr [-ex1- -ex2-]}) => true)
       (provided (expr-to-sql -ex1-) => "ex1")
       (provided (expr-to-sql -ex2-) => "ex2"))
 
-(fact (order-item {:expr [-ex1- -ex2-] :order :asc}) => ["ex1 ASC" "ex2 ASC"]
-      (provided (order-item? {:expr [-ex1- -ex2-] :order :asc}) => true)
-      (provided (expr-to-sql -ex1-) => "ex1")
-      (provided (expr-to-sql -ex2-) => "ex2"))
+(fact (order-item {:expr -expr- :order :asc}) => "expr ASC"
+      (provided (order-item? {:expr -expr- :order :asc}) => true)
+      (provided (expr-to-sql -expr-) => "expr"))
 
 (facts (expr-to-sql* -prec- nil) => "NULL"
        (expr-to-sql* -prec- 78) => "78"

@@ -230,17 +230,23 @@
    nil "" })
 
 (def order-map
-  {:asc " ASC"
-   :desc " DESC"
-   nil "" })
+  {:asc "ASC"
+   :desc "DESC"
+   nil nil})
 
 (defn order-item? [x] (:expr x))
 
 (defn order-item [x]
   (if (order-item? x)
-    (let [{:keys [expr order]} x
-          order (order-map order)]
-      (map #(str (expr-to-sql %) order) expr))
+    (let [{:keys [expr order collate nulls]} x
+          expr (expr-to-sql expr)
+          order (order-map order)
+          collate (when collate (str "COLLATE " (expr-to-sql collate)))
+          nulls (condp = nulls
+                  :first "NULLS FIRST"
+                  :last "NULLS LAST"
+                  nil)]
+      (join-by-space [expr collate order nulls]))
     (expr-to-sql x)))
 
 (defn order-by-clause [xs]

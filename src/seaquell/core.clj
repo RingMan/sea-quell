@@ -183,18 +183,18 @@
 (defn order-by [& xs]
   {:order-by xs})
 
-(def-entity-maps {:id :order-term} order-term)
+(def-entity-maps {:id :expr} order-term)
 (def-props collate nulls order)
 (def ASC {:order :asc})
 (def DESC {:order :desc})
 (def NULLS-FIRST {:nulls :first})
 (def NULLS-LAST {:nulls :last})
 
-(defn asc [& xs]
-  {:order :asc :expr xs})
+(defn asc [x]
+  {:order :asc :expr x})
 
-(defn desc [& xs]
-  {:order :desc :expr xs})
+(defn desc [x]
+  {:order :desc :expr x})
 
 ;;; LIMIT clause
 
