@@ -5,9 +5,9 @@
 
 ;; Syntax for jdbc pass-thru options
 
-(def-bool-props as-arrays? transaction? multi?)
+(def-bool-props as-arrays? keywordize? transaction? multi?)
 
-(def-props identifiers row-fn result-set-fn)
+(def-props identifiers qualifier row-fn result-set-fn)
 
 (defn id-fn [f] {:identifiers f})
 
@@ -21,14 +21,14 @@
   And one optional key:
     :params - Parameters to pass to jdbc
   The following are passed directly to jdbc/query or jdbc/execute!, respectively:
-    :as-arrays? :identifiers :row-fn :result-set-fn
+    :as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
   (if (or (u/select? q) (u/compound-select? q) (re-find #"^(?i)(select|values|explain) " sql-str))
     (jdbc/query
       db (cons sql-str params)
-      (select-keys q [:as-arrays? :identifiers :row-fn :result-set-fn]))
+      (select-keys q [:as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn]))
     (jdbc/execute!
       db (vec (cons sql-str params))
       (select-keys q [:multi? :transaction?]))))
