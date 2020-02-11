@@ -322,16 +322,17 @@
 
 ;;; Convert to string and execute
 
-(def to-sql sql/to-sql)
+(defn to-sql [stmt & body]
+  (sql/to-sql (mk-map* stmt body)))
 
 (defn do-sql [stmt & body]
   {:pre [(or (string? stmt) (sql-stmt? stmt) (:values stmt))]}
   (let [m (if (string? stmt)
-            {:sql-str stmt}
-            (assoc stmt :sql-str (to-sql stmt)))]
-    (eng/exec (mk-map* m body))))
+            (mk-map* {:sql-str stmt} body)
+            (edit stmt body #(assoc % :sql-str (sql/to-sql %))))]
+    (eng/exec m)))
 
-(def sql$ sql/to-sql)
+(def sql$ to-sql)
 (def sql! do-sql)
 
 ;; Syntax to support query execution
@@ -346,7 +347,7 @@
   (cons 'do
         (for [sym syms]
           `(defn ~(symbol (str (name sym) "$")) [& body#]
-             (to-sql (apply ~sym body#))))))
+             (sql/to-sql (apply ~sym body#))))))
 
 (defmacro mk-exec-fns [syms]
   (cons 'do
