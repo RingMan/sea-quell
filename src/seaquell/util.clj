@@ -38,7 +38,9 @@
 
 ;; Functions to convert binary blob to hex string
 
-(defn hexify [b] (Integer/toHexString (if (neg? b) (+ b 256) b)))
+(defn hexify [b]
+  (let [x (Integer/toHexString (if (neg? b) (+ b 256) b))]
+    (if (< (count x) 2) (str "0" x) x)))
 
 (defn as-hex-string [^bytes bs]
   (apply str (map #(hexify (aget bs %)) (range (alength bs)))))
