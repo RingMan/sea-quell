@@ -12,6 +12,7 @@
             [midje.repl :refer [autotest]]
             [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map mk-map* edit] :as dsl]
+            [diesel.edit :as ed]
             #_[seaquell.core :refer :all :rename {update sql-update}]
             [seaquell.core :refer :all]
             [seaquell.to-sql :as sql]
