@@ -22,12 +22,12 @@
 (def q3
   (select [:id :name]
           (from :stops :route)
-          (where {:id :stop, :company "LRT", :num 4})))
+          (where {:id :stop, :company "LRT", :num "4"})))
 
 (def q3-b
   (select [:id :name]
           (from :route (join :stops (on {:id :stop})))
-          (where {:company "LRT", :num 4})))
+          (where {:company "LRT", :num "4"})))
 
 (def q4 (select [:company :num [count :*]]
                 (from :route)
@@ -51,7 +51,7 @@
     (where {:stopa.name "Craiglockhart", :stopb.name "London Road"})))
 
 (def q7
-  (select
+  (select-distinct
     [:R1.company :R1.num]
     (from :route (as :R1)
           (comma-join :route (as :R2)))
@@ -61,7 +61,7 @@
             :R2.stop 137})))
 
 (def q7-b
-  (select
+  (select-distinct
     [:R1.company :R1.num]
     (from :route (as :R1)
           (join :route (as :R2) (on {:R1.num :R2.num
@@ -91,7 +91,7 @@
                   :S2.name "Tollcross"})))
 
 (def q9
-  (select [:S2.id :S2.name :R2.company :R2.num]
+  (select [:S2.name :R2.company :R2.num]
           (from :stops :as :S1
                 (comma-join :stops :as :S2)
                 (comma-join :route :as :R1)
@@ -102,7 +102,7 @@
                   :R2.stop :S2.id})))
 
 (def q9-b
-  (select [:S2.id :S2.name :R2.company :R2.num]
+  (select [:S2.name :R2.company :R2.num]
           (from :route :as :R1
                 (join :route :as :R2 (on {:R1.company :R2.company
                                           :R1.num :R2.num }))
