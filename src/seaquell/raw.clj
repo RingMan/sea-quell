@@ -17,10 +17,108 @@
 
 (s/def ::sql (s/coll-of ::sql-elem))
 
+(s/def ::delim (s/or :nil nil? :ch char? :str string?))
+
+(s/def ::delim-pair (s/or :one ::delim :two (s/cat :left ::delim :right ::delim)))
+
+(s/def ::coll-delim ::delim-pair)
+
+(s/def ::coll-sep ::delim)
+
+(s/def ::elem-delim ::delim-pair)
+
+(s/def ::elem-sep ::delim)
+
+(s/def ::eol ::delim)
+
+(s/def ::arity (s/or :nil nil? :int integer?))
+
+(s/def ::coll (s/keys :opt-un [::arity ::coll-delim ::coll-sep ::elem-delim ::elem-sep ::eol]))
+
+(declare ->sql)
+
+;;idea: if one of these maps appears at beginning of vector use it to format
+;;the contents
+;;each vector introduces a new formatting scope
+;;these maps are like compiler directives
+;;could push and pop formatting
+
+(def cs
+  "comma separated"
+  {:separator \,})
+
+(def vv
+  "vector of vectors"
+  {:coll-delim [\[ \]]
+   :elem-delim [\[ \]]
+   :separator ", "})
+
+(def ll
+  "list of lists"
+  {:coll-delim [\( \)]
+   :elem-delim [\( \)]
+   :separator ", "})
+
+(def lv
+  "list of vectors"
+  {:coll-delim [\( \)]
+   :elem-delim [\[ \]]
+   :separator ", "})
+
+(def vl
+  "vector of lists"
+  {:coll-delim [\[ \]]
+   :elem-delim [\( \)]
+   :separator ", "})
+
+(def bb
+  "brace of braces"
+  {:coll-delim [\{ \}]
+   :elem-delim [\{ \}]
+   :separator ", "})
+
+(defn coll* [{:keys [arity coll-delim elem-delim separator]
+              :or {separator \,}} xs]
+
+  ;partition according to arity
+  ;map over each
+  ;for each elem in xs, call ->sql then wrap in delims
+  ;join result using elem-delim
+  ;wrap in coll-delim
+  )
+
+(defn coll [opt & xs]
+  (coll* opt xs))
+
 (defprotocol RawSqlCompiler
   "Protocol for compiling sequences of raw SQL tokens"
   (sqlize [this s] "Compiles the SQL entities in `s` to a string")
   (baz [a] [a b] "baz docs"))
+
+(defn dehyphenize [x]
+  (let [xs (-> x name str/lower-case (str/split #"-"))]
+    (->> xs (map keyword) vec)))
+
+(def sqlite-stmts
+  #{:alter-table :analyze :attach :attach-database :begin :begin-deferred-transaction
+    :begin-exclusive-transaction :begin-immediate-transaction
+    :begin-transaction
+    :commit :commit-transaction :create :create-index :create-unique-index
+    :create-table :create-trigger :create-view :create-virtual-table :delete
+    :detach :drop-index :drop-table :drop-trigger :drop-view :end
+    :end-transaction :insert :insert-into :insert-or-abort :insert-or-abort-into
+    :insert-or-fail :insert-or-fail-into :insert-or-ignore :insert-or-ignore-into
+    :insert-or-replace :insert-or-replace-into :insert-or-rollback :insert-or-rollback-into
+    :pragma
+    :reindex :release :replace :replace-into :rollback :rollback-to :rollback-to-savepoint
+    :rollback-transaction :rollback-transactio-to
+    :rollback-transaction-to-savepoint :savepoint :select :update :vacuum})
+
+(def sqlite-clause-kws
+  #{:from :where :group-by :having :order-by :limit :offset})
+
+(def sqlite-stmt-kws
+  (->> sqlite-stmts (mapcat dehyphenize) set))
 
 (def sqlite-kws
   #{:abort :action :add :after :all :alter :always :analyze :and :as :asc :attach
@@ -61,6 +159,15 @@
 
 (defn as-name [x]
   (if (fn? x) (fn->sym x) x))
+
+(defn sql-stmt? [f]
+  (when (or (keyword? f) (symbol? f))
+    (-> f name str/lower-case keyword sqlite-stmts)))
+
+(defn sql->map [xs]
+  {:pre [(and (vector? xs) (sql-stmt? (first xs)))]}
+  ;if an element is a vector whose first element represents a clause
+  {})
 
 (defn sql-kw? [f]
   (let [f (as-name f)]
@@ -128,8 +235,6 @@
 
 (defn values [n & xs]
   (values* n xs))
-
-(declare ->sql)
 
 (defn array* [n xs]
   {:pre [(= 0 (mod (count xs) n))]}
