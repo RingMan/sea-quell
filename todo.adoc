@@ -4,6 +4,28 @@ There are some fairly powerful abilities but I don't remember them when too
 much time goes by. In general, show more examples and write more tests to show
 the usage.
 
+== NOW!
+
+ * Integrate experimental raw sql vectors
+   ** Let it be arg of `raw` function
+   ** Pass it to `sql!` function as a vector
+
+== upsert
+
+ * perhaps add core tests for the on-conflict clause
+ * perhaps add rendering tests for the on-conflict clause in upsert-test
+
+== the dev branch
+
+ * master branch
+  ** include sql zoo stuff
+  ** include order term stuff
+ * dev branch
+  ** syntax stuff
+  ** raw stuff
+  ** upsert stuff
+  ** notes
+
 == Grab db and params from statement for explain
 
 When `explain!` is executed, use `db` and `params` from the target statement as
