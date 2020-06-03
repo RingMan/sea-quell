@@ -327,16 +327,17 @@
 
 (fact
   (let [stmt {:sql-stmt :insert :with -wi- :into -src- :op -op-
-              :columns -cs- :values -vs-}]
+              :as -as- :columns -cs- :values -vs-}]
     (to-sql stmt)
       => ...sql...
       (provided
         (with-clause -wi-) => -wic-
         (to-sql-keywords -op-) => "INSERT"
         (expr-to-sql -src-) => "src"
+        (alias-to-sql -as-) => -as-
         (columns-to-sql -cs-) => -cols-
         (values-to-sql -vs-) => -vals-
-        (query-clauses [-wic- "INSERT INTO src" -cols- -vals-] ";")
+        (query-clauses [-wic- "INSERT INTO src" -as- -cols- -vals-] ";")
         => ...sql...)))
 
 (fact
