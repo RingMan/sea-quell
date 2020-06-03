@@ -3,6 +3,18 @@
 
 (s/def ::sql-stmt keyword?)
 
+; predefined SQLite collating sequences for strings
+(s/def ::collate #{:binary :nocase :rtrim})
+
+(s/def ::order #{:asc :desc})
+
+(s/def ::nulls #{:first :last})
+
+(s/def ::order-term
+  (s/keys :req-un [::expr] :opt-un [::collate ::order ::nulls]))
+
+(s/def ::order-by (s/coll-of ::order-term))
+
 (defmulti sql-stmt-type :sql-stmt)
 
 (defmethod sql-stmt-type :select [_]

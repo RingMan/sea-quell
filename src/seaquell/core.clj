@@ -181,7 +181,7 @@
 ;;; ORDER BY clause
 
 (defn order-by [& xs]
-  {:order-by xs})
+  {:order-by (vec xs)})
 
 (def-entity-maps {:id :expr} order-term)
 (def-props collate nulls order)
@@ -190,11 +190,11 @@
 (def NULLS-FIRST {:nulls :first})
 (def NULLS-LAST {:nulls :last})
 
-(defn asc [x]
-  {:order :asc :expr x})
+(defn asc [x & body]
+  (mk-map* {:order :asc :expr x} body))
 
-(defn desc [x]
-  {:order :desc :expr x})
+(defn desc [x & body]
+  (mk-map* {:order :desc :expr x} body))
 
 ;;; LIMIT clause
 

@@ -68,7 +68,9 @@
   (fact (to-sql (select q (order-by :id :passwd))) =>
         "SELECT * FROM user ORDER BY id, passwd;")
   (fact (to-sql (select q (order-by (asc :age) :id :passwd (desc :height)))) =>
-        "SELECT * FROM user ORDER BY age ASC, id, passwd, height DESC;"))
+        "SELECT * FROM user ORDER BY age ASC, id, passwd, height DESC;")
+  (fact (to-sql (select q (order-by (asc :id (collate :nocase) (nulls :first))))) =>
+        "SELECT * FROM user ORDER BY id COLLATE nocase ASC NULLS FIRST;"))
 
 (fact "seaquell supports primitive WHERE clause"
       (to-sql (select q (where [> :id 3]))) =>
