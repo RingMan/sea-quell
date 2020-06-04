@@ -45,5 +45,41 @@
   (win :w1 (as [windef args ...])) => {:wins {:win :w1 :as <windef>}}
   (win :w1 [windef args ...]) => {:wins {:win :w1 :as <windef>}}
   (win <windef> ...) => (mk-map* <windef> ...)
+
+  (insert-into
+    :tbl (values [1 2 3])
+    (on-conflict
+      (columns
+        (column :c1 (collate :col1) (order :asc))
+        (column :c2 (collate :col2) (order :desc))
+        :c3)
+      (where {:c1 [> :c2]})
+      (do-nothing)))
+
+  (insert-into
+    :tbl (values [1 2 3])
+    (on-conflict
+      [(column :c1 (collate :col1) (order :asc))
+       (column :c2 (collate :col2) (order :desc))
+       :c3]
+      (where {:c1 [> :c2]})
+      (do-nothing)))
+
+  (insert-into
+    :tbl (values [1 2 3])
+    (on-conflict
+      [[:c1 (collate :col1) (order :asc)]
+       [:c2 (collate :col2) (order :desc)]
+       :c3]
+      (where {:c1 [> :c2]})
+      (do-nothing)))
+
+  (insert-into
+    :tbl (values [1 2 3])
+    (on-conflict
+      ...
+      (do-update
+        (set-cols :c1 1 :c2 :excluded.c2)
+        (where ...))))
   )
 
