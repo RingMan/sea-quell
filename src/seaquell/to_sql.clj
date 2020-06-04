@@ -380,9 +380,18 @@
 (defn limit-clause [l] (when l (str "LIMIT " (expr-to-sql l))))
 (defn offset-clause [o] (when o (str "OFFSET " (expr-to-sql o))))
 
+(defn column-to-sql [col]
+  (if (:column col)
+    (let [{:keys [column order collate]} col
+          column (expr-to-sql column)
+          order (order-map order)
+          collate (when collate (str "COLLATE " (expr-to-sql collate)))]
+      (join-by-space [column collate order]))
+    (expr-to-sql col)))
+
 (defn columns-to-sql [cols]
   (when cols
-    (in-parens (string/join ", " (map expr-to-sql (as-coll cols))))))
+    (in-parens (string/join ", " (map column-to-sql (as-coll cols))))))
 
 (defn cte-to-sql [{:keys [cte columns as]}]
   (str (name cte) (columns-to-sql columns) " AS "
@@ -469,14 +478,31 @@
          offset (offset-clause offset)]
      (query-clauses [with delete where order-by limit offset] ";"))))
 
+(declare set-clause)
+
+(defn do-clause [{:keys [set-cols where] :as action}]
+  (if action
+    (let [set-cols (set-clause set-cols)
+          where (where-clause where)]
+      (query-clauses ["DO UPDATE" set-cols where] nil))
+    "DO NOTHING"))
+
+(defn on-conflict-clause [on-conflict]
+  (when-let [{action :do :keys [columns where]} on-conflict]
+    (let [columns (columns-to-sql columns)
+          where (where-clause where)
+          action (do-clause action)]
+      (query-clauses ["ON CONFLICT" columns where action] nil))))
+
 (defmethod to-sql :insert
-  ([{:keys [op into as columns values with] :as stmt}]
+  ([{:keys [op into as columns values on-conflict with] :as stmt}]
    (let [with (with-clause with)
          insert (str (to-sql-keywords op) " INTO " (expr-to-sql into))
          as (alias-to-sql as)
          columns (columns-to-sql columns)
-         values  (values-to-sql values)]
-     (query-clauses [with insert as columns values] ";"))))
+         values  (values-to-sql values)
+         on-conflict (on-conflict-clause on-conflict)]
+     (query-clauses [with insert as columns values on-conflict] ";"))))
 
 (defn set-clause [set-cols]
   (when set-cols

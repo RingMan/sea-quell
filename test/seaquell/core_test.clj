@@ -147,7 +147,8 @@
     (merge stmt {:values [[-a1- -a2-] [-b1- -b2-]]})
 
     (insert _tbl_ (columns -c1- -c2-) (values [-a1- -a2-] [-b1- -b2-])) =>
-    (merge stmt {:columns [-c1- -c2-] :values [[-a1- -a2-] [-b1- -b2-]]}))
+    (merge stmt {:columns [{:column -c1-} {:column -c2-}]
+                 :values [[-a1- -a2-] [-b1- -b2-]]}))
 
   (let [_tbl_ :_tbl_
         stmt {:sql-stmt :insert, :op :insert, :into _tbl_,
@@ -248,11 +249,13 @@
 (fact
   "cte fn lets you define common table entities with or without column names"
   (let [cte-no-cols {:cte -tbl- :as -q-}
-        cte-with-cols {:cte -tbl- :columns [-c1- -c2-] :as -q-}]
+        cte-with-cols {:cte -tbl- :columns [-c1- -c2-] :as -q-}
+        cte-with-col-maps {:cte -tbl- :columns [{:column -c1-} {:column -c2-}] :as -q-}
+        ]
     (cte -tbl- (as -q-)) => cte-no-cols
     (cte -tbl- :as -q-) => cte-no-cols
-    (cte -tbl- (columns -c1- -c2-) (as -q-)) => cte-with-cols
-    (cte -tbl- (columns -c1- -c2-) :as -q-) => cte-with-cols
+    (cte -tbl- (columns -c1- -c2-) (as -q-)) => cte-with-col-maps
+    (cte -tbl- (columns -c1- -c2-) :as -q-) => cte-with-col-maps
     (cte -tbl- :columns [-c1- -c2-] (as -q-)) => cte-with-cols
     (cte -tbl- :columns [-c1- -c2-] :as -q-) => cte-with-cols
     (cte -tbl- [-c1- -c2-] (as -q-)) => cte-with-cols

@@ -11,7 +11,7 @@
 (def set-columns set-cols)
 (def set-fields set-cols)
 (def set-flds set-cols)
-(def-vec-props columns partition-by)
+(def-vec-props partition-by)
 
 (defn field [f & more]
   (if (field? f)
@@ -248,8 +248,8 @@
     (= :into stmt) (apply insert body)
     (:into stmt) (apply insert (:into stmt) body)
     (vector? cols) (apply insert stmt :columns cols rem-body)
-    (select? (last body)) (apply insert stmt {:values (last body)} (butlast body))
-    :else (mk-map* {:sql-stmt :insert :into stmt :op :insert} body)))
+    :else (mk-map* {:sql-stmt :insert :into stmt :op :insert}
+                   (map #(if (select? %) {:values %} %) body))))
 
 (def insert-into insert)
 
@@ -289,6 +289,25 @@
 
 (defn defaults [] {:columns nil :values :default})
 (def default-values defaults)
+
+;;; ON CONFLICT clause
+
+(defn column [c & args]
+  (mk-map* (if (:column c) c {:column c}) args))
+
+(defn columns [& xs]
+  {:columns (mapv #(if (vector? %) (apply column %) (column %)) xs)})
+
+(defn on-conflict [cols & args]
+  (cond
+    (:on-conflict cols) (mk-map cols args)
+    (vector? cols) {:on-conflict (apply mk-map (apply columns cols) args)}
+    :else {:on-conflict (mk-map cols args)}))
+
+(defn do-nothing [] {:do nil})
+
+(defn do-update [& args]
+  {:do (mk-map* {} args)})
 
 ;;; UPDATE statement
 
