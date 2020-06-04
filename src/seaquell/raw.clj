@@ -131,6 +131,21 @@
 
 (declare ->sql)
 
+(defn array* [n xs]
+  {:pre [(= 0 (mod (count xs) n))]}
+  [:array
+   (apply vector vec (->> xs (partition n) (map #(->> % (cons vec) vec))))])
+
+(defn array [n & xs]
+  (array* n xs))
+
+(defn curly* [n xs]
+  {:pre [(= 0 (mod (count xs) n))]}
+  (apply vector map (->> xs (partition n) (map #(->> % (cons map) vec)))))
+
+(defn curly [n & xs]
+  (curly* n xs))
+
 (defn ->sql
   "Converts a sequence of sql elements to a SQL string"
   [s [x & xs :as q]]
