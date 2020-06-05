@@ -1,19 +1,41 @@
 (ns seaquell.core
   (:refer-clojure :exclude [update partition-by])
   (:require [clojure.core :as c]
+            [clojure.spec.alpha :as s]
             [diesel.core :refer :all]
             [diesel.edit :refer [conj-in]]
             [seaquell.engine :as eng]
+            [seaquell.raw :as r]
             [seaquell.to-sql :as sql]
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary filter-where having indexed-by modifier offset on op raw statement where)
+  as binary filter-where having indexed-by modifier offset on op statement where)
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def set-fields set-cols)
 (def set-flds set-cols)
 (def-vec-props partition-by)
+
+(defn raw
+  ([x] {:raw x})
+  ([x & xx] {:raw (->> xx (cons x) vec)}))
+
+(defn sql [s & body]
+  "Constructs a SQL statement or fragment from its arguments.
+  If the first arg can act as a top-level statement, the body is composed
+  into `stmt` using mk-map*. Otherwise, the leading arguments describe raw
+  SQL (with leading strings treated as verbatim SQL text), while the trailing
+  arguments are options to mix into the SQL value."
+  (let [[stmt body]
+        (cond
+          (or (sql-stmt? s) (:values s)) [s body]
+          :else (let [[strings body] (split-with string? (cons s body))
+                      strings (map raw strings)
+                      [tokens body] (split-with #(s/valid? ::r/sql-elem %)
+                                                (concat strings body))]
+                  [{:sql-stmt :sql, :tokens tokens}, body]))]
+    (mk-map* stmt body)))
 
 (defn field [f & more]
   (if (field? f)
@@ -350,14 +372,12 @@
 
 ;;; Convert to string and execute
 
-(defn to-sql [stmt & body]
-  (sql/to-sql (mk-map* stmt body)))
+(defn to-sql [& body]
+  (sql/to-sql (apply sql body)))
 
-(defn do-sql [stmt & body]
-  {:pre [(or (string? stmt) (sql-stmt? stmt) (:values stmt))]}
-  (let [m (if (string? stmt)
-            (mk-map* {:sql-str stmt} body)
-            (edit stmt body #(assoc % :sql-str (sql/to-sql %))))]
+(defn do-sql [& body]
+  (let [q (apply sql body)
+        m (assoc q :sql-str (sql/to-sql q))]
     (eng/exec m)))
 
 (def sql$ to-sql)

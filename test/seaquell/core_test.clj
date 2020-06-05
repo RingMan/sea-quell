@@ -30,7 +30,7 @@
   {:fields [-f1- {:field :field2 :as :f2} -f3-]})
 
 (fact "to-sql throws for unsupported statements"
-      (to-sql nil) => (throws RuntimeException))
+      (to-sql {:sql-stmt -unsupported-}) => (throws RuntimeException))
 
 (fact "select does not require a FROM clause"
       (to-sql (select [[* 7 6]])) => "SELECT 7 * 6;")

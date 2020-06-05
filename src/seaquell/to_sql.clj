@@ -1,6 +1,7 @@
 (ns seaquell.to-sql
   (:require [clojure.set :as set]
             [clojure.string :as string]
+            [seaquell.raw :as r]
             [seaquell.util :as u :refer [field? raw? windef?]]))
 
 (defn delimit [l r x]
@@ -528,4 +529,7 @@
 
 (defmethod to-sql :explain-query-plan [stmt]
   (str "EXPLAIN QUERY PLAN " (to-sql (:statement stmt))))
+
+(defmethod to-sql :sql [stmt]
+  (r/sql$ (:tokens stmt)))
 
