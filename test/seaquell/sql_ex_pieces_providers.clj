@@ -2,11 +2,11 @@
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
   (:refer-clojure :exclude [update partition-by])
-  (:require [clojure.java.jdbc :as jdb])
-  (:require [diesel.core :refer [mk-map*]])
-  (:use midje.sweet
-        seaquell.core
-        seaquell.engine))
+  (:require [clojure.java.jdbc :as jdb]
+            [diesel.core :refer [mk-map*]]
+            [midje.sweet :refer :all]
+            [seaquell.core :refer :all]
+            [seaquell.engine :refer :all]))
 
 (defn properties [& body]
   (mk-map* {} body))

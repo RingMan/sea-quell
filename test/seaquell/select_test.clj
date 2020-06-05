@@ -1,7 +1,7 @@
 (ns seaquell.select-test
   (:refer-clojure :exclude [update partition-by])
-  (:use midje.sweet
-        seaquell.core))
+  (:require [midje.sweet :refer :all]
+            [seaquell.core :refer :all]))
 
 (fact
   "The following select all columns from a table"

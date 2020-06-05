@@ -1,8 +1,8 @@
 (ns seaquell.to-sql-test
   (:require [clojure.string :as string]
-            [seaquell.util :refer [raw?]])
-  (:use midje.sweet
-        seaquell.to-sql))
+            [midje.sweet :refer :all]
+            [seaquell.to-sql :refer :all]
+            [seaquell.util :refer [raw?]]))
 
 (fact (query-clauses ["select *" "from tbl" "limit 3" "offset 5"] nil) =>
       "select * from tbl limit 3 offset 5")

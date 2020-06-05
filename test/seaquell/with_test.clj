@@ -3,9 +3,9 @@
   'Outlandish Recursive Query Examples' from the Sqlite website:
   https://sqlite.org/lang_with.html"
   (:refer-clojure :exclude [update partition-by])
-  (:require [clojure.java.jdbc :as jdb])
-  (:use midje.sweet
-        seaquell.core))
+  (:require [clojure.java.jdbc :as jdb]
+            [midje.sweet :refer :all]
+            [seaquell.core :refer :all]))
 
 (def sq3 {:classname "org.sqlite.JDBC"
           :subprotocol "sqlite"

@@ -1,9 +1,11 @@
 (ns seaquell.core
   (:refer-clojure :exclude [update partition-by])
-  (:require [clojure.core :as c])
-  (:require [diesel.core :refer :all])
-  (:require [diesel.edit :refer [conj-in]])
-  (:require [seaquell [util :refer :all] [to-sql :as sql] [engine :as eng]]))
+  (:require [clojure.core :as c]
+            [diesel.core :refer :all]
+            [diesel.edit :refer [conj-in]]
+            [seaquell.engine :as eng]
+            [seaquell.to-sql :as sql]
+            [seaquell.util :refer :all]))
 
 (def-props
   as binary filter-where having indexed-by modifier offset on op raw statement where)

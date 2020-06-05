@@ -1,7 +1,7 @@
 (ns seaquell.update-test
   (:refer-clojure :exclude [update partition-by])
-  (:use midje.sweet
-        seaquell.core))
+  (:require [midje.sweet :refer :all]
+            [seaquell.core :refer :all]))
 
 (facts "about update"
   ;; simple update

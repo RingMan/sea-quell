@@ -1,7 +1,7 @@
 (ns seaquell.to-sql
-  (:require [clojure.set :as set])
-  (:require [clojure.string :as string])
-  (:require [seaquell.util :as u :refer [field? raw? windef?]]))
+  (:require [clojure.set :as set]
+            [clojure.string :as string]
+            [seaquell.util :as u :refer [field? raw? windef?]]))
 
 (defn delimit [l r x]
   (str l x r))

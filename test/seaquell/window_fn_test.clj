@@ -2,12 +2,12 @@
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
   (:refer-clojure :exclude [update partition-by])
-  (:require [clojure.java.jdbc :as jdb])
-  (:require [diesel.core :refer [mk-map*]]
-            [diesel.edit :refer [edit-in]])
-  (:use midje.sweet
-        seaquell.core
-        seaquell.engine))
+  (:require [clojure.java.jdbc :as jdb]
+            [diesel.core :refer [mk-map*]]
+            [diesel.edit :refer [edit-in]]
+            [midje.sweet :refer :all]
+            [seaquell.core :refer :all]
+            [seaquell.engine :refer :all]))
 
 (def sq3 {:classname "org.sqlite.JDBC"
           :subprotocol "sqlite"
