@@ -6,14 +6,11 @@
             [diesel.core :refer [mk-map*]]
             [midje.sweet :refer :all]
             [seaquell.core :refer :all]
-            [seaquell.engine :refer :all]))
+            [seaquell.engine :refer :all]
+            [seaquell.sqlite :refer [db-spec]]))
 
 (defn properties [& body]
   (mk-map* {} body))
-
-(def sq3 {:classname "org.sqlite.JDBC"
-          :subprotocol "sqlite"
-          :subname ":memory:"})
 
 (defn create-tbls [con]
   (do-sql
@@ -55,8 +52,7 @@
                      [3 "TNBC" 45] [4 "HAL" 5] [4 "RBT" 7]))))
 
 (defn mk-db []
-  (let [c (->> sq3 jdb/get-connection
-               (jdb/add-connection sq3))]
+  (let [c (db-conn (db-spec))]
     (create-tbls c)
     (insert-data c)
     c))

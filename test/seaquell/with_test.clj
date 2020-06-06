@@ -5,11 +5,8 @@
   (:refer-clojure :exclude [update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all]
-            [seaquell.core :refer :all]))
-
-(def sq3 {:classname "org.sqlite.JDBC"
-          :subprotocol "sqlite"
-          :subname ":memory:"})
+            [seaquell.core :refer :all]
+            [seaquell.sqlite :refer [db-spec]]))
 
 (def sudoku-solver
   (with-recursive
@@ -49,7 +46,7 @@
       (select :s (from :x) (where {:ind 0}))))
 
 (fact
-  (jdb/query sq3 (to-sql sudoku-solver) {:row-fn :s, :result-set-fn first})
+  (jdb/query (db-spec) (to-sql sudoku-solver) {:row-fn :s, :result-set-fn first})
   => (str "53467891267219534819834256785976142342685379"
           "1713924856961537284287419635345286179"))
 
@@ -76,7 +73,7 @@
     (select [[:group_concat '(rtrim t) (binary "0a")]] (from :a))))
 
 (fact
-  (jdb/query sq3 (to-sql mandelbrot) {:result-set-fn (comp val first first)})
+  (jdb/query (db-spec) (to-sql mandelbrot) {:result-set-fn (comp val first first)})
   =>
 "                                    ....#
                                    ..#*..
