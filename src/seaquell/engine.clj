@@ -3,6 +3,9 @@
             [diesel.core :refer [def-props def-vec-props def-bool-props]]
             [seaquell.util :as u]))
 
+(defn db-conn [db-spec]
+  (->> db-spec jdbc/get-connection (jdbc/add-connection db-spec)))
+
 ;; Syntax for jdbc pass-thru options
 
 (def-bool-props as-arrays? keywordize? transaction? multi?)

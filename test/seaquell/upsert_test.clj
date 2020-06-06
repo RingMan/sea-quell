@@ -6,17 +6,10 @@
             [midje.sweet :refer :all]
             [diesel.edit :refer [edit-in]]
             [seaquell.core :refer :all]
-            [seaquell.engine :refer :all]))
+            [seaquell.engine :refer :all]
+            [seaquell.sqlite :refer [db-spec]]))
 
-(def sq3 {:classname "org.sqlite.JDBC"
-          :subprotocol "sqlite"
-          :subname ":memory:"})
-
-(defn db-conn []
-  (->> sq3 jdb/get-connection
-       (jdb/add-connection sq3)))
-
-(let [c (db-conn)
+(let [c (db-conn (db-spec))
       q (insert
           :vocabulary [:word] (value "jovial")
           (on-conflict [:word]
@@ -32,7 +25,7 @@
   (fact "count for jovial is 2"
         (select-from! :vocabulary (db c)) => [{:word "jovial", :count 2}]))
 
-(let [c (db-conn)
+(let [c (db-conn (db-spec))
       q (insert
           :phonebook [:name :phonenumber] (value "Alice" :?)
           (on-conflict [:name]
@@ -51,7 +44,7 @@
         (select-from! :phonebook (db c)) =>
         [{:name "Alice", :phonenumber "704-555-1212"}]))
 
-(let [c (db-conn)
+(let [c (db-conn (db-spec))
       q (insert
           :phonebook2 [:name :phonenumber :validDate] (value "Alice" :?1 :?2)
           (on-conflict [:name]
@@ -74,7 +67,7 @@
         (select-from! :phonebook2 (db c)) =>
         [{:name "Alice", :phonenumber "704-555-1212" :validdate "2019-01-01"}]))
 
-(let [c (db-conn)
+(let [c (db-conn (db-spec))
       q (insert
           :t1 (select :* (from :t2))
           (on-conflict [:x] (do-update (set-cols {:y :excluded.y})))

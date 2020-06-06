@@ -18,6 +18,7 @@
             [seaquell.core :refer :all]
             [seaquell.to-sql :as sql]
             [seaquell.engine :as eng :refer :all]
+            [seaquell.sqlite :as sq3 :refer [db-spec tables schema]]
             [seaquell.spec :as ss]
             [seaquell.util :as u]))
 
@@ -28,8 +29,7 @@
     ['(sqrt (sum (/ (* (- price q.AvgPrice) (- price q.AvgPrice)) (- q.CntPrice 1)))) :as :sdev]
     (from :cars (join q1 :as :q))))
 
-#_(def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname "/home/david/clj/sqlite/test.db"})
-(def sq3 {:classname "org.sqlite.JDBC", :subprotocol "sqlite", :subname ":memory:"})
+(def c (db-conn (db-spec)))
 
 (integrant.repl/set-prep! (constantly {}))
 
