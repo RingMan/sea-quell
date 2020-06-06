@@ -17,6 +17,8 @@
 
 (defmulti sql-stmt-type :sql-stmt)
 
+;; Primary statements
+
 (defmethod sql-stmt-type :select [_]
     (s/keys :req-un [::sql-stmt (or ::fields ::from)]
             :opt-un [::group-by ::having ::window ::order-by ::limit ::offset ::with]))
@@ -32,5 +34,13 @@
 (defmethod sql-stmt-type :delete [_]
     (s/keys :req-un [::sql-stmt]
             :opt-un []))
+
+;; Explain statements
+
+(defmethod sql-stmt-type :explain [_]
+    (s/keys :req-un [::sql-stmt ::statement]))
+
+(defmethod sql-stmt-type :explain-query-plan [_]
+    (s/keys :req-un [::sql-stmt ::statement]))
 
 (s/def ::statement (s/multi-spec sql-stmt-type :sql-stmt))
