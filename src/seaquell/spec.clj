@@ -43,4 +43,12 @@
 (defmethod sql-stmt-type :explain-query-plan [_]
     (s/keys :req-un [::sql-stmt ::statement]))
 
+;; Attach/Detach
+
+(defmethod sql-stmt-type :attach [_]
+    (s/keys :req-un [::sql-stmt ::database ::as] :opt-un [::modifier]))
+
+(defmethod sql-stmt-type :detach [_]
+    (s/keys :req-un [::sql-stmt ::as] :opt-un [::modifier]))
+
 (s/def ::statement (s/multi-spec sql-stmt-type :sql-stmt))

@@ -530,6 +530,21 @@
 (defmethod to-sql :explain-query-plan [stmt]
   (str "EXPLAIN QUERY PLAN " (to-sql (:statement stmt))))
 
+(defmethod to-sql :attach
+  ([{:keys [modifier database as] :as stmt}]
+   (let [attach "ATTACH"
+         modifier (when modifier (-> modifier name string/upper-case))
+         database (expr-to-sql (name database))
+         as (alias-to-sql as)]
+     (query-clauses [attach modifier database as] ";"))))
+
+(defmethod to-sql :detach
+  ([{:keys [modifier as] :as stmt}]
+   (let [detach "DETACH"
+         modifier (when modifier (-> modifier name string/upper-case))
+         as (expr-to-sql as)]
+     (query-clauses [detach modifier as] ";"))))
+
 (defmethod to-sql :sql [stmt]
   (r/sql$ (:tokens stmt)))
 

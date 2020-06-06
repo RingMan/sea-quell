@@ -10,7 +10,9 @@
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary filter-where having indexed-by modifier offset on op statement where)
+  as binary database filter-where having indexed-by modifier offset on op
+  statement where)
+
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def set-fields set-cols)
@@ -370,6 +372,27 @@
                       [{:sql-stmt :explain-query-plan :statement stmt} body])]
     (mk-map* stmt body)))
 
+;;; ATTACH/DETACH statements
+
+(defn attach [stmt & body]
+  (let [[stmt body] (if (= (:sql-stmt stmt) :attach)
+                      [stmt body]
+                      [{:sql-stmt :attach :database stmt} body])]
+    (mk-map* stmt body)))
+
+(defn attach-database [& body]
+  (sql (apply attach body) (modifier :database)))
+
+(defn detach [stmt & body]
+  (let [[stmt body] (if (= (:sql-stmt stmt) :detach)
+                      [stmt body]
+                      [{:sql-stmt :detach :as stmt} body])]
+    (mk-map* stmt body)))
+
+(defn detach-database [& body]
+  (sql (apply detach body) (modifier :database)))
+
+
 ;;; Convert to string and execute
 
 (defn to-sql [& body]
@@ -412,7 +435,8 @@
         update update-or-rollback update-or-abort update-or-replace
         update-or-fail update-or-ignore
         value values with
-        explain explain-query-plan]]
+        explain explain-query-plan
+        attach attach-database detach detach-database]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
 
