@@ -28,7 +28,9 @@
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
-  (if (or (u/select? q) (u/compound-select? q) (re-find #"^(?i)(select|values|explain) " sql-str))
+  (if (or (u/select? q) (u/compound-select? q)
+          (re-find #"^(?i)(select|values|explain) " sql-str)
+          (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str))
     (jdbc/query
       db (cons sql-str params)
       (select-keys q [:as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn]))
