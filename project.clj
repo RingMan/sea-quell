@@ -12,7 +12,8 @@
                                   [midje "1.9.9"]
                                   [org.xerial/sqlite-jdbc "3.31.1"]
                                   [mysql/mysql-connector-java "5.1.23"]
-                                  [org.hsqldb/hsqldb "2.2.9"]]
+                                  [org.hsqldb/hsqldb "2.2.9"]
+                                  [clj-commons/fs "1.5.2"]]
                    :source-paths ["dev"]
                    :plugins [[lein-midje "3.2.2"]]}
              :test {:dependencies [[midje "1.9.9"]

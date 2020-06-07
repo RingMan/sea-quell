@@ -10,6 +10,7 @@
             [clojure.test :as test]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
             [integrant.repl :refer [clear go halt prep init reset reset-all]]
+            [me.raynes.fs :as fs]
             [midje.repl :refer [autotest]]
             [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map mk-map* edit] :as dsl]
