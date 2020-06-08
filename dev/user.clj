@@ -33,5 +33,8 @@
 
 (def c (db-conn (db-spec)))
 
+(defn qry! [& body]
+  (apply sql! (concat body {:jdbc/query? true})))
+
 (integrant.repl/set-prep! (constantly {}))
 

@@ -21,14 +21,16 @@
   Takes a map with two mandatory keys:
     :db - DB spec or connection pool datasource
     :sql-str - SQL string to execute
-  And one optional key:
+  And two optional keys:
     :params - Parameters to pass to jdbc
+    :jdbc/query? - Force exec to call jdbc/query if truthy. Useful for literal
+                   SELECT statements introduced by a WITH clause.
   The following are passed directly to jdbc/query or jdbc/execute!, respectively:
     :as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
-  (if (or (u/select? q) (u/compound-select? q)
+  (if (or (u/select? q) (u/compound-select? q) (:jdbc/query? q)
           (re-find #"^(?i)(select|values|explain) " sql-str)
           (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str)
           (re-find #"^(?i)\s*PRAGMA\s+(?:\w|\.)+\s*;" sql-str))
