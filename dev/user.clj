@@ -33,6 +33,9 @@
 
 (def c (db-conn (db-spec)))
 
+(defn sql-$ [sql-fn & args]
+  (let [q (apply sql-fn args)] [q (sql$ q)]))
+
 (defn qry! [& body]
   (apply sql! (concat body {:jdbc/query? true})))
 
