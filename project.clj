@@ -10,13 +10,13 @@
                                   [integrant "0.8.0"]
                                   [integrant/repl "0.3.1"]
                                   [midje "1.9.9"]
-                                  [org.xerial/sqlite-jdbc "3.30.1"]
+                                  [org.xerial/sqlite-jdbc "3.31.1"]
                                   [mysql/mysql-connector-java "5.1.23"]
                                   [org.hsqldb/hsqldb "2.2.9"]]
                    :source-paths ["dev"]
                    :plugins [[lein-midje "3.2.2"]]}
              :test {:dependencies [[midje "1.9.9"]
-                                   [org.xerial/sqlite-jdbc "3.30.1"]]
+                                   [org.xerial/sqlite-jdbc "3.31.1"]]
                     ;:plugins [[lein-midje "3.2.2"]]
                     }
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}}
