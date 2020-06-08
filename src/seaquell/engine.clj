@@ -30,14 +30,17 @@
     :multi? :transaction?"
   [{:keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
-  (if (or (u/select? q) (u/compound-select? q) (:jdbc/query? q)
-          (re-find #"^(?i)(select|values|explain) " sql-str)
-          (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str)
-          (re-find #"^(?i)\s*PRAGMA\s+(?:\w|\.)+\s*;" sql-str))
-    (jdbc/query
-      db (cons sql-str params)
-      (select-keys q [:as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn]))
-    (jdbc/execute!
-      db (vec (cons sql-str params))
-      (select-keys q [:multi? :transaction?]))))
+  (let [q (if (re-find #"^(?i)vacuum(?:\W|$)" sql-str)
+            (assoc q :transaction? false)
+            q)]
+    (if (or (u/select? q) (u/compound-select? q) (:jdbc/query? q)
+            (re-find #"^(?i)(select|values|explain) " sql-str)
+            (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str)
+            (re-find #"^(?i)\s*PRAGMA\s+(?:\w|\.)+\s*;" sql-str))
+      (jdbc/query
+        db (cons sql-str params)
+        (select-keys q [:as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn]))
+      (jdbc/execute!
+        db (vec (cons sql-str params))
+        (select-keys q [:multi? :transaction?])))))
 
