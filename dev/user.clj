@@ -16,12 +16,12 @@
             [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map mk-map* edit] :as dsl]
             [diesel.edit :as ed]
-            #_[seaquell.core :refer :all :rename {update sql-update}]
-            [seaquell.core :refer :all]
+            [seaquell.core :refer :all :rename {into s-into #_#_update s-update}]
+            #_[seaquell.core :refer :all]
             [seaquell.to-sql :as sql]
             [seaquell.engine :as eng :refer :all]
             [seaquell.raw :as r]
-            [seaquell.sqlite :as sq3 :refer [db-spec tables schema]]
+            [seaquell.sqlite :as sq3 :refer [db-spec tables]]
             [seaquell.spec :as ss]
             [seaquell.util :as u]))
 

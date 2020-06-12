@@ -1,5 +1,5 @@
 (ns seaquell.select-test
-  (:refer-clojure :exclude [update partition-by])
+  (:refer-clojure :exclude [into update partition-by])
   (:require [midje.sweet :refer :all]
             [seaquell.core :refer :all]))
 

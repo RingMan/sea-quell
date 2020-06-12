@@ -545,6 +545,13 @@
          as (expr-to-sql as)]
      (query-clauses [detach modifier as] ";"))))
 
+(defmethod to-sql :vacuum
+  ([{:keys [schema into] :as stmt}]
+   (let [vacuum "VACUUM"
+         schema (when schema (expr-to-sql schema))
+         into (when into (str "INTO " (expr-to-sql into)))]
+     (query-clauses [vacuum schema into] ";"))))
+
 (defmethod to-sql :sql [stmt]
   (r/sql$ (:tokens stmt)))
 

@@ -17,7 +17,8 @@
              :repl {:dependencies [[expound "0.8.4"]
                                    [integrant/repl "0.3.1"]]
                     :source-paths ["dev"]}
-             :test {:dependencies [[midje "1.9.9"]
+             :test {:dependencies [[clj-commons/fs "1.5.2"]
+                                   [midje "1.9.9"]
                                    [org.xerial/sqlite-jdbc "3.31.1"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}}
   :aliases {

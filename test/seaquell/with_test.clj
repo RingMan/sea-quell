@@ -2,7 +2,7 @@
   "Uses an in-memory Sqlite database to demonstrate a couple of
   'Outlandish Recursive Query Examples' from the Sqlite website:
   https://sqlite.org/lang_with.html"
-  (:refer-clojure :exclude [update partition-by])
+  (:refer-clojure :exclude [into update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all]
             [seaquell.core :refer :all]

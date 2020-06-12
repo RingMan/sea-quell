@@ -1,5 +1,5 @@
 (ns seaquell.zoo.covid
-  (:refer-clojure :exclude [update partition-by])
+  (:refer-clojure :exclude [into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 6/4/2020) to the

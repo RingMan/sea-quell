@@ -1,5 +1,5 @@
 (ns seaquell.core
-  (:refer-clojure :exclude [update partition-by])
+  (:refer-clojure :exclude [into update partition-by])
   (:require [clojure.core :as c]
             [clojure.spec.alpha :as s]
             [diesel.core :refer :all]
@@ -10,8 +10,8 @@
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary database filter-where having indexed-by modifier offset on op
-  statement where)
+  as binary database filter-where having indexed-by into modifier offset on op
+  schema statement where)
 
 (def-map-props set-cols)
 (def set-columns set-cols)
@@ -392,6 +392,27 @@
 (defn detach-database [& body]
   (sql (apply detach body) (modifier :database)))
 
+;;; VACUUM statement
+
+(defn vacuum
+  ([] {:sql-stmt :vacuum})
+  ([stmt & body]
+   (let [[stmt body]
+         (cond
+           (= (:sql-stmt stmt) :vacuum) [stmt body]
+           (or (:into stmt) (= :into stmt)) [{:sql-stmt :vacuum}
+                                             (cons stmt body)]
+           (name? stmt) [{:sql-stmt :vacuum :schema stmt} body]
+           :else [{:sql-stmt :vacuum} (cons stmt body)])]
+     (mk-map* stmt body))))
+
+(defn vacuum-into
+  [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :vacuum) [stmt body]
+          :else [{:sql-stmt :vacuum :into stmt} body])]
+    (mk-map* stmt body)))
 
 ;;; Convert to string and execute
 
@@ -436,7 +457,8 @@
         update-or-fail update-or-ignore
         value values with
         explain explain-query-plan
-        attach attach-database detach detach-database]]
+        attach attach-database detach detach-database
+        vacuum vacuum-into]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
 
