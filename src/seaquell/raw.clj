@@ -4,9 +4,8 @@
   SQL. Similar to hiccup for HTML."
   (:require [clojure.string :as str]
             [clojure.set :as set]
-            [clojure.spec.alpha :as s]))
-
-(defn regex? [x] (instance? java.util.regex.Pattern x))
+            [clojure.spec.alpha :as s]
+            [seaquell.util :refer [regex?]]))
 
 (s/def ::raw string?)
 

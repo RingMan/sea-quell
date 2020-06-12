@@ -1,6 +1,11 @@
 (ns seaquell.util)
 
+(defn regex? [x] (instance? java.util.regex.Pattern x))
+
 (defn raw? [x] (and (map? x) (= [:raw] (keys x))))
+
+(defn name? [x]
+  (or (keyword? x) (symbol? x) (raw? x) (regex? x)))
 
 (defn alias? [x] (and (map? x) (= (keys x) [:as])))
 
