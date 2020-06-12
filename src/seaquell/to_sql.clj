@@ -530,6 +530,12 @@
 (defmethod to-sql :explain-query-plan [stmt]
   (str "EXPLAIN QUERY PLAN " (to-sql (:statement stmt))))
 
+(defmethod to-sql :analyze
+  ([{:keys [schema into] :as stmt}]
+   (let [analyze "ANALYZE"
+         schema (when schema (expr-to-sql schema))]
+     (query-clauses [analyze schema] ";"))))
+
 (defmethod to-sql :attach
   ([{:keys [modifier database as] :as stmt}]
    (let [attach "ATTACH"

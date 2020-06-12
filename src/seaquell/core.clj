@@ -372,6 +372,18 @@
                       [{:sql-stmt :explain-query-plan :statement stmt} body])]
     (mk-map* stmt body)))
 
+;;; ANALYZE statement
+
+(defn analyze
+  ([] {:sql-stmt :analyze})
+  ([stmt & body]
+   (let [[stmt body]
+         (cond
+           (= (:sql-stmt stmt) :analyze) [stmt body]
+           (name? stmt) [{:sql-stmt :analyze :schema stmt} body]
+           :else [{:sql-stmt :analyze} (cons stmt body)])]
+     (mk-map* stmt body))))
+
 ;;; ATTACH/DETACH statements
 
 (defn attach [stmt & body]
@@ -458,7 +470,7 @@
         value values with
         explain explain-query-plan
         attach attach-database detach detach-database
-        vacuum vacuum-into]]
+        analyze vacuum vacuum-into]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
 
