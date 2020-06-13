@@ -404,6 +404,18 @@
 (defn detach-database [& body]
   (sql (apply detach body) (modifier :database)))
 
+;;; REINDEX statement
+
+(defn reindex
+  ([] {:sql-stmt :reindex})
+  ([stmt & body]
+   (let [[stmt body]
+         (cond
+           (= (:sql-stmt stmt) :reindex) [stmt body]
+           (name? stmt) [{:sql-stmt :reindex :schema stmt} body]
+           :else [{:sql-stmt :reindex} (cons stmt body)])]
+     (mk-map* stmt body))))
+
 ;;; VACUUM statement
 
 (defn vacuum
@@ -470,7 +482,7 @@
         value values with
         explain explain-query-plan
         attach attach-database detach detach-database
-        analyze vacuum vacuum-into]]
+        analyze reindex vacuum vacuum-into]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
 

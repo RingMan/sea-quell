@@ -1,5 +1,6 @@
 (ns seaquell.spec
-  (:require [clojure.spec.alpha :as s]))
+  (:require [clojure.spec.alpha :as s]
+            [seaquell.util :refer [name?]]))
 
 (s/def ::sql-stmt keyword?)
 
@@ -20,35 +21,43 @@
 ;; Primary statements
 
 (defmethod sql-stmt-type :select [_]
-    (s/keys :req-un [::sql-stmt (or ::fields ::from)]
-            :opt-un [::group-by ::having ::window ::order-by ::limit ::offset ::with]))
+  (s/keys :req-un [::sql-stmt (or ::fields ::from)]
+          :opt-un [::group-by ::having ::window ::order-by ::limit ::offset ::with]))
 
 (defmethod sql-stmt-type :insert [_]
-    (s/keys :req-un [::sql-stmt]
-            :opt-un []))
+  (s/keys :req-un [::sql-stmt]
+          :opt-un []))
 
 (defmethod sql-stmt-type :update [_]
-    (s/keys :req-un [::sql-stmt]
-            :opt-un []))
+  (s/keys :req-un [::sql-stmt]
+          :opt-un []))
 
 (defmethod sql-stmt-type :delete [_]
-    (s/keys :req-un [::sql-stmt]
-            :opt-un []))
+  (s/keys :req-un [::sql-stmt]
+          :opt-un []))
 
 ;; Explain statements
 
 (defmethod sql-stmt-type :explain [_]
-    (s/keys :req-un [::sql-stmt ::statement]))
+  (s/keys :req-un [::sql-stmt ::statement]))
 
 (defmethod sql-stmt-type :explain-query-plan [_]
-    (s/keys :req-un [::sql-stmt ::statement]))
+  (s/keys :req-un [::sql-stmt ::statement]))
 
 ;; Attach/Detach
 
 (defmethod sql-stmt-type :attach [_]
-    (s/keys :req-un [::sql-stmt ::database ::as] :opt-un [::modifier]))
+  (s/keys :req-un [::sql-stmt ::database ::as] :opt-un [::modifier]))
 
 (defmethod sql-stmt-type :detach [_]
-    (s/keys :req-un [::sql-stmt ::as] :opt-un [::modifier]))
+  (s/keys :req-un [::sql-stmt ::as] :opt-un [::modifier]))
+
+;; Reindex
+
+(s/def :reindex/schema (s/or :col ::collate :tbl-or-idx name?))
+
+(defmethod sql-stmt-type :reindex [_]
+  (s/keys :req-un [::sql-stmt] :opt-un [:reindex/schema]))
 
 (s/def ::statement (s/multi-spec sql-stmt-type :sql-stmt))
+

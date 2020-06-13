@@ -551,6 +551,12 @@
          as (expr-to-sql as)]
      (query-clauses [detach modifier as] ";"))))
 
+(defmethod to-sql :reindex
+  ([{:keys [schema into] :as stmt}]
+   (let [reindex "REINDEX"
+         schema (when schema (expr-to-sql schema))]
+     (query-clauses [reindex schema] ";"))))
+
 (defmethod to-sql :vacuum
   ([{:keys [schema into] :as stmt}]
    (let [vacuum "VACUUM"
