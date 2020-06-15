@@ -11,7 +11,7 @@
 
 (def-props
   as binary database filter-where having indexed-by into modifier offset on op
-  schema statement where)
+  schema statement to where)
 
 (def-map-props set-cols)
 (def set-columns set-cols)
@@ -438,6 +438,89 @@
           :else [{:sql-stmt :vacuum :into stmt} body])]
     (mk-map* stmt body)))
 
+;;;; Transaction Control
+
+;;; BEGIN statement
+
+(defn begin [& [stmt & body :as args]]
+  (let [[stmt body]
+        (cond
+          (nil? args) [{:sql-stmt :begin}]
+          (= (:sql-stmt stmt) :begin) [stmt body]
+          :else [{:sql-stmt :begin} args])]
+    (mk-map* stmt body)))
+
+(defn begin-deferred [& body]
+  (begin body (modifier :deferred)))
+
+(defn begin-immediate [& body]
+  (begin body (modifier :immediate)))
+
+(defn begin-exclusive [& body]
+  (begin body (modifier :exclusive)))
+
+(defn begin-transaction [& body]
+  (begin body {:transaction true}))
+
+(defn begin-deferred-transaction [& body]
+  (begin-deferred body {:transaction true}))
+
+(defn begin-immediate-transaction [& body]
+  (begin-immediate body {:transaction true}))
+
+(defn begin-exclusive-transaction [& body]
+  (begin-exclusive body {:transaction true}))
+
+;;; COMMIT statement
+
+(defn commit [& [stmt & body :as args]]
+  (let [[stmt body]
+        (cond
+          (nil? args) [{:sql-stmt :commit}]
+          (= (:sql-stmt stmt) :commit) [stmt body]
+          :else [{:sql-stmt :commit} args])]
+    (mk-map* stmt body)))
+
+(defn commit-transaction [& body]
+  (commit body {:transaction true}))
+
+(defn end [& body]
+  (commit body {:end true}))
+
+(defn end-transaction [& body]
+  (end body {:transaction true}))
+
+;;; ROLLBACK statement
+
+(defn to-savepoint [sp] (merge (to sp) {:savepoint true}))
+
+(defn rollback [& [stmt & body :as args]]
+  (let [[stmt body]
+        (cond
+          (nil? args) [{:sql-stmt :rollback}]
+          (= (:sql-stmt stmt) :rollback) [stmt body]
+          :else [{:sql-stmt :rollback} args])]
+    (mk-map* stmt body)))
+
+(defn rollback-transaction [& body]
+  (rollback body {:transaction true}))
+
+(defn rollback-to [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :rollback) [stmt body]
+          :else [{:sql-stmt :rollback :to stmt} body])]
+    (mk-map* stmt body)))
+
+(defn rollback-transaction-to [& body]
+  (merge (apply rollback-to body) {:transaction true}))
+
+(defn rollback-to-savepoint [& body]
+  (merge (apply rollback-to body) {:savepoint true}))
+
+(defn rollback-transaction-to-savepoint [& body]
+  (merge (apply rollback-to body) {:savepoint true, :transaction true}))
+
 ;;; Convert to string and execute
 
 (defn to-sql [& body]
@@ -482,7 +565,14 @@
         value values with
         explain explain-query-plan
         attach attach-database detach detach-database
-        analyze reindex vacuum vacuum-into]]
+        analyze begin begin-transaction
+        begin-deferred begin-deferred-transaction
+        begin-exclusive begin-exclusive-transaction
+        begin-immediate begin-immediate-transaction
+        commit commit-transaction end end-transaction
+        reindex rollback rollback-to rollback-to-savepoint
+        rollback-transaction rollback-transaction-to rollback-transaction-to-savepoint
+        vacuum vacuum-into]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))
 

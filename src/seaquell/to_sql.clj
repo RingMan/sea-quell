@@ -544,6 +544,19 @@
          as (alias-to-sql as)]
      (query-clauses [attach modifier database as] ";"))))
 
+(defmethod to-sql :begin
+  ([{:keys [modifier transaction] :as stmt}]
+   (let [begin "BEGIN"
+         modifier (when modifier (-> modifier name string/upper-case))
+         transaction (when transaction "TRANSACTION")]
+     (query-clauses [begin modifier transaction] ";"))))
+
+(defmethod to-sql :commit
+  ([{:keys [end transaction] :as stmt}]
+   (let [commit (if end "END" "COMMIT")
+         transaction (when transaction "TRANSACTION")]
+     (query-clauses [commit transaction] ";"))))
+
 (defmethod to-sql :detach
   ([{:keys [modifier as] :as stmt}]
    (let [detach "DETACH"
@@ -556,6 +569,14 @@
    (let [reindex "REINDEX"
          schema (when schema (expr-to-sql schema))]
      (query-clauses [reindex schema] ";"))))
+
+(defmethod to-sql :rollback
+  ([{:keys [transaction to savepoint] :as stmt}]
+   (let [rollback "ROLLBACK"
+         transaction (when transaction "TRANSACTION")
+         savepoint (when savepoint "SAVEPOINT ")
+         to (when to (str "TO " savepoint (expr-to-sql to)))]
+     (query-clauses [rollback transaction to] ";"))))
 
 (defmethod to-sql :vacuum
   ([{:keys [schema into] :as stmt}]
