@@ -521,6 +521,25 @@
 (defn rollback-transaction-to-savepoint [& body]
   (merge (apply rollback-to body) {:savepoint true, :transaction true}))
 
+;;;; Nested transactions with SAVEPOINT/RELEASE
+
+(defn savepoint [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :savepoint) [stmt body]
+          :else [{:sql-stmt :savepoint :sp-name stmt} body])]
+    (mk-map* stmt body)))
+
+(defn release [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :release) [stmt body]
+          :else [{:sql-stmt :release :sp-name stmt} body])]
+    (mk-map* stmt body)))
+
+(defn release-savepoint [& body]
+  (merge (apply release body) {:savepoint true}))
+
 ;;; Convert to string and execute
 
 (defn to-sql [& body]
@@ -570,8 +589,10 @@
         begin-exclusive begin-exclusive-transaction
         begin-immediate begin-immediate-transaction
         commit commit-transaction end end-transaction
-        reindex rollback rollback-to rollback-to-savepoint
+        reindex release release-savepoint
+        rollback rollback-to rollback-to-savepoint
         rollback-transaction rollback-transaction-to rollback-transaction-to-savepoint
+        savepoint
         vacuum vacuum-into]]
   (eval `(mk-render-fns ~stmts))
   (eval `(mk-exec-fns ~stmts)))

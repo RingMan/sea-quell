@@ -49,3 +49,16 @@
     (rollback-transaction-to-savepoint$ :sp) => "ROLLBACK TRANSACTION TO SAVEPOINT sp;"
     (rollback-transaction$ (to-savepoint :sp)) => "ROLLBACK TRANSACTION TO SAVEPOINT sp;"))
 
+(fact "Seaquell supports the SAVEPOINT statement"
+  (fact "savepoint is idempotent"
+    (savepoint (savepoint :sp)) => (savepoint :sp))
+  (fact "You can create a named savepoint"
+    (savepoint$ :sp) => "SAVEPOINT sp;"))
+
+(fact "Seaquell supports the RELEASE statement"
+  (fact "release is idempotent"
+    (release (release :sp)) => (release :sp))
+  (fact "You can release a savepoint"
+    (release$ :sp) => "RELEASE sp;"
+    (release-savepoint$ :sp) => "RELEASE SAVEPOINT sp;"))
+

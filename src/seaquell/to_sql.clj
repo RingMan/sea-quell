@@ -570,6 +570,13 @@
          schema (when schema (expr-to-sql schema))]
      (query-clauses [reindex schema] ";"))))
 
+(defmethod to-sql :release
+  ([{:keys [savepoint sp-name] :as stmt}]
+   (let [release "RELEASE"
+         savepoint (when savepoint "SAVEPOINT")
+         sp-name (expr-to-sql sp-name)]
+     (query-clauses [release savepoint sp-name] ";"))))
+
 (defmethod to-sql :rollback
   ([{:keys [transaction to savepoint] :as stmt}]
    (let [rollback "ROLLBACK"
@@ -577,6 +584,12 @@
          savepoint (when savepoint "SAVEPOINT ")
          to (when to (str "TO " savepoint (expr-to-sql to)))]
      (query-clauses [rollback transaction to] ";"))))
+
+(defmethod to-sql :savepoint
+  ([{:keys [sp-name] :as stmt}]
+   (let [savepoint "SAVEPOINT"
+         sp-name (expr-to-sql sp-name)]
+     (query-clauses [savepoint sp-name] ";"))))
 
 (defmethod to-sql :vacuum
   ([{:keys [schema into] :as stmt}]
