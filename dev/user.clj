@@ -36,5 +36,9 @@
 (defn qry! [& body]
   (apply sql! (concat body {:jdbc/query? true})))
 
+(defn query?
+  ([] {:jdbc/query? true})
+  ([x] {:jdbc/query? x}))
+
 (integrant.repl/set-prep! (constantly {}))
 
