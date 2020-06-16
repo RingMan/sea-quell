@@ -23,20 +23,25 @@
     :sql-str - SQL string to execute
   And two optional keys:
     :params - Parameters to pass to jdbc
-    :jdbc/query? - Force exec to call jdbc/query if truthy. Useful for literal
-                   SELECT statements introduced by a WITH clause.
+    :jdbc/query? - If truthy, treat `q` as a query. If set but falsey, don't.
+                   Useful for literal SELECT statements introduced by a WITH
+                   clause and certain PRAGMAs that look like queries but aren't.
   The following are passed directly to jdbc/query or jdbc/execute!, respectively:
     :as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn
     :multi? :transaction?"
-  [{:keys [db sql-str params] :as q}]
+  [{query? :jdbc/query? :keys [db sql-str params] :as q}]
   {:pre [(and db sql-str)]}
   (let [q (if (re-find #"^(?i)vacuum(?:\W|$)" sql-str)
             (assoc q :transaction? false)
-            q)]
-    (if (or (u/select? q) (u/compound-select? q) (:jdbc/query? q)
-            (re-find #"^(?i)(select|values|explain) " sql-str)
-            (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str)
-            (re-find #"^(?i)\s*PRAGMA\s+(?:\w|\.)+\s*;" sql-str))
+            q)
+        query?
+        (if (contains? q :jdbc/query?)
+          query?
+          (or (u/select? q) (u/compound-select? q)
+              (re-find #"^(?i)(select|values|explain) " sql-str)
+              (re-find #"^(?i)\s*ALTER\s+TABLE\s+\S+\s+RENAME\W" sql-str)
+              (re-find #"^(?i)\s*PRAGMA\s+[^=]+;" sql-str)))]
+    (if query?
       (jdbc/query
         db (cons sql-str params)
         (select-keys q [:as-arrays? :identifiers :keywordize? :qualifier :row-fn :result-set-fn]))
