@@ -1,7 +1,11 @@
 (ns seaquell.engine
   (:require [clojure.java.jdbc :as jdbc]
+            [clojure.java.jdbc.spec :as jdb-spec]
             [diesel.core :refer [def-props def-vec-props def-bool-props]]
             [seaquell.util :as u]))
+
+(defn executes? [x]
+  (clojure.spec.alpha/valid? ::jdb-spec/execute-result x))
 
 (defn db-conn [db-spec]
   (->> db-spec jdbc/get-connection (jdbc/add-connection db-spec)))
