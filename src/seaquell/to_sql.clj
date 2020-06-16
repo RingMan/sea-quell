@@ -564,6 +564,22 @@
          as (expr-to-sql as)]
      (query-clauses [detach modifier as] ";"))))
 
+(defmethod to-sql :drop
+  ([{:keys [entity index table trigger view if-exists] :as stmt}]
+   (let [drop-s "DROP"
+         entity (if entity
+                  entity
+                  (cond
+                    index :index
+                    table :table
+                    trigger :trigger
+                    view :view
+                    :else :to-sql/no-entity-to-drop))
+         tgt (expr-to-sql (get stmt entity))
+         entity (when entity (-> entity name string/upper-case))
+         if-exists (when if-exists "IF EXISTS")]
+     (query-clauses [drop-s entity if-exists tgt] ";"))))
+
 (defmethod to-sql :pragma
   ([{:keys [pragma expr] :as stmt}]
    (let [expr (expr-to-sql (if (and pragma (contains? stmt :expr))

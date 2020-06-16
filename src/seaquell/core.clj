@@ -10,9 +10,10 @@
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary database expr filter-where having indexed-by into modifier offset on op
-  schema statement to where)
+  as binary database entity expr filter-where having index indexed-by into modifier offset on op
+  schema statement table to trigger view where)
 
+(def-bool-props if-exists)
 (def-map-props set-cols)
 (def set-columns set-cols)
 (def set-fields set-cols)
@@ -404,6 +405,45 @@
 (defn detach-database [& body]
   (sql (apply detach body) (modifier :database)))
 
+;;; DROP statement
+
+(def IF-EXISTS {:if-exists true})
+
+(defn drop
+  [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :drop) [stmt body]
+          :else [{:sql-stmt :drop} (cons stmt body)])]
+    (mk-map* stmt body)))
+
+(defn drop-if-exists [& body]
+  (drop body (if-exists)))
+
+(defn drop-index [ix & body]
+  (drop (if (name? ix) (index ix) ix) body (entity :index)))
+
+(defn drop-index-if-exists [& body]
+  (apply drop-index (conj (vec body) (if-exists))))
+
+(defn drop-table [tbl & body]
+  (drop (if (name? tbl) (table tbl) tbl) body (entity :table)))
+
+(defn drop-table-if-exists [& body]
+  (apply drop-table (conj (vec body) (if-exists))))
+
+(defn drop-trigger [trg & body]
+  (drop (if (name? trg) (trigger trg) trg) body (entity :trigger)))
+
+(defn drop-trigger-if-exists [& body]
+  (apply drop-trigger (conj (vec body) (if-exists))))
+
+(defn drop-view [v & body]
+  (drop (if (name? v) (view v) v) body (entity :view)))
+
+(defn drop-view-if-exists [& body]
+  (apply drop-view (conj (vec body) (if-exists))))
+
 ;;; PRAGMA statement
 
 (defn pragma [stmt & body]
@@ -605,6 +645,10 @@
         begin-exclusive begin-exclusive-transaction
         begin-immediate begin-immediate-transaction
         commit commit-transaction end end-transaction
+        drop drop-if-exists drop-table drop-table-if-exists
+        drop-index drop-index-if-exists
+        drop-trigger drop-trigger-if-exists
+        drop-view drop-view-if-exists
         pragma
         reindex release release-savepoint
         rollback rollback-to rollback-to-savepoint
