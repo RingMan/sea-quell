@@ -7,6 +7,7 @@
                  [org.clojure/java.jdbc "0.7.11"]
                  [diesel "0.1.3-SNAPSHOT"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.3.1"]
+                                  [expound "0.8.4"]
                                   [integrant "0.8.0"]
                                   [integrant/repl "0.3.1"]
                                   [midje "1.9.9"]

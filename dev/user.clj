@@ -9,6 +9,7 @@
             [clojure.spec.alpha :as s]
             [clojure.test :as test]
             [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+            [expound.alpha :refer [expound]]
             [integrant.repl :refer [clear go halt prep init reset reset-all]]
             [me.raynes.fs :as fs]
             [midje.repl :refer [autotest]]
