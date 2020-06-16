@@ -10,7 +10,7 @@
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary database filter-where having indexed-by into modifier offset on op
+  as binary database expr filter-where having indexed-by into modifier offset on op
   schema statement to where)
 
 (def-map-props set-cols)
@@ -404,6 +404,22 @@
 (defn detach-database [& body]
   (sql (apply detach body) (modifier :database)))
 
+;;; PRAGMA statement
+
+(defn pragma [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :pragma) [stmt body]
+          (sequential? stmt) [{:sql-stmt :pragma, :pragma stmt} body]
+          (name? stmt) (let [pragma {:sql-stmt :pragma, :pragma stmt}
+                             [expr & props] body]
+                         (cond
+                           (map? expr) [pragma body]
+                           (seq? body) [(assoc pragma :expr expr) props]
+                           :else [pragma]))
+          :else [{:sql-stmt :pragma} (cons stmt body)])]
+    (mk-map* stmt body)))
+
 ;;; REINDEX statement
 
 (defn reindex
@@ -589,6 +605,7 @@
         begin-exclusive begin-exclusive-transaction
         begin-immediate begin-immediate-transaction
         commit commit-transaction end end-transaction
+        pragma
         reindex release release-savepoint
         rollback rollback-to rollback-to-savepoint
         rollback-transaction rollback-transaction-to rollback-transaction-to-savepoint

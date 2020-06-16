@@ -564,6 +564,13 @@
          as (expr-to-sql as)]
      (query-clauses [detach modifier as] ";"))))
 
+(defmethod to-sql :pragma
+  ([{:keys [pragma expr] :as stmt}]
+   (let [expr (expr-to-sql (if (and pragma (contains? stmt :expr))
+                             [= pragma expr]
+                             (or pragma expr)))]
+     (query-clauses ["PRAGMA" expr] ";"))))
+
 (defmethod to-sql :reindex
   ([{:keys [schema into] :as stmt}]
    (let [reindex "REINDEX"
