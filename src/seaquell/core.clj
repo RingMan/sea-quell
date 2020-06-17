@@ -1,5 +1,5 @@
 (ns seaquell.core
-  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
   (:require [clojure.core :as c]
             [clojure.spec.alpha :as s]
             [diesel.core :refer :all]
@@ -14,10 +14,7 @@
   schema statement table to trigger view where)
 
 (def-bool-props if-exists)
-(def-map-props set-cols)
-(def set-columns set-cols)
-(def set-fields set-cols)
-(def set-flds set-cols)
+(def-map-props set)
 (def-vec-props partition-by)
 
 (defn raw

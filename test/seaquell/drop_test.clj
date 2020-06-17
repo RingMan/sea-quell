@@ -1,6 +1,6 @@
 (ns seaquell.drop-test
   "Tests the SQLite DROP command"
-  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
   (:require [midje.sweet :refer :all]
             [seaquell.core :refer :all]
             [seaquell.engine :refer [db-conn executes?]]

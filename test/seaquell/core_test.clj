@@ -1,5 +1,5 @@
 (ns seaquell.core-test
-  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
   (:require [midje.sweet :refer :all]
             [seaquell.core :refer :all]
             [seaquell.util :refer [select?]]))
@@ -164,20 +164,17 @@
 
 (facts
   (let [stmt {:sql-stmt :update :op :update :source -tbl-}]
-    (update -tbl- (set-cols :-c1- :-v1-)) =>
-    (merge stmt {:set-cols {:-c1- :-v1-}})
+    (update -tbl- (set :-c1- :-v1-)) =>
+    (merge stmt {:set {:-c1- :-v1-}})
 
-    (update -tbl- (set-columns :-c1- :-v1-)) =>
-    (merge stmt {:set-cols {:-c1- :-v1-}})
+    (update -tbl- (not-indexed) (set :-c1- :-v1-)) =>
+    (merge stmt {:indexed-by nil, :set {:-c1- :-v1-}})
 
-    (update -tbl- (not-indexed) (set-cols :-c1- :-v1-)) =>
-    (merge stmt {:indexed-by nil, :set-cols {:-c1- :-v1-}})
-
-    (update -tbl- (indexed-by -ix-) (set-cols :-c1- :-v1-) (where -expr-)
+    (update -tbl- (indexed-by -ix-) (set :-c1- :-v1-) (where -expr-)
             (order-by -ord-) (limit -lim-) (offset -off-)) =>
     (merge stmt
            {:indexed-by -ix-
-            :set-cols {:-c1- :-v1-}
+            :set {:-c1- :-v1-}
             :where -expr-
             :order-by [-ord-]
             :limit -lim-

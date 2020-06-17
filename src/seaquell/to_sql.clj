@@ -481,11 +481,11 @@
 
 (declare set-clause)
 
-(defn do-clause [{:keys [set-cols where] :as action}]
+(defn do-clause [{set-c :set :keys [where] :as action}]
   (if action
-    (let [set-cols (set-clause set-cols)
+    (let [set-c (set-clause set-c)
           where (where-clause where)]
-      (query-clauses ["DO UPDATE" set-cols where] nil))
+      (query-clauses ["DO UPDATE" set-c where] nil))
     "DO NOTHING"))
 
 (defn on-conflict-clause [on-conflict]
@@ -505,24 +505,24 @@
          on-conflict (on-conflict-clause on-conflict)]
      (query-clauses [with insert as columns values on-conflict] ";"))))
 
-(defn set-clause [set-cols]
-  (when set-cols
+(defn set-clause [set-c]
+  (when set-c
     (str "SET "
          (string/join
            ", "
            (map (fn [[k v]] (str (expr-to-sql k) "=" (expr-to-sql v)))
-                (sort set-cols))))))
+                (sort set-c))))))
 
 (defmethod to-sql :update
-  ([{:keys [op set-cols where order-by limit offset with] :as stmt}]
+  ([{set-c :set :keys [op where order-by limit offset with] :as stmt}]
    (let [with (with-clause with)
          update (str (to-sql-keywords op) " " (join-src-to-sql stmt))
-         set-cols (set-clause set-cols)
+         set-c (set-clause set-c)
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (query-clauses [with update set-cols where order-by limit offset] ";"))))
+     (query-clauses [with update set-c where order-by limit offset] ";"))))
 
 (defmethod to-sql :explain [stmt]
   (str "EXPLAIN " (to-sql (:statement stmt))))

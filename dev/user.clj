@@ -2,6 +2,7 @@
   (:refer-clojure :rename {distinct clj-distinct,
                            drop clj-drop,
                            group-by clj-group-by,
+                           set clj-set,
                            update clj-update,
                            partition-by clj-partition-by})
   (:require [clojure.core :as c]

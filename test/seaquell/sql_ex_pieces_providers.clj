@@ -1,7 +1,7 @@
 (ns seaquell.sql-ex-pieces-providers
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
-  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map*]]
             [midje.sweet :refer :all]
@@ -165,7 +165,7 @@
 (let [c (mk-db)]
   "Increase all prices by one cent."
   (fact
-    (update! :provides (set-cols {:price [+ :price 1]}) (db c))
+    (update! :provides (set {:price [+ :price 1]}) (db c))
     => [9]
     ;; Confirm raise in price
     (select-from! :provides (db c))

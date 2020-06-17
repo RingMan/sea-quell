@@ -343,7 +343,7 @@
 
 (fact
   (let [stmt {:sql-stmt :update :source -src- :indexed-by -ix- :op -op-
-              :set-cols -s- :where -w- :order-by -ob- :limit -l- :offset -o-
+              :set -s- :where -w- :order-by -ob- :limit -l- :offset -o-
               :with -wi-}]
     (to-sql stmt)
       => ...sql...

@@ -1,7 +1,7 @@
 (ns seaquell.upsert-test
   "Uses an in-memory Sqlite database to demonstrate the use of
   SQLite UPSERT (ON CONFLICT clause in an INSERT statement)."
-  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all]
             [diesel.edit :refer [edit-in]]
@@ -13,7 +13,7 @@
       q (insert
           :vocabulary [:word] (value "jovial")
           (on-conflict [:word]
-                       (do-update (set-cols {:count [+ :count 1]})))
+                       (do-update (set {:count [+ :count 1]})))
           (db c))]
   (do-sql "CREATE TABLE vocabulary(word TEXT PRIMARY KEY, count INT DEFAULT 1);" (db c))
   (fact "vocabulary is empty"
@@ -29,8 +29,8 @@
       q (insert
           :phonebook [:name :phonenumber] (value "Alice" :?)
           (on-conflict [:name]
-                       (do-update (set-cols {:phonenumber
-                                             :excluded.phonenumber})))
+                       (do-update (set {:phonenumber
+                                        :excluded.phonenumber})))
           (db c))]
   (do-sql "CREATE TABLE phonebook(name TEXT PRIMARY KEY, phonenumber TEXT);" (db c))
   (fact "phonebook is empty"
@@ -48,8 +48,8 @@
       q (insert
           :phonebook2 [:name :phonenumber :validDate] (value "Alice" :?1 :?2)
           (on-conflict [:name]
-                       (do-update (set-cols {:phonenumber :excluded.phonenumber
-                                             :validDate :excluded.validDate})
+                       (do-update (set {:phonenumber :excluded.phonenumber
+                                        :validDate :excluded.validDate})
                                   (where {:excluded.validDate
                                           [> :phonebook2.validDate]})))
           (db c))]
@@ -70,7 +70,7 @@
 (let [c (db-conn (db-spec))
       q (insert
           :t1 (select :* (from :t2))
-          (on-conflict [:x] (do-update (set-cols {:y :excluded.y})))
+          (on-conflict [:x] (do-update (set {:y :excluded.y})))
           (db c))]
   (do-sql "CREATE TABLE t1 (x PRIMARY KEY, y);" (db c))
   (do-sql "CREATE TABLE t2 (x PRIMARY KEY, y);" (db c))
