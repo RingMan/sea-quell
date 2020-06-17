@@ -1,5 +1,5 @@
 (ns seaquell.zoo.join
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are valid solutions (as of 3/31/2013) to the
@@ -62,24 +62,24 @@
 (def q9
   (select [:teamname [count :gtime]]
           (from :eteam (join :goal :on {:teamid :id}))
-          (group :teamname)))
+          (group-by :teamname)))
 
 (def q10
   (select [:stadium [count :gtime]]
           (from :goal (join :game (on {:id :matchid})))
-          (group :stadium)))
+          (group-by :stadium)))
 
 (def q11
   (select [:matchid :mdate [count :gtime]]
           (from :game (join :goal (on {:id :matchid})))
           (where '(or (= team1 "POL") (= team2 "POL")))
-          (group :matchid :mdate)))
+          (group-by :matchid :mdate)))
 
 (def q12
   (select [:matchid :mdate [count :gtime]]
           (from :game (join :goal (on {:id :matchid})))
           (where {:teamid "GER"})
-          (group :matchid :mdate)))
+          (group-by :matchid :mdate)))
 
 (def q13
   (select
@@ -87,4 +87,4 @@
       team1, (sum (cond (= teamid team1) 1 :else 0)) :as score1
       team2, (sum (cond (= teamid team2) 1 :else 0)) :as score2]
     (from :game (join :goal :on {:matchid :id}))
-    (group :mdate :matchid :team1 :team2)))
+    (group-by :mdate :matchid :team1 :team2)))

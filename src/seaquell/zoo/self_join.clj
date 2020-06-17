@@ -1,5 +1,5 @@
 (ns seaquell.zoo.self-join
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/20/2013) to the
@@ -32,7 +32,7 @@
 (def q4 (select [:company :num [count :*]]
                 (from :route)
                 (where '(or [= stop 149] [= stop 53]))
-                (group :company :num)
+                (group-by :company :num)
                 (having [= [count :*] 2])))
 
 (def q5 (select [:a.company :a.num :a.stop :b.stop]

@@ -1,5 +1,5 @@
 (ns seaquell.select-test
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [midje.sweet :refer :all]
             [seaquell.core :refer :all]))
 
@@ -34,5 +34,5 @@
   (let [sql "SELECT DISTINCT fld FROM t;"]
     (select-distinct$ :fld (from :t)) => sql
     (select$ :fld (unique) (from :t)) => sql
-    (select$ :fld (distinkt) (from :t)) => sql
+    (select$ :fld (distinct) (from :t)) => sql
     (select$ :fld (modifier :distinct) (from :t)) => sql))

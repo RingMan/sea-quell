@@ -1,5 +1,5 @@
 (ns seaquell.core
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [clojure.core :as c]
             [clojure.spec.alpha :as s]
             [diesel.core :refer :all]
@@ -139,13 +139,13 @@
 
 (defn all [] (modifier :all))
 (defn unique [] (modifier :distinct))
-(defn distinkt [] (modifier :distinct))
+(defn distinct [] (modifier :distinct))
 
 (defn select-all [& xs] (merge (apply select xs) (all)))
-(defn select-distinct [& xs] (merge (apply select xs) (distinkt)))
+(defn select-distinct [& xs] (merge (apply select xs) (distinct)))
 
-(defn group [& xs]
-  {:group xs})
+(defn group-by [& xs]
+  {:group-by xs})
 
 ;;; WINDOW clause
 

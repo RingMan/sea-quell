@@ -1,5 +1,5 @@
 (ns seaquell.zoo.window-fns
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 2/18/2020) to the
@@ -70,5 +70,5 @@
         (where {:constituency [:like "S%"], :yr 2017}))
       (as :ed))
     (where {:posn 1})
-    (group :party)))
+    (group-by :party)))
 

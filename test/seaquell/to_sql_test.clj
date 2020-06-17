@@ -11,14 +11,14 @@
 
 (fact (to-sql {:sql-stmt :select
                :with -wi- :modifier -m- :fields -flds- :from -f- :where -w-
-               :group -gb- :having -h- :window -win- :order-by -ob- :limit -l- :offset -o-})
+               :group-by -gb- :having -h- :window -win- :order-by -ob- :limit -l- :offset -o-})
       => ...sql...
       (provided
         (with-clause -wi-) => -wic-
         (select-clause -m- -flds-) => -sc-
         (from-clause -f-) => -fc-
         (where-clause -w-) => -wc-
-        (group-clause -gb-) => -gbc-
+        (group-by-clause -gb-) => -gbc-
         (having-clause -h-) => -hc-
         (window-clause -win-) => -winc-
         (order-by-clause -ob-) => -obc-
@@ -122,10 +122,10 @@
 (fact (where-clause -expr-) => "WHERE expr"
       (provided (expr-to-sql -expr-) => "expr"))
 
-(fact (group-clause nil) => nil)
-(fact (group-clause [-expr-]) => "GROUP BY expr"
+(fact (group-by-clause nil) => nil)
+(fact (group-by-clause [-expr-]) => "GROUP BY expr"
       (provided (expr-to-sql -expr-) => "expr"))
-(fact (group-clause [-ex1- -ex2-]) => "GROUP BY ex1, ex2"
+(fact (group-by-clause [-ex1- -ex2-]) => "GROUP BY ex1, ex2"
       (provided (expr-to-sql -ex1-) => "ex1"
                 (expr-to-sql -ex2-) => "ex2"))
 

@@ -1,5 +1,7 @@
 (ns user
-  (:refer-clojure :rename {drop clj-drop,
+  (:refer-clojure :rename {distinct clj-distinct,
+                           drop clj-drop,
+                           group-by clj-group-by,
                            update clj-update,
                            partition-by clj-partition-by})
   (:require [clojure.core :as c]

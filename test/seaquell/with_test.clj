@@ -2,7 +2,7 @@
   "Uses an in-memory Sqlite database to demonstrate a couple of
   'Outlandish Recursive Query Examples' from the Sqlite website:
   https://sqlite.org/lang_with.html"
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all]
             [seaquell.core :refer :all]
@@ -66,10 +66,10 @@
         (from :m)
         (where '(and (< (+ (* x x) (* y y)) 4.0) (< iter 28))))),
     :m2[:iter :cx :cy] :as
-    (select [[max :iter] :cx :cy] (from :m) (group :cx :cy)),
+    (select [[max :iter] :cx :cy] (from :m) (group-by :cx :cy)),
     :a[:t] :as
     (select [[:group_concat '(substr " .+*#" (+ 1 (min (/ iter 7) 4)) 1) ""]] 
-            (from :m2) (group :cy))
+            (from :m2) (group-by :cy))
     (select [[:group_concat '(rtrim t) (binary "0a")]] (from :a))))
 
 (fact

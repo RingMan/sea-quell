@@ -1,7 +1,7 @@
 (ns seaquell.sql-ex-pieces-providers
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map*]]
             [midje.sweet :refer :all]
@@ -76,7 +76,7 @@
   (fact
     "Obtain the average price of each piece
     (show only the piece code and the average price)."
-    (select! [:piece [:avg :price]] (from :provides) (group :piece) (db c))
+    (select! [:piece [:avg :price]] (from :provides) (group-by :piece) (db c))
     => [{(kw "avg(price)") 12.5 :piece 1}
         {(kw "avg(price)") 16.333333333333332 :piece 2}
         {(kw "avg(price)") 47.5 :piece 3}

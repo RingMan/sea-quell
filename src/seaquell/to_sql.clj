@@ -329,9 +329,9 @@
       (str "FROM " (string/join " " (map join-op-to-sql ops))))))
 
 (defn where-clause [w] (when w (str "WHERE " (expr-to-sql w))))
-(defn group-clause [group]
-  (when group
-    (str "GROUP BY " (string/join ", " (map expr-to-sql (as-coll group))))))
+(defn group-by-clause [group-by]
+  (when group-by
+    (str "GROUP BY " (string/join ", " (map expr-to-sql (as-coll group-by))))))
 (defn having-clause [having]
   (when having (str "HAVING " (expr-to-sql having))))
 
@@ -409,14 +409,14 @@
 (defmethod to-sql :select
   ([stmt]
    (to-sql stmt true))
-  ([{:keys [fields modifier from where group having window
+  ([{:keys [fields modifier from where group-by having window
             order-by limit offset with] :as stmt}
     semi?]
    (let [with (with-clause with)
          select (select-clause modifier fields)
          from (from-clause from)
          where (where-clause where)
-         group (group-clause group)
+         group-by (group-by-clause group-by)
          having (having-clause having)
          window (window-clause window)
          order-by (order-by-clause order-by)
@@ -424,7 +424,7 @@
          offset (offset-clause offset)
          semi (when semi? ";")]
      (query-clauses
-       [with select from where group having window order-by limit offset] semi))))
+       [with select from where group-by having window order-by limit offset] semi))))
 
 (defn values-to-sql [values]
   (cond

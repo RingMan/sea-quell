@@ -1,5 +1,5 @@
 (ns seaquell.zoo.using-null
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/20/2013) to the
@@ -46,7 +46,7 @@
   (select [:dept.name [count :teacher.name]]
           (from :teacher
                 (right-join :dept (on {:teacher.dept :dept.id})))
-          (group :dept.name)))
+          (group-by :dept.name)))
 
 (def q9
   (select [:name '(cond

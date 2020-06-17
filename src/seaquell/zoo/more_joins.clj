@@ -1,5 +1,5 @@
 (ns seaquell.zoo.more-joins
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/20/2013) to the
@@ -112,7 +112,7 @@
           (join :casting :on {:movie.id :movieid})
           (join :actor :on {:actorid :actor.id}))
     (where {:name "John Travolta"})
-    (group :yr)
+    (group-by :yr)
     (having
       [= [count :title]
          (select
@@ -123,7 +123,7 @@
                          (join :casting :on {:movie.id :movieid})
                          (join :actor :on {:actor.id :actorid}))
                    (where {:name "John Travolta"})
-                   (group :yr)) :as :t))])))
+                   (group-by :yr)) :as :t))])))
 
 (def q13
   (select
@@ -169,14 +169,14 @@
           (from :casting
                 (join :actor :on {:actorid :actor.id}))
           (where {:ord 1})
-          (group :name)
+          (group-by :name)
           (having [>= [count :movieid] 30])))
 
 (def q15
   (select [:title [count :actorid]]
           (from :casting :movie)
           (where {:yr 1978, :movieid :movie.id})
-          (group :title)
+          (group-by :title)
           (order-by (desc 2))))
 
 (def q15-b
@@ -184,7 +184,7 @@
           (from :casting
                 (join :movie :on {:movieid :movie.id}))
           (where {:yr 1978})
-          (group :title)
+          (group-by :title)
           (order-by (desc 2))))
 
 (def q16

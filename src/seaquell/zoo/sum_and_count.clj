@@ -1,5 +1,5 @@
 (ns seaquell.zoo.sum-and-count
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/19/2013) to the
@@ -31,14 +31,14 @@
           (where [:in :name [vals "France" "Germany" "Spain"]])))
 
 (def q6
-  (select [:region [count :name]] (from :bbc) (group :region)))
+  (select [:region [count :name]] (from :bbc) (group-by :region)))
 
 (def q7
   (select [:region [count :name]]
           (from :bbc)
           (where [>= :population 10000000])
-          (group :region)))
+          (group-by :region)))
 
 (def q8
-  (select :region (from :bbc) (group :region)
+  (select :region (from :bbc) (group-by :region)
           (having [>= [:sum :population] 100000000])))

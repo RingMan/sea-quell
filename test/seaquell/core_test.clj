@@ -1,5 +1,5 @@
 (ns seaquell.core-test
-  (:refer-clojure :exclude [drop into update partition-by])
+  (:refer-clojure :exclude [distinct drop group-by into update partition-by])
   (:require [midje.sweet :refer :all]
             [seaquell.core :refer :all]
             [seaquell.util :refer [select?]]))
@@ -51,7 +51,7 @@
         "SELECT ALL * FROM user;")
   (fact (to-sql (select q (modifier :distinct))) =>
         "SELECT DISTINCT * FROM user;")
-  (fact (to-sql (select q (distinkt))) =>
+  (fact (to-sql (select q (distinct))) =>
         "SELECT DISTINCT * FROM user;")
   (fact (to-sql (select-distinct :* (from :user))) =>
         "SELECT DISTINCT * FROM user;"))
@@ -76,8 +76,8 @@
       (to-sql (select q (where [> :id 3]))) =>
       "SELECT * FROM user WHERE id > 3;")
 
-(fact "select handles group clause"
-      (-> (select q (group :this :that)) (:group)) => [:this :that])
+(fact "select handles group by clause"
+      (-> (select q (group-by :this :that)) (:group-by)) => [:this :that])
 
 (fact "select handles having clause"
       (-> (select q (having :expr)) (:having)) => :expr)
@@ -94,14 +94,14 @@
       (to-sql {:sql-stmt :select
                :fields [{:field :*}]
                :from :user
-               :group [:make :model]}) =>
+               :group-by [:make :model]}) =>
       "SELECT * FROM user GROUP BY make, model;")
 
 (fact "to-sql generates HAVING clause"
       (to-sql {:sql-stmt :select
                :fields [{:field :visits}]
                :from :user
-               :group [:visits]
+               :group-by [:visits]
                :having [> :visits 1]
                }) =>
       "SELECT visits FROM user GROUP BY visits HAVING visits > 1;")
