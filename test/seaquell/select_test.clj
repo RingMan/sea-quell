@@ -33,6 +33,5 @@
   "You can use the DISTINCT modifier"
   (let [sql "SELECT DISTINCT fld FROM t;"]
     (select-distinct$ :fld (from :t)) => sql
-    (select$ :fld (unique) (from :t)) => sql
     (select$ :fld (distinct) (from :t)) => sql
     (select$ :fld (modifier :distinct) (from :t)) => sql))

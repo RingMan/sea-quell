@@ -135,7 +135,6 @@
 ;;; Select Query modifiers
 
 (defn all [] (modifier :all))
-(defn unique [] (modifier :distinct))
 (defn distinct [] (modifier :distinct))
 
 (defn select-all [& xs] (merge (apply select xs) (all)))
