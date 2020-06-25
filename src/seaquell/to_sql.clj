@@ -240,12 +240,15 @@
 
 (defn order-item? [x] (:expr x))
 
+(defn collate-clause [collate]
+  (when collate (str "COLLATE " (expr-to-sql collate))))
+
 (defn order-item [x]
   (if (order-item? x)
     (let [{:keys [expr order collate nulls]} x
           expr (expr-to-sql expr)
           order (order-map order)
-          collate (when collate (str "COLLATE " (expr-to-sql collate)))
+          collate (collate-clause collate)
           nulls (condp = nulls
                   :first "NULLS FIRST"
                   :last "NULLS LAST"
@@ -389,7 +392,7 @@
     (let [{:keys [column order collate]} col
           column (expr-to-sql column)
           order (order-map order)
-          collate (when collate (str "COLLATE " (expr-to-sql collate)))]
+          collate (collate-clause collate)]
       (join-by-space [column collate order]))
     (expr-to-sql col)))
 
