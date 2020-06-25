@@ -94,7 +94,10 @@
 (declare expr-to-sql expr-to-sql*)
 
 (defn raw-to-sql [{:keys [raw]}]
-  (if (keyword? raw) (name raw) (str raw)))
+  (cond
+    (vector? raw) (r/sql$ raw)
+    (keyword? raw) (name raw)
+    :else (str raw)))
 
 (defn name-to-sql [x]
   (cond
