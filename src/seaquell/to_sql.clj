@@ -490,19 +490,22 @@
 
 (declare set-clause)
 
-(defn do-clause [{set-c :set :keys [where] :as action}]
-  (if action
-    (let [set-c (set-clause set-c)
+(defn do-clause [action]
+  (case action
+    (nil :nothing) "DO NOTHING"
+    (let [{set-c :set :keys [where]} action
+          set-c (set-clause set-c)
           where (where-clause where)]
-      (query-clauses ["DO UPDATE" set-c where] nil))
-    "DO NOTHING"))
+      (query-clauses ["DO UPDATE" set-c where] nil))))
 
 (defn on-conflict-clause [on-conflict]
-  (when-let [{action :do :keys [columns where]} on-conflict]
-    (let [columns (columns-to-sql columns)
-          where (where-clause where)
-          action (do-clause action)]
-      (query-clauses ["ON CONFLICT" columns where action] nil))))
+  (if (keyword? on-conflict)
+    (str "ON CONFLICT " (to-sql-keywords on-conflict))
+    (when-let [{action :do :keys [columns where]} on-conflict]
+      (let [columns (columns-to-sql columns)
+            where (where-clause where)
+            action (do-clause action)]
+        (query-clauses ["ON CONFLICT" columns where action] nil)))))
 
 (defmethod to-sql :insert
   ([{:keys [op into as columns values on-conflict with] :as stmt}]
