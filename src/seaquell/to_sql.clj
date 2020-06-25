@@ -313,10 +313,13 @@
       (in-parens (join-by-space (map join-op-to-sql source)))
       :else (join-by-space [(name-to-sql source) as indexed-by]))))
 
+(defn on-clause [on]
+  (when on (str "ON " (expr-to-sql on))))
+
 (defn join-op-to-sql [{:keys [source op on using] :as join}]
   (cond
     source
-    (let [on (when on (str "ON " (expr-to-sql on)))
+    (let [on (on-clause on)
           using (when using
                   (str "USING " (-> (map name-to-sql (as-coll using))
                                     (join-by-comma) (in-parens))))]
