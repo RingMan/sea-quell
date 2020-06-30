@@ -1,5 +1,26 @@
 (ns seaquell.util)
 
+(defn split-with-not [pred coll]
+  (let [not-pred (comp not pred)]
+    [(take-while not-pred coll) (drop-while not-pred coll)]))
+
+(defn constraint? [{:keys [constraint foreign-key generated not-null
+                           primary-key references unique] :as c}]
+  (cond
+    (not (map? c)) false
+    constraint (constraint? constraint)
+    (or foreign-key generated not-null primary-key references unique) true
+    :else (not-empty (select-keys c [:check :collate :default]))))
+
+(defn table-constraint? [{:keys [constraint foreign-key primary-key unique] :as c}]
+  (cond
+    (not (map? c)) false
+    constraint (table-constraint? constraint)
+    foreign-key true
+    primary-key (:columns primary-key)
+    unique (:columns unique)
+    :else (contains? c :check)))
+
 (defn regex? [x] (instance? java.util.regex.Pattern x))
 
 (defn raw? [x] (and (map? x) (= [:raw] (keys x))))

@@ -11,8 +11,9 @@
             [seaquell.util :refer :all]))
 
 (def-props
-  as binary database entity expr filter-where having index indexed-by into modifier offset on op
-  schema statement table to trigger view where)
+  as binary check database default entity expr filter-where having initially
+  index indexed-by into match modifier offset on-delete on-update op schema
+  statement table to trigger view where)
 
 (def-bool-props if-exists)
 (def-map-props set)
@@ -260,26 +261,34 @@
 
 ;;; DELETE statement
 
-(defn delete [stmt & body]
-  (let [[stmt body] (cond
-                      (sql-stmt? stmt) [stmt body]
-                      (or (= :from stmt) (:from stmt))
-                      [{:sql-stmt :delete} (cons stmt body)]
-                      :else [{:sql-stmt :delete :from stmt} body])]
-    (mk-map* stmt body)))
+(defn delete
+  "With one or more args, creates a DELETE statement. With no args, specifies
+  what database operation fires a TRIGGER."
+  ([] {:op :delete})
+  ([stmt & body]
+   (let [[stmt body] (cond
+                       (sql-stmt? stmt) [stmt body]
+                       (or (= :from stmt) (:from stmt))
+                       [{:sql-stmt :delete} (cons stmt body)]
+                       :else [{:sql-stmt :delete :from stmt} body])]
+     (mk-map* stmt body))))
 
 (def delete-from delete)
 
 ;;; INSERT statement
 
-(defn insert [stmt & [cols & rem-body :as body]]
-  (cond
-    (sql-stmt? stmt) (mk-map* stmt body)
-    (= :into stmt) (apply insert body)
-    (:into stmt) (apply insert (:into stmt) body)
-    (vector? cols) (apply insert stmt :columns cols rem-body)
-    :else (mk-map* {:sql-stmt :insert :into stmt :op :insert}
-                   (map #(if (select? %) {:values %} %) body))))
+(defn insert
+  "With one or more args, creates an INSERT statement. With no args, specifies
+  what database operation fires a TRIGGER."
+  ([] {:op :insert})
+  ([stmt & [cols & rem-body :as body]]
+   (cond
+     (sql-stmt? stmt) (mk-map* stmt body)
+     (= :into stmt) (apply insert body)
+     (:into stmt) (apply insert (:into stmt) body)
+     (vector? cols) (apply insert stmt :columns cols rem-body)
+     :else (mk-map* {:sql-stmt :insert :into stmt :op :insert}
+                    (map #(if (select? %) {:values %} %) body)))))
 
 (def insert-into insert)
 
@@ -323,21 +332,32 @@
 ;;; ON CONFLICT clause
 
 (defn column [c & args]
-  (mk-map* (if (:column c) c {:column c}) args))
+  (let [col (if (:column c) c {:column c})]
+    (mk-map* col args)))
 
 (defn columns [& xs]
   {:columns (mapv #(if (vector? %) (apply column %) (column %)) xs)})
 
-(defn on-conflict [cols & args]
+(defn on-conflict
+  [oc & args]
   (cond
-    (:on-conflict cols) (mk-map cols args)
-    (vector? cols) {:on-conflict (apply mk-map (apply columns cols) args)}
-    :else {:on-conflict (mk-map cols args)}))
+    (:on-conflict oc) (mk-map oc args)
+    (vector? oc) {:on-conflict (apply mk-map (apply columns oc) args)}
+    (or (map? oc) (seq? args)) {:on-conflict (apply mk-map oc args)}
+    :else {:on-conflict oc}))
 
 (defn do-nothing [] {:do nil})
 
 (defn do-update [& args]
   {:do (mk-map* {} args)})
+
+(defn on-conflict-do-nothing [] (on-conflict (do-nothing)))
+
+(defn on-conflict-abort [] (on-conflict :abort))
+(defn on-conflict-fail [] (on-conflict :fail))
+(defn on-conflict-ignore [] (on-conflict :ignore))
+(defn on-conflict-replace [] (on-conflict :replace))
+(defn on-conflict-rollback [] (on-conflict :rollback))
 
 ;;; UPDATE statement
 
@@ -407,6 +427,288 @@
 
 (defn detach-database [& body]
   (sql (apply detach body) (modifier :database)))
+
+;;; CREATE statement
+
+(def IF-NOT-EXISTS {:if-not-exists true})
+(def WITHOUT-ROWID {:without-rowid true})
+
+(def-bool-props
+  always autoincrement if-not-exists stored temp temporary virtual without-rowid)
+
+(def-map-props generated not-null deferrable)
+(def-vec-props ctype)
+
+;; Column CONSTRAINTs (primary-key and unique are also table constraints)
+
+(defn constraint
+  ([c]
+   (if (:constraint c) c (constraint nil c)))
+  ([id c]
+   {:id id, :constraint c}))
+
+(defn constraints [& xs]
+  {:constraints (mapv #(if (vector? %) (apply constraint %) (constraint %)) xs)})
+
+(defn primary-key [& [cols & body]]
+  (cond
+    (vector? cols) {:primary-key (mk-map (apply columns cols) body)}
+    :else {:primary-key (apply mk-map {} cols body)}))
+
+(defn unique [& [cols & body]]
+  (cond
+    (vector? cols) {:unique (mk-map (apply columns cols) body)}
+    :else {:unique (apply mk-map {} cols body)}))
+
+(defn generated-always [& body]
+  (generated body (always)))
+
+(defn generated-as [expr & body]
+  (generated (as expr) body))
+
+(defn generated-always-as [expr & body]
+  (generated (as expr) body (always)))
+
+(def AUTOINCREMENT (autoincrement))
+(def NOT-NULL (not-null))
+(def PRIMARY-KEY (primary-key))
+(def UNIQUE (unique))
+
+(def STORED (stored))
+(def VIRTUAL (virtual))
+
+(defn on-delete-set-null [] (on-delete :set-null))
+(defn on-delete-set-default [] (on-delete :set-default))
+(defn on-delete-cascade [] (on-delete :cascade))
+(defn on-delete-restrict [] (on-delete :restrict))
+(defn on-delete-no-action [] (on-delete :no-action))
+
+(defn on-update-set-null [] (on-update :set-null))
+(defn on-update-set-default [] (on-update :set-default))
+(defn on-update-cascade [] (on-update :cascade))
+(defn on-update-restrict [] (on-update :restrict))
+(defn on-update-no-action [] (on-update :no-action))
+
+(defn deferrable-initially-deferred [] (deferrable (initially :deferred)))
+(defn deferrable-initially-immediate [] (deferrable (initially :immediate)))
+(defn not-deferrable [& body] (deferrable body (modifier :not)))
+(defn not-deferrable-initially-deferred []
+  (deferrable (initially :deferred) (modifier :not)))
+(defn not-deferrable-initially-immediate []
+  (deferrable (initially :immediate) (modifier :not)))
+
+(defn references [t & [cols & args :as body]]
+  (let [[m body]
+        (cond
+          (:references t) [(:references t) body]
+          (map? t) [t body]
+          (vector? cols) [(merge {:table t} (apply columns cols)) args]
+          :else [{:table t} body])]
+    {:references (mk-map* m body)}))
+
+;; Table CONSTRAINTS
+
+(defn foreign-key [& [cols & body]]
+  (cond
+    (vector? cols) {:foreign-key (mk-map (apply columns cols) body)}
+    :else {:foreign-key (apply mk-map {} cols body)}))
+
+;; Generic CREATE syntax
+
+(defn create
+  [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :create) [stmt body]
+          :else [{:sql-stmt :create} (cons stmt body)])]
+    (mk-map* stmt body)))
+
+(defn create-if-not-exists [& body]
+  (create body (if-not-exists)))
+
+(defn create-temp [& body]
+  (create body (temp)))
+
+(defn create-temp-if-not-exists [& body]
+  (create-temp body (if-not-exists)))
+
+(defn create-temporary [& body]
+  (create body (temporary)))
+
+(defn create-temporary-if-not-exists [& body]
+  (create-temporary body (if-not-exists)))
+
+(defn split-constraints
+  "Splits out trailing table constraints from `xs`. Returns both parts of split"
+  [xs]
+  (loop [xs (vec xs), ys ()]
+    (let [c (last xs)]
+      (if (table-constraint? c)
+        (recur (pop xs) (cons c ys))
+        [xs ys]))))
+
+(defn col-defs [xs]
+  (let [[cdefs tbl-constraints] (split-constraints xs)
+        cdefs (flatten cdefs)
+        col-name? #(or (keyword? %) (symbol? %) (:column %))]
+    (loop [args [], [c & cs :as cdefs] cdefs]
+      (cond
+        (empty? cdefs) (mk-map (apply columns args)
+                               (apply constraints tbl-constraints))
+        (:column c) (recur (conj args c) cs)
+        (name? c)
+        (let [[props more] (split-with-not col-name? cs)
+              [props constr] (split-with-not constraint? props)
+              constr (c/when (not-empty constr) (apply constraints constr))]
+          (recur (conj args (column c props constr)) more))
+        :else (throw (RuntimeException. "Expected column name or definition"))))))
+
+(def BLOB (ctype :blob))
+(def INTEGER (ctype :integer))
+(def NUMERIC (ctype :numeric))
+(def REAL (ctype :real))
+(def TEXT (ctype :text))
+
+(defn create-table
+  [id & body]
+  (if (name? id)
+    (let [body (if (vector? (first body))
+                 [(col-defs (first body)) (rest body)]
+                 body)]
+      (create (table id) body (entity :table)))
+    (create id body (entity :table))))
+
+(defn create-table-if-not-exists [& body]
+  (apply create-table (conj (vec body) (if-not-exists))))
+
+(defn create-temp-table [& body]
+  (apply create-table (conj (vec body) (temp))))
+
+(defn create-temp-table-if-not-exists [& body]
+  (apply create-table (conj (vec body) (temp) (if-not-exists))))
+
+(defn create-temporary-table [& body]
+  (apply create-table (conj (vec body) (temporary))))
+
+(defn create-temporary-table-if-not-exists [& body]
+  (apply create-table (conj (vec body) (temporary) (if-not-exists))))
+
+(defn virtual-table [t]
+  {:virtual true, :table t})
+
+(defn create-virtual-table
+  [id & body]
+  (create (if (name? id) (table id) id) body (virtual) (entity :table)))
+
+(defn create-virtual-table-if-not-exists [& body]
+  (apply create-virtual-table (conj (vec body) (if-not-exists))))
+
+;;; CREATE INDEX
+
+(defn on
+  ([expr] {:on expr})
+  ([tbl cols] (let [cols (if (vector? cols) (apply columns cols) cols)]
+                (merge {:on tbl} cols))))
+
+(defn create-index [id & body]
+  (create (if (name? id) (index id) id) body (entity :index)))
+
+(defn create-index-if-not-exists [& body]
+  (apply create-index (conj (vec body) (if-not-exists))))
+
+(defn create-unique-index [& body]
+  (apply create-index (conj (vec body) (unique))))
+
+(defn create-unique-index-if-not-exists [& body]
+  (apply create-index (conj (vec body) (unique) (if-not-exists))))
+
+;;; CREATE TRIGGER
+
+(def-props fire when)
+
+(def-bool-props for-each-row)
+
+(def-vec-props statements)
+
+(defn fire
+  ([x] {:fire x})
+  ([x op] (assoc {:fire x} :op (or (:op op) op))))
+
+(defn after
+  ([] {:fire :after})
+  ([op] (fire :after op)))
+
+(defn before
+  ([] {:fire :before})
+  ([op] (fire :before op)))
+
+(defn instead-of
+  ([] {:fire :instead-of})
+  ([op] (fire :instead-of op)))
+
+(defn update-of [& cs] {:op {:update-of (vec cs)}})
+
+(defn after-delete [] (after :delete))
+(defn after-insert [] (after :insert))
+(defn after-update-of [& cs] (after (apply update-of cs)))
+(defn before-delete [] (before :delete))
+(defn before-insert [] (before :insert))
+(defn before-update-of [& cs] (before (apply update-of cs)))
+(defn instead-of-delete [] (instead-of :delete))
+(defn instead-of-insert [] (instead-of :insert))
+(defn instead-of-update-of [& cs] (instead-of (apply update-of cs)))
+
+(def AFTER-DELETE (after-delete))
+(def AFTER-INSERT (after-insert))
+(def BEFORE-DELETE (before-delete))
+(def BEFORE-INSERT (before-insert))
+(def INSTEAD-OF-DELETE (instead-of-delete))
+(def INSTEAD-OF-INSERT (instead-of-insert))
+(def FOR-EACH-ROW (for-each-row))
+
+(defn create-trigger [id & body]
+  (create (if (name? id) (trigger id) id) body (entity :trigger)))
+
+(defn create-trigger-if-not-exists [& body]
+  (apply create-trigger (conj (vec body) (if-not-exists))))
+
+(defn create-temp-trigger [& body]
+  (apply create-trigger (conj (vec body) (temp))))
+
+(defn create-temp-trigger-if-not-exists [& body]
+  (apply create-trigger (conj (vec body) (temp) (if-not-exists))))
+
+(defn create-temporary-trigger [& body]
+  (apply create-trigger (conj (vec body) (temporary))))
+
+(defn create-temporary-trigger-if-not-exists [& body]
+  (apply create-trigger (conj (vec body) (temporary) (if-not-exists))))
+
+;;; CREATE VIEW
+
+(defn create-view
+  [id & body]
+  (if (name? id)
+    (let [body (if (vector? (first body))
+                 [(apply columns (first body)) (rest body)]
+                 body)]
+      (create (view id) body (entity :view)))
+    (create id body (entity :view))))
+
+(defn create-view-if-not-exists [& body]
+  (apply create-view (conj (vec body) (if-not-exists))))
+
+(defn create-temp-view [& body]
+  (apply create-view (conj (vec body) (temp))))
+
+(defn create-temp-view-if-not-exists [& body]
+  (apply create-view (conj (vec body) (temp) (if-not-exists))))
+
+(defn create-temporary-view [& body]
+  (apply create-view (conj (vec body) (temporary))))
+
+(defn create-temporary-view-if-not-exists [& body]
+  (apply create-view (conj (vec body) (temporary) (if-not-exists))))
 
 ;;; DROP statement
 
@@ -501,11 +803,14 @@
 
 ;;; BEGIN statement
 
-(defn begin [& [stmt & body :as args]]
+(defn begin
+  "Create a SQL BEGIN statement or specify actions for CREATE TRIGGER"
+  [& [stmt & body :as args]]
   (let [[stmt body]
         (cond
           (nil? args) [{:sql-stmt :begin}]
           (= (:sql-stmt stmt) :begin) [stmt body]
+          (every? sql-stmt? args) [{:begin (vec args)}]
           :else [{:sql-stmt :begin} args])]
     (mk-map* stmt body)))
 
@@ -648,6 +953,20 @@
         begin-exclusive begin-exclusive-transaction
         begin-immediate begin-immediate-transaction
         commit commit-transaction end end-transaction
+        create create-if-not-exists create-temp create-temp-if-not-exists
+        create-temporary create-temporary-if-not-exists
+        create-index create-index-if-not-exists
+        create-unique-index create-unique-index-if-not-exists
+        create-table create-table-if-not-exists
+        create-temp-table create-temp-table-if-not-exists
+        create-temporary-table create-temporary-table-if-not-exists
+        create-virtual-table create-virtual-table-if-not-exists
+        create-trigger create-trigger-if-not-exists
+        create-temp-trigger create-temp-trigger-if-not-exists
+        create-temporary-trigger create-temporary-trigger-if-not-exists
+        create-view create-view-if-not-exists
+        create-temp-view create-temp-view-if-not-exists
+        create-temporary-view create-temporary-view-if-not-exists
         drop drop-if-exists drop-table drop-table-if-exists
         drop-index drop-index-if-exists
         drop-trigger drop-trigger-if-exists

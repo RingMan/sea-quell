@@ -576,6 +576,158 @@
          as (expr-to-sql as)]
      (query-clauses [detach modifier as] ";"))))
 
+(defn using-clause [using]
+  (when-let [[module & args] (seq using)]
+    (str "USING " (name-to-sql module)
+         (when args
+           (str "(" (string/join ", " (map expr-to-sql args)) ")")))))
+
+(defn ctype-to-sql [ctype]
+  (when ctype
+    (let [[ids nums] (u/split-with-not number? ctype)
+          ids (join-by-space
+                (map #(if (keyword? %)(to-sql-keywords %) (expr-to-sql %)) ids))
+          nums (when (not-empty nums)
+                 (in-parens (join-by-comma (map expr-to-sql nums))))]
+      (str ids nums))))
+
+(defn not-null-to-sql [{:keys [on-conflict]}]
+  (let [on-conflict (on-conflict-clause on-conflict)]
+    (query-clauses ["NOT NULL" on-conflict] nil)))
+
+(defn pk-or-unique-to-sql [prefix {:keys [columns order on-conflict autoincrement]}]
+  (let [columns (when columns (columns-to-sql columns))
+        order (order-map order)
+        on-conflict (on-conflict-clause on-conflict)
+        autoincrement (when autoincrement "AUTOINCREMENT")]
+    (query-clauses [prefix columns order on-conflict autoincrement] nil)))
+
+(defn deferrable-clause [{:keys [initially modifier] :as deferrable}]
+  (when deferrable
+    (let [initially (when initially (str "INITIALLY " (to-sql-keywords initially)))
+          modifier (when modifier (to-sql-keywords modifier))]
+      (join-by-space [modifier "DEFERRABLE" initially]))))
+
+(defn references-to-sql [{:keys [table columns match on-delete on-update deferrable]}]
+  ;TODO: maybe allow clauses key that can contain multiple match, on-delete,
+  ;or on-update clauses in an arbitrary order as SQLite syntax allows
+  (let [table (name-to-sql table)
+        columns (columns-to-sql columns)
+        on-delete (when on-delete (str "ON DELETE " (to-sql-keywords on-delete)))
+        on-update (when on-update (str "ON UPDATE " (to-sql-keywords on-update)))
+        match (when match (str "MATCH (" (to-sql-keywords match) ")"))
+        deferrable (deferrable-clause deferrable)]
+    (join-by-space ["REFERENCES" table columns on-delete on-update match deferrable])))
+
+(defn foreign-key-clause [{:keys [columns references]}]
+  (let [columns (columns-to-sql columns)
+        refs (references-to-sql references)]
+    (join-by-space ["FOREIGN KEY" columns refs])))
+
+(defn generated-clause [{:keys [always as stored virtual]}]
+  (let [always (when always "GENERATED ALWAYS")
+        as (when as (str "AS (" (expr-to-sql as) ")"))
+        storage (cond stored "STORED", virtual "VIRTUAL")]
+    (join-by-space [always as storage])))
+
+(defn constraint-to-sql
+  [{{:keys [check collate default foreign-key generated not-null primary-key
+            references unique] :as c} :constraint,
+    id :id}]
+  (let [c-str
+        (cond
+          (keyword? c) (to-sql-keywords c)
+          check (str "CHECK (" (expr-to-sql check) ")")
+          collate (collate-clause collate)
+          (contains? c :default) (str "DEFAULT " (expr-to-sql default))
+          foreign-key (foreign-key-clause foreign-key)
+          generated (generated-clause generated)
+          not-null (not-null-to-sql not-null)
+          primary-key (pk-or-unique-to-sql "PRIMARY KEY" primary-key)
+          unique (pk-or-unique-to-sql "UNIQUE" unique)
+          references (references-to-sql references))
+        id (when id (str "CONSTRAINT " (name-to-sql id)))]
+    (join-by-space [id c-str])))
+
+(defn constraints-to-sql [xs join-fn]
+  (when-not (empty? xs)
+    (join-fn (map constraint-to-sql xs))))
+
+(defn column-def-to-sql [col]
+  (if (:column col)
+    (let [{:keys [column ctype constraints order collate]} col
+          column (expr-to-sql column)
+          ctype (ctype-to-sql ctype)
+          constraints (constraints-to-sql constraints join-by-space)
+          order (order-map order)
+          collate (collate-clause collate)]
+      (join-by-space [column ctype constraints collate order]))
+    (expr-to-sql col)))
+
+(defn column-defs-to-sql [cols]
+  (when cols
+    (string/join ", " (map column-def-to-sql (as-coll cols)))))
+
+(defn db-entity [ent idx tbl trg view]
+  (if ent
+    ent
+    (cond idx :index
+          tbl :table
+          trg :trigger
+          view :view
+          :else :to-sql/invalid-db-entity)))
+
+(defn trigger-ev-to-sql [{:keys [fire op] :as stmt}]
+  (when op
+    (let [fire (when fire (to-sql-keywords fire))
+          {:keys [update-of]} op]
+      (join-by-space
+        [fire
+         (if update-of
+           (str "UPDATE OF " (join-by-comma (map name-to-sql update-of)))
+           (to-sql-keywords op))]))))
+
+(defn begin-clause [begin]
+  (when begin
+    (str "BEGIN " (join-by-space (map to-sql begin)) " END")))
+
+(defmethod to-sql :create
+  ([{:keys [as begin columns constraints entity for-each-row index on table
+            trigger view if-not-exists temp temporary unique using virtual
+            where without-rowid] when-e :when, :as stmt}]
+   (let [create "CREATE"
+         begin (begin-clause begin)
+         columns (column-defs-to-sql columns)
+         constraints (constraints-to-sql constraints join-by-comma)
+         columns (when columns (in-parens (join-by-comma [columns constraints])))
+         entity (db-entity entity index table trigger view)
+         ent (when entity (-> entity name string/upper-case))
+         ev (trigger-ev-to-sql stmt)
+         for-each-row (when for-each-row "FOR EACH ROW")
+         id (expr-to-sql (get stmt entity))
+         if-not-exists (when if-not-exists "IF NOT EXISTS")
+         temp (when temp "TEMP")
+         temporary (when temporary "TEMPORARY")
+         tmp (or temp temporary)
+         unique (when unique "UNIQUE")
+         on (on-clause on)
+         using (using-clause using)
+         virtual (when virtual "VIRTUAL")
+         when-e (when (contains? stmt :when) (str "WHEN " (expr-to-sql when-e)))
+         where (where-clause where)
+         without-rowid (when without-rowid "WITHOUT ROWID")
+         as (when as (str "AS " (to-sql as nil)))
+         clauses
+         (case entity
+           :index [create unique ent if-not-exists id on columns where]
+           (:table :view)
+           (if virtual
+             [create virtual ent if-not-exists id using]
+             [create tmp ent if-not-exists id columns without-rowid as])
+           :trigger
+           [create tmp ent if-not-exists id ev on for-each-row when-e begin])]
+     (query-clauses clauses ";"))))
+
 (defmethod to-sql :drop
   ([{:keys [entity index table trigger view if-exists] :as stmt}]
    (let [drop-s "DROP"
