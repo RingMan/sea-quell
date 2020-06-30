@@ -1,5 +1,6 @@
 (ns seaquell.zoo.window-fns
-  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 2/18/2020) to the

@@ -1,10 +1,11 @@
 (ns seaquell.sql-ex-pieces-providers
   "Uses an in-memory Sqlite database to do the SQL exercises at
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
-  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
   (:require [clojure.java.jdbc :as jdb]
             [diesel.core :refer [mk-map*]]
-            [midje.sweet :refer :all]
+            [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.engine :refer :all]
             [seaquell.sqlite :refer [db-spec]]))

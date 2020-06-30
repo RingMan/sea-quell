@@ -1,7 +1,8 @@
 (ns seaquell.reindex-test
   "Tests the SQLite REINDEX command"
-  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
-  (:require [midje.sweet :refer :all]
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
+  (:require [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.engine :refer [db-conn executes?]]
             [seaquell.sqlite :refer [db-spec]]))

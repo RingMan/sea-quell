@@ -1,8 +1,9 @@
 (ns seaquell.vacuum-test
   "Tests the SQLite VACUUM command"
-  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
   (:require [me.raynes.fs :as fs]
-            [midje.sweet :refer :all]
+            [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.engine :refer [db-conn executes?]]
             [seaquell.sqlite :refer [db-spec]]))

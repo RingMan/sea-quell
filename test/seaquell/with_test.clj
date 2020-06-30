@@ -2,9 +2,10 @@
   "Uses an in-memory Sqlite database to demonstrate a couple of
   'Outlandish Recursive Query Examples' from the Sqlite website:
   https://sqlite.org/lang_with.html"
-  (:refer-clojure :exclude [distinct drop group-by into set update partition-by])
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
   (:require [clojure.java.jdbc :as jdb]
-            [midje.sweet :refer :all]
+            [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.sqlite :refer [db-spec]]))
 

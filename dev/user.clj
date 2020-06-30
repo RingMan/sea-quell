@@ -1,10 +1,6 @@
 (ns user
-  (:refer-clojure :rename {distinct clj-distinct,
-                           drop clj-drop,
-                           group-by clj-group-by,
-                           set clj-set,
-                           update clj-update,
-                           partition-by clj-partition-by})
+  (:refer-clojure
+    :exclude [distinct drop group-by into set update partition-by when])
   (:require [clojure.core :as c]
             [clojure.java.io :as io]
             [clojure.string :as str]
