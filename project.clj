@@ -9,7 +9,7 @@
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.3.1"]
                                   [integrant "0.8.0"]
                                   [midje "1.9.9"]
-                                  [org.xerial/sqlite-jdbc "3.31.1"]
+                                  [org.xerial/sqlite-jdbc "3.32.3"]
                                   [mysql/mysql-connector-java "5.1.23"]
                                   [org.hsqldb/hsqldb "2.2.9"]
                                   [clj-commons/fs "1.5.2"]]
