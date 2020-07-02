@@ -1,0 +1,160 @@
+== Installing Seaquell
+
+If you haven't already done so, follow the instructions in the main https://github.com/RingMan/sea-quell[README] file and come back here.
+
+== Creating Statements
+
+The *Statement* is the primary abstraction.
+It represents a single SQL statement.
+Individual statements can be grouped in two ways: they may be lumped in a *Statement Sequence* or wrapped in a *Transaction*.
+
+At its heart, `seaquell` gives you a syntax for creating instances of SQL statements as simple values.
+Here's the "Hello, world" of _seaquell_:
+
+[source,clojure]
+----
+(select :* (from :user))
+----
+
+Calling `select` doesn't actually execute a SELECT query, it creates an internal representation of one.
+Once the statement exists you can do something useful with it like convert it to a string or execute it.
+
+Since every library has to start somewhere, we'll start with the `select` statement and add more over time.
+
+* <<Select.adoc#, Select>>
+* <<Compound-Select.adoc#, Compound Select>>
+
+== Composing Statements
+
+Of course, one of the main reasons for treating SQL statements as data is so that you can manipulate them over time.
+
+Here's how to compose a select statement in `seaquell`.
+
+. Create the base query with `select`
+. Pass it to `select` to add new clauses or replace existing ones
+
+[source,clojure]
+----
+(def widgets (select :* (from :widget)))
+;; "SELECT * FROM widget;"
+(def cheap-widgets (select widgets (where [< :price 10])))
+;; "SELECT * FROM widget WHERE price < 10;"
+(def sorted-cheap-widgets (select cheap-widgets (order-by :price)))
+;; "SELECT * FROM widget WHERE price < 10 ORDER BY price;"
+(def some-sorted-cheap-widgets (select sorted-cheap-widgets (limit 3) (offset 5)))
+;; "SELECT * FROM widget WHERE price < 10 ORDER BY price LIMIT 3 OFFSET 5;"
+
+(def some-sorted-pricey-widgets (select some-sorted-cheap-widgets (where [> :price 100])))
+;; "SELECT * FROM widget WHERE price > 100 ORDER BY price LIMIT 3 OFFSET 5;"
+
+(def some-sorted-cheap-gadgets (select some-sorted-cheap-widgets (from :gadget)))
+;; "SELECT * FROM gadget WHERE price < 10 ORDER BY price LIMIT 3 OFFSET 5;"
+----
+
+As you can see, it's very natural to add or replace clauses.
+But what if you want to modify existing ones?
+For now, you'll have to know how statements are <<Select-Statement-Representation.adoc#, represented>> and use the tools that Clojure already provides.
+
+Check out the <<Composing-Statements.adoc#, Composing Statements>> page for more thoughts on this subject.
+
+== Executing Statements
+
+To execute a statement just call `do-sql` passing it as an argument.
+
+[source,clojure]
+----
+(do-sql (select :* (from :user)))
+----
+
+`do-sql` will also accept one or more parameters after the SQL statement or SQL string.
+
+You can also `def` your statement and call `do-sql` later like this:
+
+[source,clojure]
+----
+(def q (select :* (from :user)))
+(do-sql q)
+----
+
+If you don't need to specify any parameters or save your query definition, the easiest way to create and then execute a select statment is this:
+
+[source,clojure]
+----
+(select! :* (from :user))
+----
+
+== Parameterizing Statements
+
+For now, `seaquell` doesn't automatically parameterize your query.
+To do so yourself, just use `:?` instead of a literal value.
+Then call `do-sql` with the actual parameter values:
+
+[source,clojure]
+----
+=> (def q (select [:name :owner] :from :pet :where {:name [:like :?] :species :?}))
+=> (do-sql q "%uff%" "dog")
+[{:owner "Harold", :name "Buffy"}]
+----
+
+== Converting Statements
+
+Sometimes it's useful to see what SQL string your statement expands to.
+Use `to-sql` to convert a statement to a string:
+
+[source,clojure]
+----
+(to-sql (select :* (from :user)))
+----
+
+The `do-sql` function calls `to-sql` on your statement internally before executing it.
+
+Another way to define a select statement and convert it to a string in one step is this:
+
+[source,clojure]
+----
+(select$ :* (from :user))
+----
+
+== Representing Statements
+
+Every statement is just a map with a `:sql-stmt` key.
+Each kind of statement will have its own set of keys used to define it and rules for what values are permissible.
+
+Most `seaquell` functions simply return a value representing
+
+* a fragment of a statement
+* a complete statement
+* a sequence of statements
+* a transaction
+
+To understand the internal specification of any given kind of statement, follow the links below.
+
+* <<Documentation-Conventions.adoc#, Documentation Conventions>>
+* <<Select-Statement-Representation.adoc#, Select>>
+* <<Delete-Statement-Representation.adoc#, Delete>> (proposed)
+* <<Insert-Statement-Representation.adoc#, Insert>> (proposed)
+* <<Update-Statement-Representation.adoc#, Update>> (proposed)
+
+== Learning Statements
+
+An excellent way to learn a new library is to see it in action.
+With that in mind, here are some answers to various http://SQLZoo.net[SQL Zoo] tutorials:
+
+* link:../src/seaquell/zoo/select_within_select.clj[Select within Select]
+* link:../src/seaquell/zoo/join.clj[Joins]
+
+== What's next?
+
+There's still a lot of work to do.
+Select statements are coming along nicely.
+You can express some very complicated queries with a fairly intuitive syntax.
+
+Below are some of the things that are still missing:
+
+* Automatic parameter extraction
+* Automatic quoting for table and field identifiers
+* Comprehensive support for modifying existing queries.
+It's easy to completely replace clauses, but not so easy to modify existing ones (although you do have the full power of Clojure functions like `update-in` and so on)
+* Entity definitions and automatic joins based on them
+* Other statement types (particularly DELETE, UPDATE, INSERT)
+* A mechanism for extending the default SQL generator for specific dialects

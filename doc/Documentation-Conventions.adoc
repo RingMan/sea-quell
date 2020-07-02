@@ -1,0 +1,30 @@
+= Documentation Conventions
+
+I use a few simple conventions for documenting `seaquell`.
+In particular, I use midje-style metaconstants.
+
+* `+...expr...+` is any <<Expression-Representation.adoc#, expression>>
+* `+...expr-list...+` is a single <<Expression-Representation.adoc#, expression>> or a collection of them
+* `+...name...+` is either a keyword, symbol, or string (anything you can call `name` on)
+* `+...name-list...+` is a single name or a collection of them
+* `+...sql-kw...+` is something convertible to one or more consecutive SQL keywords.
+Most often it will be a Clojure style keyword like `:left-outer-join` which would become `LEFT OUTER JOIN` or a string like `"decimal(4,3)"` which would pass through unmodified.
+* `+...select...+` is a <<Select-Statement-Representation.adoc#, select statement>>
+
+In general, any time a metaconstant ends with `+-list...+` it means either a single item of the type or a collection of them.
+
+Clojure code is shown in code blocks like this:
+
+[source,clojure]
+----
+(+ 2 2)
+----
+
+REPL interaction includes the `+=>+` prompt before forms that are evaluated and omits the prompt for the results of evaluation.
+Not all results are shown.
+
+[source,clojure]
+----
+=> (+ 2 2)
+4
+----

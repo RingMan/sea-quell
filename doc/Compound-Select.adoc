@@ -1,0 +1,80 @@
+= Compound Selects
+
+A compound select statement is one that uses any of the set operations UNION, INTERSECT, or EXCEPT.
+
+For the following descriptions, assume we have defined the following five select statements and that each table has the same column definitions.
+
+[source,clojure]
+----
+=> (def q1 (select :* :from :t1))
+=> (def q2 (select :* :from :t2))
+=> (def q3 (select :* :from :t3))
+=> (def q4 (select :* :from :t4))
+=> (def q5 (select :* :from :t5))
+----
+
+== Union and Union All
+
+[source,clojure]
+----
+=> (to-sql (union q1 q2 q3))
+"SELECT * FROM t1 UNION SELECT * FROM t2 UNION SELECT * FROM t3;"
+=> (to-sql (union-all q1 q2 q3))
+"SELECT * FROM t1 UNION ALL SELECT * FROM t2 UNION ALL SELECT * FROM t3;"
+----
+
+== Intersect and Intersect All
+
+[source,clojure]
+----
+=> (to-sql (intersect q1 q2 q3))
+"SELECT * FROM t1 INTERSECT SELECT * FROM t2 INTERSECT SELECT * FROM t3;"
+=> (to-sql (intersect-all q1 q2 q3))
+"SELECT * FROM t1 INTERSECT ALL SELECT * FROM t2 INTERSECT ALL SELECT * FROM t3;"
+----
+
+== Except
+
+[source,clojure]
+----
+=> (to-sql (except q1 q2 q3))
+"SELECT * FROM t1 EXCEPT SELECT * FROM t2 EXCEPT SELECT * FROM t3;"
+----
+
+== Arbitrary Compound Selects
+
+The above constructs are just syntactic sugar for an arbitrary compound select which can combine multiple set operations.
+Here they are using `compound-select`:
+
+[source,clojure]
+----
+(compound-select q1 (union q2 q3))
+(compound-select q1 (union-all q2 q3))
+(compound-select q1 (intersect q2 q3))
+(compound-select q1 (intersect-all q2 q3))
+(compound-select q1 (except q2 q3))
+----
+
+Here's an example that uses multiple set operations (I wrapped the string to make it more readable):
+
+[source,clojure]
+----
+=> (to-sql (compound-select q1 (union q2 q3) (intersect q4) (except q5)))
+"SELECT * FROM t1
+ UNION SELECT * FROM t2 UNION SELECT * FROM t3
+ INTERSECT SELECT * FROM t4
+ EXCEPT SELECT * FROM t5;"
+----
+
+== Order By, Limit, and Offset
+
+Any of the compound select flavors above can be used with the `order-by`, `limit`, and `offset` from a simple `select`.
+For example:
+
+[source,clojure]
+----
+=> (to-sql (union q1 q2 (order-by (asc :f1 :f2) (desc :f3)) (limit 3) (offset 5)))
+"SELECT * FROM t1 UNION SELECT * FROM t2
+ ORDER BY f1 ASC, f2 ASC, f3 DESC
+ LIMIT 3 OFFSET 5;"
+----

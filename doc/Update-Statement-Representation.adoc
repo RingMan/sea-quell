@@ -1,0 +1,58 @@
+The map below shows the structure of the _update_ statement.
+The `sql-stmt`, `op`, `source` and `set-cols` keys are required.
+
+[source,clojure]
+----
+{:sql-stmt :update
+ :op ...sql-kw...
+ :source ...name...
+ :indexed-by ...name-or-nil...
+ :set-cols ...col-map...
+ :where ...expr...
+ :order-by ...order-item-list...
+ :limit ...expr...
+ :offset ...expr...}
+----
+
+== Source
+
+`+...name...+` is anything convertible to a table name, usually a keyword.
+
+== Indexed-by
+
+`:indexed-by` is anything convertible to an index name, usually a keyword.
+
+Here's how `:indexed-by` would be used...
+
+[source,clojure]
+----
+{:source :tbl}
+;; UPDATE tbl
+{:source :tbl :indexed-by nil}
+;; UPDATE tbl NOT INDEXED
+{:source :tbl :indexed-by :ix}
+;; UPDATE tbl INDEXED BY ix
+----
+
+== Op
+
+The `:op` key can be anything convertible by `to-sql-keywords`.
+Syntax will be provided for at least these update operations.
+
+[source,clojure]
+----
+#{:update, :update-or-rollback, :update-or-abort, :update-or-replace
+  :update-or-fail, :update-or-ignore}
+----
+
+== Set-cols
+
+The `:set-cols` value must be a map from column names to values.
+The keys can be anything convertible to a column name (most commonly a keyword).
+The values are <<Expression-Representation.adoc#, expressions>>
+
+== Other Clauses
+
+The remaining clauses have the same meaning as in <<Select-Statement-Representation.adoc#, select statements>>.
+
+http://www.sqlite.org/lang_update.html[SQLite] optionally allows ORDER BY, LIMIT and OFFSET clauses, but they may not be standard SQL.

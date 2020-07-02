@@ -1,0 +1,56 @@
+The structure of the _insert_ statement is based on https://sqlite.org/lang_insert.html[SQLite syntax].
+
+[source,clojure]
+----
+{:sql-stmt :insert
+ :op ...sql-kw...
+ :source ...name...
+ :columns ...col-list...
+ :values ...values...}
+----
+
+== Source
+
+`+...name...+` is anything convertible to a table name, usually a keyword.
+
+== Op
+
+The `:op` key can be anything convertible by `to-sql-keywords`.
+Syntax will be provided for at least these insert operations.
+
+[source,clojure]
+----
+#{:insert, :insert-or-rollback, :insert-or-abort, :insert-or-replace
+  :insert-or-fail, :insert-or-ignore, :replace}
+----
+
+== Columns
+
+`+...col-list...+` can be a single column name or a collection of them.
+Any given column must be convertible to a column name (most commonly a keyword).
+
+== Values
+
+`+...values...+` is either the keyword `:default`, a <<Select-Statement-Representation.adoc#, select statement>>, or a collection of rows where each row is itself a collection of <<Expression-Representation.adoc#, expressions>>.
+
+`:columns` is ignored if `:values` is `:default`.
+
+== Values Syntax
+
+[source,clojure]
+----
+(values :default) ; => DEFAULT VALUES
+(values ...select...) ; use a select statement for the values
+(values [r1c1 r1c2 r1c3] [r2c1 r2c2 r2c3] ...) ; each arg is a row value
+;; VALUES (r1c1, r1c2, r1c3), (r2c1, r2c2, r2c3), ...
+(value c1 c2 c3 ...) ; insert one value; each arg is a column value
+;; VALUES (c1, c2, c3, ...)
+----
+
+The `default-values` or just `defaults` functions produce the following map:
+
+[source,clojure]
+----
+{:columns nil
+ :values :default}
+----

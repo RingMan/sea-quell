@@ -1,0 +1,275 @@
+= Select Statements
+
+So far, `seaquell` supports precisely one kind of SQL statement: `select`
+
+Most of the example statements here are written against the `pet` or `event` table of the `menagerie` example MySQL database.
+Here are the rows in the `pet` table:
+
+----
+mysql> select * from pet;
++----------+--------+---------+------+------------+------------+
+| name     | owner  | species | sex  | birth      | death      |
++----------+--------+---------+------+------------+------------+
+| Puffball | Diane  | hamster | f    | 1999-03-30 | NULL       |
+| Fluffy   | Harold | cat     | f    | 1993-02-04 | NULL       |
+| Claws    | Gwen   | cat     | m    | 1994-03-17 | NULL       |
+| Buffy    | Harold | dog     | f    | 1989-05-13 | NULL       |
+| Fang     | Benny  | dog     | m    | 1990-08-27 | NULL       |
+| Bowser   | Diane  | dog     | m    | 1979-08-31 | 1995-07-29 |
+| Chirpy   | Gwen   | bird    | f    | 1998-09-11 | NULL       |
+| Whistler | Gwen   | bird    | NULL | 1997-12-09 | NULL       |
+| Slim     | Benny  | snake   | m    | 1996-04-29 | NULL       |
++----------+--------+---------+------+------------+------------+
+9 rows in set (0.00 sec)
+----
+
+== Selecting Fields
+
+The first argument to `select` is a single value specifying what field or fields to show in the result.
+
+[source,clojure]
+----
+;; To select all fields
+(select :* (from :pet))
+(select :pet.* (from :pet))
+
+;; To select a single field
+(select :name (from :pet))
+(select :pet.name (from :pet))
+(select (field :name) (from :pet))
+(select (field :name :as :handle) (from :pet))
+
+;; To select multiple fields, put them in a vector or list
+(select [:name :owner] (from :pet))
+(select [:name :owner] (from :pet))
+----
+
+Here's an example of multiple fields with aliases using two styles of syntax.
+
+[source,clojure]
+----
+=> (select$ [:name :as :n :owner (as :o)] :from :pet)
+"SELECT name AS n, owner AS o FROM pet;"
+----
+
+Expressions can also be used as fields and given aliases.
+
+[source,clojure]
+----
+=> (select$ [[count :*] :as :count] :from :event)
+"SELECT COUNT(*) AS count FROM event;"
+----
+
+So can scalar subqueries.
+
+[source,clojure]
+----
+=> (def q (select [[count :*]] :from :event))
+=> (select$ [q :as :events :name] :from :pet)
+"SELECT (SELECT COUNT(*) FROM event) AS events, name FROM pet;"
+----
+
+== Selecting Distinct Rows
+
+There are other ways, but probably the easiest is to call `select-distinct` instead of `select`.
+
+[source,clojure]
+----
+(select-distinct :owner :from :pet)
+----
+
+== From Clause
+
+You've already seen how to select rows from a single table.
+You can alias a table the same way you alias a field.
+
+[source,clojure]
+----
+=> (select$ :* (from :pet (as :p)))
+"SELECT * FROM pet AS p;"
+=>  (select$ :* (from :pet :as :p))
+"SELECT * FROM pet AS p;"
+----
+
+== Joins
+
+You can join a table to another.
+This example shows the owner, pet name, and pet birthday for pets that had a birthday.
+
+[source,clojure]
+----
+  => (select$ [:owner :e.name :birth]
+#_=> (from :event :as :e (join :pet :as :p (on {:p.name :e.name})))
+#_=> (where {:type "birthday"}))
+"SELECT owner, e.name, birth
+ FROM event AS e JOIN pet AS p ON p.name = e.name
+ WHERE type = 'birthday';"
+----
+
+=== Sources
+
+There are three possible sources you can use in a join: a table, a subquery, or a nested join.
+
+[source,clojure]
+----
+;; join with another table
+(join :table)
+;; join with a subquery
+(def q (select :* :from :user))
+(join q)
+;; a nested join
+(join [:t1 (join :t2) (join :t3)])
+----
+
+=== Aliases
+
+You can use table aliases in your joins.
+Here are the same joins from above with aliases.
+
+[source,clojure]
+----
+;; join with another table
+(join :table :as :t)
+;; join with a subquery
+(def q (select :* :from :user))
+(join q (as :users))
+;; a nested join
+(join [:t1 (join :t2) (join :t3)] :as :nested)
+----
+
+=== Supported Operations
+
+You can use any of the following set of functions to do a join.
+
+[source,clojure]
+----
+#{join, cross-join, inner-join, left-join, right-join, full-join
+  left-outer-join, right-outer-join, full-outer-join
+  natural-join, natural-cross-join, natural-inner-join
+  natural-left-join, natural-right-join, natural-full-join
+  natural-left-outer-join, natural-right-outer-join, natural-full-outer-join
+  straight-join}
+----
+
+If you require some other join flavor that isn't listed above, you can use `op` with a Clojure-style keyword:
+
+[source,clojure]
+----
+(join :t1 (op :dialect-specific-join))
+;; => DIALECT SPECIFIC JOIN t1
+----
+
+=== On
+
+One way to specify join criteria is with `on` and a boolean <<expressions.adoc#, expression>>
+
+[source,clojure]
+----
+=> (select$ :* (from :t0 (join :t1 (on [:and [= :f1 :t1.f1] [= :f2 :t2.f2]]))))
+"SELECT * FROM t0 JOIN t1 ON f1 = t1.f1 AND f2 = t2.f2;"
+----
+
+Here's the same query using an expression map (ala Korma) for the condition.
+These do work beautifully for boolean predicates.
+
+[source,clojure]
+----
+(select$ :* (from :t0 (join :t1 (on {:f1 :t1.f1 :f2 :t2.f2}))))
+"SELECT * FROM t0 JOIN t1 ON f1 = t1.f1 AND f2 = t2.f2;"
+----
+
+=== Using
+
+If your dialect supports it, the above query can be expressed even more succintly with the `using` function.
+
+[source,clojure]
+----
+(select$ :* (from :t0 (join :t1 (using :f1 :f2))))
+"SELECT * FROM t0 JOIN t1 USING (f1, f2);"
+----
+
+== Where Clause
+
+The `where` function takes a boolean <<expressions.adoc#, expression>>.
+
+[source,clojure]
+----
+(where ...expr...)
+----
+
+== Group By Clause
+
+The `group` function (since `group-by` conflicts with Clojure) takes one or more expressions to group by.
+
+[source,clojure]
+----
+(group ...expr1... ...expr2... ...)
+----
+
+Here's an example that counts the number of pets for each owner.
+
+[source,clojure]
+----
+=> (select$ [:owner [count :name] :as :pets] (from :pet) (group :owner))
+"SELECT owner, COUNT(name) AS pets FROM pet GROUP BY owner;"
+----
+
+== Having Clause
+
+The `having` function takes a boolean <<expressions.adoc#, expression>>.
+
+[source,clojure]
+----
+(having ...expr...)
+----
+
+This example limits the query above to just the owners with more than two pets
+
+[source,clojure]
+----
+=> (select$ [:owner [count :name] :as :pets] (from :pet) (group :owner) (having [> :pets 2]))
+"SELECT owner, COUNT(name) AS pets FROM pet GROUP BY owner HAVING pets > 2;"
+----
+
+== Order By Clause
+
+The `order-by` function takes one or more _order items_.
+Each order item can be an expression (usually a field name) or the result of calling `asc` or `desc`.
+
+[source,clojure]
+----
+=> (def q (select [:owner :name] :from :pet))
+=> (select$ q (order-by :owner :name))
+"SELECT owner, name FROM pet ORDER BY owner, name;"
+=> (select$ q (order-by (desc :owner :name)))
+"SELECT owner, name FROM pet ORDER BY owner DESC, name DESC;"
+=> (select$ q (order-by (desc :owner) (asc :name)))
+"SELECT owner, name FROM pet ORDER BY owner DESC, name ASC;"
+----
+
+== Limit Clause
+
+The `limit` function takes an integral <<expressions.adoc#, expression>>.
+
+[source,clojure]
+----
+(limit 5)
+----
+
+There's also a two-argument form that accepts both the offset and the limit.
+
+[source,clojure]
+----
+(limit ...offset... ...limit...)
+----
+
+The argument ordering is based on SQLite's documentation.
+
+== Offset Clause
+
+The `offset` function takes an integral <<expressions.adoc#, expression>>.
+
+[source,clojure]
+----
+(offset 10)
+----

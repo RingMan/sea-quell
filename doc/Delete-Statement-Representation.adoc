@@ -1,0 +1,40 @@
+Below is a map showing the structure of a _delete_ statement.
+The first two keys are required.
+
+[source,clojure]
+----
+{:sql-stmt :delete
+ :source ...name...
+ :as ...name...
+ :indexed-by ...name-or-nil...
+ :where ...expr...
+ :order-by ...order-item-list...
+ :limit ...expr...
+ :offset ...expr...}
+----
+
+== FROM Clause
+
+`+...source...+` is the table _name_ (required)
+
+`+...as...+` is an optional alias
+
+`:indexed-by` is an optional index _name_
+
+Here's how `:indexed-by` would be used...
+
+[source,clojure]
+----
+{:source :tbl}
+;; FROM tbl
+{:source :tbl :indexed-by nil}
+;; FROM tbl NOT INDEXED
+{:source :tbl :indexed-by :ix}
+;; FROM tbl INDEXED BY ix
+----
+
+== Other Clauses
+
+The remaining clauses have the same meaning as in <<Select-Statement-Representation.adoc#, select statements>>.
+
+https://www.sqlite.org/lang_delete.html#optional_limit_and_order_by_clauses[SQLite] optionally allows ORDER BY, LIMIT and OFFSET clauses, but they may not be standard SQL.

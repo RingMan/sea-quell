@@ -1,0 +1,94 @@
+= Select Statement Representation
+
+A select statement is just an ordinary map with the following allowable keys:
+
+[source,clojure]
+----
+{:sql-stmt :select
+ :fields ...field-list...
+ :from ...source-list...
+ :where ...expr...
+ :group ...expr-list...
+ :having ...expr...
+ :order-by ...order-item-list...
+ :limit ...expr...
+ :offset ...expr...}
+----
+
+Most keys are optional.
+A legitimate select statement requires the `sql-stmt` key and either the `fields` key or the `from` key.
+For example:
+
+[source,clojure]
+----
+=> (to-sql {:sql-stmt :select, :fields 5})
+"SELECT 5;"
+=> (to-sql {:sql-stmt :select, :from :users})
+"SELECT * FROM users;"
+----
+
+== Fields
+
+`+...field-list...+` can be either a single field or a collection of fields.
+Any single field can be an <<Expression-Representation.adoc#, expression>> or a field map:
+
+[source,clojure]
+----
+{:field ...expr...  ;mandatory
+ :as ...name...}    ;optional
+----
+
+== FROM Clause
+
+`+...source-list...+` can be a single _source_ or a collection of them.
+Any single _source_ can be a _name_ (keyword, string, or symbol), a _select statement_ or a _join_ map:
+
+[source,clojure]
+----
+{:source ...source...  ;mandatory
+ :op ...op...
+ :on ...expr...
+ :using ...name-list...
+ :as ...name...}
+----
+
+`+...source...+` can be a keyword, string, _select statement_, or a nested `+...source-list...+`.
+
+`+...op...+` is anything suitable to pass to `to-sql-keywords`, but usually just a clojure style keyword such as `:inner-join`.
+
+If supplied, `:as` defines a table alias for the source.
+
+If present, `:using` can be a single field name or a collection of them.
+In a _join_ map, `:on` and `:using` are mutually exclusive.
+
+== WHERE Clause
+
+`+...expr...+` can be any valid boolean <<Expression-Representation.adoc#, expression>>
+
+== GROUP BY Clause
+
+`+...expr-list...+` can be either a single <<Expression-Representation.adoc#, expression>> or a collection of expressions.
+Usually, each expression identifies a (possibly qualified) column to group by.
+
+== HAVING Clause
+
+`+...expr...+` can be any valid boolean <<Expression-Representation.adoc#, expression>>
+
+== ORDER BY Clause
+
+`+...order-item-list...+` can be a single _order item_ or a collection of them.
+Any single _order item_ can be an <<Expression-Representation.adoc#, expression>> or an _order item_ map:
+
+[source,clojure]
+----
+{:expr ...expr-list... ;mandatory
+ :order ...order...}   ;optional - either :asc or :desc; defaults to :asc
+----
+
+== LIMIT Clause
+
+`+...expr...+` can be any integral <<Expression-Representation.adoc#, expression>>
+
+== OFFSET Clause
+
+`+...expr...+` can be any integral <<Expression-Representation.adoc#, expression>>

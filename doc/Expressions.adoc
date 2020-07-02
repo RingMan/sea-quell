@@ -1,0 +1,64 @@
+= Expressions
+
+Expressions are used in several parts of a SQL statement.
+In `seaquell`, an expression may be a simple value like a number, string, or keyword.
+More complicated expressions are just Clojure values for which `sequential?` is true, most commonly vectors or quoted lists.
+
+All the examples below show the output of `seaquell.to-sql/expr-to-sql`, which converts an expression to its equivalent SQL string.
+
+Ummm...
+Actually, this page is under construction.
+But <<Expression-Representation.adoc#, this one>> might be more useful.
+
+== Simple Expressions
+
+Keywords are used to refer to columns or tables or parameters.
+
+[source,clojure]
+----
+=> (expr-to-sql :db.table.column)
+"db.table.column"
+----
+
+Strings are simply enclosed in single quotes.
+*NOTE:* use two consecutive single quotes to escape quotes within strings.
+
+[source,clojure]
+----
+=> (expr-to-sql "Hello, y''all")
+"'Hello, y''all'"
+----
+
+== Intervals
+
+The `interval` function helps you create an interval literal representing a relative amount of time, such as 5 days.
+
+[source,clojure]
+----
+=> (select$ [[+ [:now] (interval 5 :day)]])
+"SELECT NOW() + INTERVAL 5 DAY;"
+----
+
+== Subqueries
+
+== Unary Operators
+
+== Binary Operators
+
+=== Arithmetic Operators
+
+=== Relational Operators
+
+=== BETWEEN operator
+
+=== IN operator
+
+== Equality Maps
+
+== Functions
+
+== CASE Expressions
+
+=== Using `case` Form
+
+=== Using `cond` Form

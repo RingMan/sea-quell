@@ -1,0 +1,90 @@
+= Composing Statements
+
+`Seaquell` gives you a variety of ways to alter a query over time.
+
+* Add or replace existing clauses
+* Remove existing clauses
+* Edit whole clauses
+* Edit parts of a clause
+
+For selected fields and clauses like FROM, GROUP BY, and ORDER BY which can contain multiple items, you can do any of the following:
+
+* Append new items
+* Prepend new items
+* Insert new items
+* Remove items by value
+* Remove items by index
+* Replace items by value
+* Replace items by index
+* Edit an item by index
+
+For WHERE and HAVING clauses which describe boolean conditions, you can do the following:
+
+* Add another condition by logical AND
+* Add another condition by logical OR
+* Add another condition by logical XOR
+* Negate the existing condition
+
+If that's not enough, you can make arbitrary edits to a clause using one of the `edit-<clause>` functions.
+
+If that's still not enough, the `diesel.edit` namespace contains a number of useful functions for editing deeply nested data structures.
+
+Finally, you can use any of the standard Clojure ways of editing things.
+All in all, you can manipulate your queries in just about any way imaginable and almost certainly in the ways that are actually useful.
+
+== Adding or Replacing Clauses
+
+Just call `select` on an existing query and use the same functions you would if you were creating the query in the first place.
+
+[source,clojure]
+----
+=> (def q (select :* (from :t) (where [> :price 20])))
+=> (select$ q (where [< :qty 10]) (order-by :qty) (limit 5))
+"SELECT * FROM t WHERE qty < 10 ORDER BY qty LIMIT 5;"
+----
+
+== Removing Clauses
+
+To delete clauses from a query, use `dissoc`, `rm-clauses`, or `rm-parts`.
+
+[source,clojure]
+----
+=> (def q (select :* (from :t) (where [> :price 20]) (limit 5) (offset 10)))
+=> (select$ q (rm-parts :where) (rm-clauses :limit :offset))
+"SELECT * FROM t;"
+=> (select$ (dissoc q :limit :offset))
+"SELECT * FROM t WHERE price > 20;"
+----
+
+== Editing Whole Clauses
+
+Use one of the `edit-<clause>` functions to update a clause as a function of the existing one.
+These functions work just like `update-in`.
+This is most useful for `limit` and `offset`.
+
+[source,clojure]
+----
+=> (def q (select :* (from :t) (where {:price [> 20], :qty [> 10]}) (limit 5) (offset 10)))
+=> (select$ q (edit-offset + 20) (edit-where dissoc :qty))
+"SELECT * FROM t WHERE price > 20 LIMIT 5 OFFSET 30;"
+----
+
+== Editing Boolean Predicates
+
+[source,clojure]
+----
+=> (def q (select :* (from :t) (where [> :price 20])))
+=> (def qa (select :* (from :t) (where [:and [> :price 20] [< :qty 100]])))
+=> (def qo (select :* (from :t) (where [:or [> :price 20] [< :qty 100]])))
+=> (def qx (select :* (from :t) (where [:xor [> :price 20] [< :qty 100]])))
+=> (= qa (select q (and-where [< :qty 100])))
+true
+=> (= qo (select q (or-where [< :qty 100])))
+true
+=> (= qx (select q (xor-where [< :qty 100])))
+true
+----
+
+== More Docs to Come...
+
+Look at `seaquell/core.clj` for what's available
