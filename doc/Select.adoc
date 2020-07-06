@@ -1,4 +1,5 @@
 = Select Statements
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 
 So far, `seaquell` supports precisely one kind of SQL statement: `select`
 

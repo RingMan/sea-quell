@@ -1,3 +1,6 @@
+= Delete Statement Representation
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+
 Below is a map showing the structure of a _delete_ statement.
 The first two keys are required.
 

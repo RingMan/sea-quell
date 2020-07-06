@@ -1,6 +1,9 @@
+= Welcome to Seaquell
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+
 == Installing Seaquell
 
-If you haven't already done so, follow the instructions in the main https://github.com/RingMan/sea-quell[README] file and come back here.
+If you haven't already done so, follow the instructions in the main <<../README.adoc#, README>> file and come back here.
 
 == Creating Statements
 

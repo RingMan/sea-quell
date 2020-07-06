@@ -1,4 +1,5 @@
 = Expressions
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 
 Expressions are used in several parts of a SQL statement.
 In `seaquell`, an expression may be a simple value like a number, string, or keyword.

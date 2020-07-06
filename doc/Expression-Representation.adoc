@@ -1,4 +1,5 @@
 = Expression Representation
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 
 == Simple Expressions
 
