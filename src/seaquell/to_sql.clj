@@ -542,6 +542,28 @@
 (defmethod to-sql :explain-query-plan [stmt]
   (str "EXPLAIN QUERY PLAN " (to-sql (:statement stmt))))
 
+(declare column-def-to-sql)
+
+(defmethod to-sql :alter
+  ([{:keys [add column entity rename table] :as stmt}]
+   (let [alter-s "ALTER"
+         entity (if entity
+                  entity
+                  (cond
+                    table :table
+                    :else :to-sql/no-entity-to-alter))
+         tgt (expr-to-sql (get stmt entity))
+         entity (when entity (-> entity name string/upper-case))
+         add (when add (str "ADD " (when column "COLUMN ")
+                            (column-def-to-sql add)))
+         rename
+         (when rename
+           (join-by-space
+             ["RENAME" (when column "COLUMN")
+              (when (:column rename) (name-to-sql (:column rename)))
+              (when (:to rename) (str "TO " (name-to-sql (:to rename))))]))]
+     (query-clauses [alter-s entity tgt rename add] ";"))))
+
 (defmethod to-sql :analyze
   ([{:keys [schema into] :as stmt}]
    (let [analyze "ANALYZE"

@@ -396,6 +396,42 @@
                       [{:sql-stmt :explain-query-plan :statement stmt} body])]
     (mk-map* stmt body)))
 
+;;; ALTER TABLE statement
+
+(declare constraints)
+
+(defn add [c & body]
+  (let [[props constr] (split-with-not constraint? body)
+        constr (c/when (not-empty constr) (apply constraints constr))]
+    {:add (column c props constr)}))
+
+(defn add-column [& body]
+  (merge {:column true} (apply add body)))
+
+(defn rename
+  ([new-tbl]
+   {:rename (if (map? new-tbl) new-tbl {:to new-tbl})})
+  ([old-col new-col]
+   (let [old-col (if (map? old-col) old-col {:column old-col})
+         new-col (if (map? new-col) new-col {:to new-col})]
+     {:rename (merge old-col new-col)})))
+
+(defn rename-to [new-tbl] (rename new-tbl))
+
+(defn rename-column [old-col new-col]
+  (merge {:column true} (rename old-col new-col)))
+
+(defn alter
+  [stmt & body]
+  (let [[stmt body]
+        (cond
+          (= (:sql-stmt stmt) :alter) [stmt body]
+          :else [{:sql-stmt :alter} (cons stmt body)])]
+    (mk-map* stmt body)))
+
+(defn alter-table [id & body]
+  (alter (if (name? id) (table id) id) body (entity :table)))
+
 ;;; ANALYZE statement
 
 (defn analyze
@@ -947,6 +983,7 @@
         update-or-fail update-or-ignore
         value values with
         explain explain-query-plan
+        alter alter-table
         attach attach-database detach detach-database
         analyze begin begin-transaction
         begin-deferred begin-deferred-transaction
