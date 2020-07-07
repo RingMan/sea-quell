@@ -1,6 +1,6 @@
 (ns seaquell.zoo.select-from-bbc
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/19/2013) to the

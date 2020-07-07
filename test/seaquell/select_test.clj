@@ -1,6 +1,6 @@
 (ns seaquell.select-test
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]))
 

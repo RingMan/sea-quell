@@ -2,7 +2,7 @@
   "Uses an in-memory Sqlite database to demonstrate the use of
   SQLite UPSERT (ON CONFLICT clause in an INSERT statement)."
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all :exclude [after before]]
             [diesel.edit :refer [edit-in]]

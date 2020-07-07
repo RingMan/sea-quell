@@ -1,6 +1,6 @@
 (ns seaquell.core
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [clojure.core :as c]
             [clojure.spec.alpha :as s]
             [diesel.core :refer :all]

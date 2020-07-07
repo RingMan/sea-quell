@@ -1,7 +1,7 @@
 (ns seaquell.create-test
   "Tests the SQLite CREATE command"
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [diesel.core :refer [mk-map]]
             [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]

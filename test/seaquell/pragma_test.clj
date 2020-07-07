@@ -1,7 +1,7 @@
 (ns seaquell.pragma-test
   "Tests the SQLite PRAGMA command"
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.engine :refer [db-conn executes?]]

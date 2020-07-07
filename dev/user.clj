@@ -1,6 +1,6 @@
 (ns user
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [clojure.core :as c]
             [clojure.java.io :as io]
             [clojure.string :as str]

@@ -1,7 +1,7 @@
 (ns seaquell.constraint-test
   "Tests that column constraints for CREATE TABLE render properly"
   (:refer-clojure
-    :exclude [distinct drop group-by into set update partition-by when])
+    :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
             [seaquell.to-sql :refer
