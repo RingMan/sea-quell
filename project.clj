@@ -7,7 +7,7 @@
                                     :sign-releases false}]]
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/java.jdbc "0.7.11"]
-                 [diesel "0.1.3-SNAPSHOT"]]
+                 [diesel "0.2.0"]]
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.3.1"]
                                   [integrant "0.8.0"]
                                   [midje "1.9.9"]
