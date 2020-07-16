@@ -1,5 +1,5 @@
 (ns seaquell.zoo.using-null
-  (:refer-clojure :exclude [into update partition-by])
+  (:refer-clojure :exclude [drop into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 4/20/2013) to the

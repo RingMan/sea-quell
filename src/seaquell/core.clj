@@ -1,5 +1,5 @@
 (ns seaquell.core
-  (:refer-clojure :exclude [into update partition-by])
+  (:refer-clojure :exclude [drop into update partition-by])
   (:require [clojure.core :as c]
             [clojure.spec.alpha :as s]
             [diesel.core :refer :all]
@@ -69,13 +69,13 @@
     (merge a1 {:with m})
     (:cte a1) (recur (conj-in m [:ctes] a1) (rest xs))
     ; (cte :tbl (as :t))
-    (alias? a2) (recur (conj-in m [:ctes] (cte a1 a2)) (drop 2 xs))
+    (alias? a2) (recur (conj-in m [:ctes] (cte a1 a2)) (c/drop 2 xs))
     ; (cte :tbl :as :t) or (cte :tbl [:c1 :c2] (as :t))
-    (or (as? a2) (alias? a3)) (recur (conj-in m [:ctes] (cte a1 a2 a3)) (drop 3 xs))
+    (or (as? a2) (alias? a3)) (recur (conj-in m [:ctes] (cte a1 a2 a3)) (c/drop 3 xs))
     ; (cte :tbl [:c1 :c2] :as :t) or (cte :tbl :columns [:c1 :c2] (as :t))
-    (or (as? a3) (alias? a4)) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4)) (drop 4 xs))
+    (or (as? a3) (alias? a4)) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4)) (c/drop 4 xs))
     ; (cte :tbl :columns [:c1 :c2] as :t)
-    (as? a4) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4 a5)) (drop 5 xs))
+    (as? a4) (recur (conj-in m [:ctes] (cte a1 a2 a3 a4 a5)) (c/drop 5 xs))
     :else (throw (RuntimeException. "Illegal with clause"))))
 
 (defn with [& body]
@@ -173,9 +173,9 @@
     (empty? xs) {:window m}
     (or (raw? a1) (:win a1)) (recur (conj-in m [:wins] a1) (rest xs))
     ; (win :w (as <window-def>))
-    (alias? a2) (recur (conj-in m [:wins] (win a1 a2)) (drop 2 xs))
+    (alias? a2) (recur (conj-in m [:wins] (win a1 a2)) (c/drop 2 xs))
     ; (win :w :as <window-def>)
-    (as? a2) (recur (conj-in m [:wins] (win a1 a2 a3)) (drop 3 xs))
+    (as? a2) (recur (conj-in m [:wins] (win a1 a2 a3)) (c/drop 3 xs))
     :else (throw (RuntimeException. "Illegal window clause"))))
 
 (defn window [& args]

@@ -1,6 +1,6 @@
 (ns seaquell.vacuum-test
   "Tests the SQLite VACUUM command"
-  (:refer-clojure :exclude [into update partition-by])
+  (:refer-clojure :exclude [drop into update partition-by])
   (:require [me.raynes.fs :as fs]
             [midje.sweet :refer :all]
             [seaquell.core :refer :all]

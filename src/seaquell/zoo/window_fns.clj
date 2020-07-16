@@ -1,5 +1,5 @@
 (ns seaquell.zoo.window-fns
-  (:refer-clojure :exclude [into update partition-by])
+  (:refer-clojure :exclude [drop into update partition-by])
   (:require [seaquell.core :refer :all]))
 
 ;; The following queries are solutions (as of 2/18/2020) to the

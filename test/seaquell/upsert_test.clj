@@ -1,7 +1,7 @@
 (ns seaquell.upsert-test
   "Uses an in-memory Sqlite database to demonstrate the use of
   SQLite UPSERT (ON CONFLICT clause in an INSERT statement)."
-  (:refer-clojure :exclude [into update partition-by])
+  (:refer-clojure :exclude [drop into update partition-by])
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all]
             [diesel.edit :refer [edit-in]]
