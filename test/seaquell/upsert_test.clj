@@ -3,12 +3,32 @@
   SQLite UPSERT (ON CONFLICT clause in an INSERT statement)."
   (:refer-clojure
     :exclude [alter distinct drop group-by into set update partition-by when])
-  (:require [clojure.java.jdbc :as jdb]
-            [midje.sweet :refer :all :exclude [after before]]
+  (:require [midje.sweet :refer :all :exclude [after before]]
             [diesel.edit :refer [edit-in]]
             [seaquell.core :refer :all]
-            [seaquell.engine :refer :all]
-            [seaquell.sqlite :refer [db-spec]]))
+            [seaquell.engine :refer [db-conn]]
+            [seaquell.sqlite :refer [db-spec]]
+            [seaquell.to-sql :refer [on-conflict-clause]]))
+
+(fact "You can specify an ON CONFLICT clause for SQLite UPSERT"
+  (let [->sql #(-> % :on-conflict on-conflict-clause)]
+    (->sql (on-conflict-do-nothing)) => "ON CONFLICT DO NOTHING"
+    (->sql (on-conflict (do-nothing))) => "ON CONFLICT DO NOTHING"
+    (->sql (on-conflict :do-nothing)) => "ON CONFLICT DO NOTHING"
+    (->sql (on-conflict :do :nothing)) => "ON CONFLICT DO NOTHING"
+    (->sql (on-conflict :do nil)) => "ON CONFLICT DO NOTHING"
+    (->sql (on-conflict [:a] (do-nothing))) => "ON CONFLICT (a) DO NOTHING"
+    (->sql (on-conflict [:a [:b (collate :nocase) (asc)]] (do-nothing)))
+    => "ON CONFLICT (a, b COLLATE nocase ASC) DO NOTHING"
+    (->sql (on-conflict (columns :a (column :b (collate :nocase) (asc)))
+                        (do-nothing)))
+    => "ON CONFLICT (a, b COLLATE nocase ASC) DO NOTHING"
+    (->sql (on-conflict [:a] (where :condition) (do-nothing)))
+    => "ON CONFLICT (a) WHERE condition DO NOTHING"
+    (->sql (on-conflict [:a] (do-update (set {:a "a"}) (where :condition))))
+    => "ON CONFLICT (a) DO UPDATE SET a='a' WHERE condition"
+    (fact "on-conflict is idempotent"
+      (on-conflict (on-conflict (do-nothing))) => (on-conflict (do-nothing)))))
 
 (let [c (db-conn (db-spec))
       q (insert
