@@ -15,7 +15,9 @@
                                   [mysql/mysql-connector-java "5.1.23"]
                                   [org.hsqldb/hsqldb "2.2.9"]
                                   [clj-commons/fs "1.5.2"]]
-                   :plugins [[lein-midje "3.2.2"]]}
+                   :cloverage {:codecov? true, :runner :midje}
+                   :plugins [[lein-cloverage "1.1.2"]
+                             [lein-midje "3.2.2"]]}
              :repl {:dependencies [[expound "0.8.4"]
                                    [integrant/repl "0.3.1"]]
                     :source-paths ["dev"]}
