@@ -27,5 +27,9 @@
   (update-or-fail$ :tbl (set {:a 1 :b 2}) (where {:c [> 5]}))
   => "UPDATE OR FAIL tbl SET a=1, b=2 WHERE c > 5;"
   (update-or-ignore$ :tbl (set {:a 1 :b 2}) (where {:c [> 5]}))
-  => "UPDATE OR IGNORE tbl SET a=1, b=2 WHERE c > 5;"
-  )
+  => "UPDATE OR IGNORE tbl SET a=1, b=2 WHERE c > 5;")
+
+(fact "update is idempotent"
+  (update (update :tbl (set {:a 1 :b 2}) (where {:c [> 5]})))
+  => (update :tbl (set {:a 1 :b 2}) (where {:c [> 5]})))
+
