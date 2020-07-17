@@ -6,8 +6,13 @@
 
 (facts "about delete"
   ;; simple delete
-  (delete$ :db.tbl)
-  => "DELETE FROM db.tbl;"
+  (delete$ :db.tbl) => "DELETE FROM db.tbl;"
+  (delete-from$ :db.tbl) => "DELETE FROM db.tbl;"
+  (delete$ (from :db.tbl)) => "DELETE FROM db.tbl;"
+  (delete$ :from :db.tbl) => "DELETE FROM db.tbl;"
+
+  (fact "delete is idempotent"
+    (delete (delete :db.tbl)) => (delete :db.tbl))
 
   ;; using WHERE
   (delete$ :tbl (where [> :c 5]))
@@ -19,5 +24,4 @@
   (delete$ :tbl (indexed-by :ix) (where [> :c 5]))
   => "DELETE FROM tbl INDEXED BY ix WHERE c > 5;"
   (delete$ :tbl :indexed-by :ix :where [> :c 5])
-  => "DELETE FROM tbl INDEXED BY ix WHERE c > 5;"
-  )
+  => "DELETE FROM tbl INDEXED BY ix WHERE c > 5;")
