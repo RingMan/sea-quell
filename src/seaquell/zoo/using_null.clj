@@ -3,7 +3,7 @@
     :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
-;; The following queries are solutions (as of 4/20/2013) to the
+;; The following queries are solutions (as of 7/21/2020) to the
 ;; tutorial at http://sqlzoo.net/wiki/Using_Null
 ;; Each query is named for the question it answers.
 ;;
@@ -14,7 +14,7 @@
 (comment
   (use 'seaquell.core)
   (use 'seaquell.zoo.using-null)
-  (println (select$ q1)))
+  (select$ q1))
 
 (def q1 (select :name (from :teacher) (where [:is :dept nil])))
 
