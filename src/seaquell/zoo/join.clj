@@ -3,7 +3,7 @@
     :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
-;; The following queries are valid solutions (as of 3/31/2013) to the
+;; The following queries are valid solutions (as of 7/21/2020) to the
 ;; tutorial at http://sqlzoo.net/wiki/The_JOIN_operation
 ;; Each query is named for the question it answers.
 ;;
@@ -14,7 +14,7 @@
 (comment
   (use 'seaquell.core)
   (use 'seaquell.zoo.join)
-  (println (select$ q1)))
+  (select$ q1))
 
 (def q1
   (select
@@ -29,14 +29,14 @@
     (where {:id 1012})))
 
 (def q3
-  (select [:player :teamid :mdate]
+  (select [:player :teamid :stadium :mdate]
           (from :game (join :goal (on {:id :matchid})))
           (where {:teamid "GER"})))
 
 (def q4
   (select [:team1 :team2 :player]
           (from :game (join :goal (on {:id :matchid})))
-          (where [:like :player "mario%"])))
+          (where [:like :player "Mario%"])))
 
 
 (def q5
@@ -87,5 +87,6 @@
     '[mdate
       team1, (sum (cond (= teamid team1) 1 :else 0)) :as score1
       team2, (sum (cond (= teamid team2) 1 :else 0)) :as score2]
-    (from :game (join :goal :on {:matchid :id}))
-    (group-by :mdate :matchid :team1 :team2)))
+    (from :game (left-join :goal :on {:matchid :id}))
+    (group-by :mdate :matchid :team1 :team2)
+    (order-by :mdate :matchid :team1 :team2)))
