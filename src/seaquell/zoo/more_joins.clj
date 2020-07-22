@@ -26,57 +26,57 @@
           (where [:like :title "Star Trek%"])
           (order-by :yr)))
 
-(def q4
+#_(def q4
   (select :title
           (from :movie)
           (where [:in :id [vals 11768 11955 21191]])))
 
-(def q5 (select :id (from :actor) (where {:name "Glenn Close"})))
+(def q4 (select :id (from :actor) (where {:name "Glenn Close"})))
 
-(def q6 (select :id (from :movie) (where {:title "Casablanca"})))
+(def q5 (select :id (from :movie) (where {:title "Casablanca"})))
 
-(def q7
+(def q6
   (select :name
           (from :casting :actor)
           (where {:movieid (select :id (from :movie)
                                    (where {:title "Casablanca"}))
                   :actorid :actor.id})))
 
-(def q7-b
+(def q6-b
   (select :name
           (from :casting (join :actor :on {:actorid :actor.id}))
           (where {:movieid (select :id (from :movie)
                                    (where {:title "Casablanca"}))})))
 
-(def q8
+(def q7
   (select :name
           (from :movie :casting :actor)
           (where {:title "Alien"
                   :movieid :movie.id
                   :actorid :actor.id})))
 
-(def q8-b
+(def q7-b
   (select :name
           (from :movie
                 (join :casting :on {:movieid :movie.id})
                 (join :actor :on {:actorid :actor.id}))
           (where {:title "Alien"})))
 
-(def q9
+(def q8
   (select :title
           (from :movie :casting :actor)
           (where '{name "Harrison Ford"
                    movieid movie.id
                    actorid actor.id})))
 
-(def q9-b
+(def q8-b
   (select :title
           (from :movie
                 (join :casting :on {:movieid :movie.id})
                 (join :actor :on {:actorid :actor.id}))
           (where '{name "Harrison Ford"})))
 
-(def q10
+(def q9
   (select :title
           (from :movie :casting :actor)
           (where {:name "Harrison Ford"
@@ -84,14 +84,14 @@
                   :actorid :actor.id
                   :ord [not= 1]})))
 
-(def q10-b
+(def q9-b
   (select :title
           (from :movie
                 (join :casting :on {:movieid :movie.id})
                 (join :actor :on {:actorid :actor.id}))
           (where {:name "Harrison Ford", :ord [not= 1]})))
 
-(def q11
+(def q10
   (select [:title :name]
           (from :movie :casting :actor)
           (where {:yr 1962
@@ -99,34 +99,24 @@
                   :actorid :actor.id
                   :ord 1})))
 
-(def q11-b
+(def q10-b
   (select [:title :name]
           (from :movie
                 (join :casting :on {:movieid :movie.id})
                 (join :actor :on {:actorid :actor.id}))
           (where {:yr 1962, :ord 1})))
 
-(def q12
+(def q11
   (select
     [:yr [count :title]]
     (from :movie
           (join :casting :on {:movie.id :movieid})
           (join :actor :on {:actorid :actor.id}))
-    (where {:name "John Travolta"})
+    (where {:name "Rock Hudson"})
     (group-by :yr)
-    (having
-      [= [count :title]
-         (select
-           [[max :c]]
-           (from (select
-                   [:yr [count :title] :as :c]
-                   (from :movie
-                         (join :casting :on {:movie.id :movieid})
-                         (join :actor :on {:actor.id :actorid}))
-                   (where {:name "John Travolta"})
-                   (group-by :yr)) :as :t))])))
+    (having [> [count :title] 2])))
 
-(def q13
+(def q12
   (select
     [:title :name]
     (from :movie :casting :actor)
@@ -139,7 +129,7 @@
                                  (where {:actorid :actor.id
                                          :name "Julie Andrews"})))))))
 
-(def q13-b
+(def q12-b
   (select
     [:title :name]
     (from :movie
@@ -152,7 +142,7 @@
                                        (join :actor :on {:actorid :actor.id}))
                                  (where {:name "Julie Andrews"})))))))
 
-(def q13-c
+(def q12-c
   (select
     [:title :name]
     (from (select-distinct
@@ -165,30 +155,30 @@
           (join :actor :on {:actorid :actor.id}))
     (where {:ord 1})))
 
-(def q14
+(def q13
   (select :name
           (from :casting
                 (join :actor :on {:actorid :actor.id}))
           (where {:ord 1})
           (group-by :name)
-          (having [>= [count :movieid] 30])))
+          (having [>= [count :movieid] 15])))
 
-(def q15
+(def q14
   (select [:title [count :actorid]]
           (from :casting :movie)
           (where {:yr 1978, :movieid :movie.id})
           (group-by :title)
-          (order-by (desc 2))))
+          (order-by (desc 2) :title)))
 
-(def q15-b
+(def q14-b
   (select [:title [count :actorid]]
           (from :casting
                 (join :movie :on {:movieid :movie.id}))
           (where {:yr 1978})
           (group-by :title)
-          (order-by (desc 2))))
+          (order-by (desc 2) :title)))
 
-(def q16
+(def q15
   (select-distinct
     :d.name
     (from :actor :as :d
@@ -198,7 +188,7 @@
                                    :c.name "Art Garfunkel" }))
     (where '(not= d.id c.id))))
 
-(def q16-b
+(def q15-b
   (select
     :name
     (from (select-distinct
