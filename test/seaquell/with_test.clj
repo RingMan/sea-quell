@@ -7,7 +7,50 @@
   (:require [clojure.java.jdbc :as jdb]
             [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
-            [seaquell.sqlite :refer [db-spec]]))
+            [seaquell.engine :refer [row-fn result-set-fn]]
+            [seaquell.sqlite :refer [db-spec]]
+            [seaquell.to-sql :refer [with-clause]]))
+
+(fact "You can specify a WITH clause"
+  (let [->sql #(-> % :with with-clause)
+        vs (values [1, 2] [3, 4])
+        vs-s "(VALUES (1, 2), (3, 4))"]
+    (->sql (with :tbl (as vs))) => (str "WITH tbl AS " vs-s)
+    (->sql (with :tbl :as vs)) => (str "WITH tbl AS " vs-s)
+    (->sql (with :tbl [:x :y] (as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl [:x :y] :as vs)) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl (columns :x :y) (as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl (columns :x :y) :as vs)) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl :columns [:x :y] (as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl :columns [:x :y] :as vs)) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with :tbl :columns [:x :y] :as vs)) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl (as vs)))) => (str "WITH tbl AS " vs-s)
+    (->sql (with (cte :tbl :as vs))) => (str "WITH tbl AS " vs-s)
+    (->sql (with (cte :tbl [:x :y] (as vs)))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl [:x :y] :as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl (columns :x :y) (as vs)))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl (columns :x :y) :as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl :columns [:x :y] (as vs)))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl :columns [:x :y] :as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (->sql (with (cte :tbl :columns [:x :y] :as vs))) => (str "WITH tbl(x, y) AS " vs-s)
+    (with :tbl [:x :y]) => (throws #"Illegal with clause")
+    (fact "cte is idempotent"
+      (cte (cte :tbl [:x :y] (as vs))) => (cte :tbl [:x :y] (as vs)))))
+
+(fact "Use `with$` to render a statement with a leading WITH clause"
+  (with$ :t [:x] :as (values [1] [2] [3]) (select :x (from :t))) =>
+  "WITH t(x) AS (VALUES (1), (2), (3)) SELECT x FROM t;")
+
+(fact "Use `with!` to execute a statement with a leading WITH clause.
+      Put the `db` property in the statement itself, not the `with` clause."
+  (with! :t [:x] :as (values [1] [2] [3]) (select :x (from :t) (db (db-spec)))) =>
+  [{:x 1} {:x 2} {:x 3}])
+
+(fact "You can also treat `with` as just another clause for statements that support it."
+  (select$ :x (from :t) (with :t [:x] :as (values [1] [2] [3]))) =>
+  "WITH t(x) AS (VALUES (1), (2), (3)) SELECT x FROM t;"
+  (select! :x (from :t) (with :t [:x] :as (values [1] [2] [3])) (db (db-spec)))
+  => [{:x 1} {:x 2} {:x 3}])
 
 (def sudoku-solver
   (with-recursive
@@ -47,7 +90,7 @@
       (select :s (from :x) (where {:ind 0}))))
 
 (fact
-  (jdb/query (db-spec) (to-sql sudoku-solver) {:row-fn :s, :result-set-fn first})
+  (sql! sudoku-solver (db (db-spec)) (row-fn :s) (result-set-fn first))
   => (str "53467891267219534819834256785976142342685379"
           "1713924856961537284287419635345286179"))
 
@@ -74,7 +117,7 @@
     (select [[:group_concat '(rtrim t) (binary "0a")]] (from :a))))
 
 (fact
-  (jdb/query (db-spec) (to-sql mandelbrot) {:result-set-fn (comp val first first)})
+  (sql! mandelbrot (db (db-spec)) (result-set-fn (comp val first first)))
   =>
 "                                    ....#
                                    ..#*..
