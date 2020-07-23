@@ -3,7 +3,7 @@
     :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
-;; The following queries are solutions (as of 6/4/2020) to the
+;; The following queries are solutions (as of 7/21/2020) to the
 ;; tutorial at https://sqlzoo.net/wiki/Window_LAG
 ;; Each query is named for the question it answers.
 ;;
@@ -80,7 +80,7 @@
     (order-by (desc :population))))
 
 (def q8
-  "As of 6/4/2020 this query gives the correct answer sometimes. There seems
+  "As of 7/21/2020 this query gives the correct answer sometimes. There seems
   to be some kind of ordering issue when multiple countries peak on the same
   day. Their sort order appears arbitrary. Sometimes the order just happens
   to align with the expected answer."
