@@ -218,13 +218,13 @@
 (defn asc [& [x & body :as args]]
   (cond
     (nil? args) {:order :asc}
-    (name? x) (mk-map {:expr x} body {:order :asc})
+    (or (name? x) (integer? x) (sequential? x)) (mk-map {:expr x} body {:order :asc})
     :else (mk-map args {:order :asc})))
 
 (defn desc [& [x & body :as args]]
   (cond
     (nil? args) {:order :desc}
-    (name? x) (mk-map {:expr x} body {:order :desc})
+    (or (name? x) (integer? x) (sequential? x)) (mk-map {:expr x} body {:order :desc})
     :else (mk-map args {:order :desc})))
 
 ;;; LIMIT clause
