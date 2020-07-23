@@ -3,7 +3,7 @@
     :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
-;; The following queries are solutions (as of 2/18/2020) to the
+;; The following queries are solutions (as of 7/21/2020) to the
 ;; tutorial at http://sqlzoo.net/wiki/Window_functions
 ;; Each query is named for the question it answers.
 ;;
