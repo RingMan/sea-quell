@@ -3,7 +3,7 @@
     :exclude [alter distinct drop group-by into set update partition-by when])
   (:require [seaquell.core :refer :all]))
 
-;; The following queries are solutions (as of 4/20/2013) to the
+;; The following queries are solutions (as of 7/21/2020) to the
 ;; tutorial at http://sqlzoo.net/wiki/Self_join
 ;; Each query is named for the question it answers.
 ;;
@@ -112,6 +112,9 @@
           (where {:S1.name "Craiglockhart"})))
 
 (def q10
+  "NOTE: for this query, `q10-b`, and `q10-c` use the MySQL engine and set
+  the following option: `SET SQL_BIG_SELECTS=1;`. This was not necessary in
+  earlier versions of SQLZoo."
   (select
     [:ra.num :ra.company :sb.name :rd.num :rd.company]
     (from :route (as :ra)
