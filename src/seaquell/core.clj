@@ -210,6 +210,11 @@
 
 (def-entity-maps {:id :expr} order-term)
 (def-props collate nulls order)
+
+(defn nulls-first [] (nulls :first))
+
+(defn nulls-last [] (nulls :last))
+
 (def ASC {:order :asc})
 (def DESC {:order :desc})
 (def NULLS-FIRST {:nulls :first})
