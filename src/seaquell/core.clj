@@ -21,7 +21,9 @@
 
 (defn raw
   ([x] {:raw x})
-  ([x & xx] {:raw (->> xx (cons x) vec)}))
+  ([x & xx] {:raw (let [[strings toks] (split-with string? (cons x xx))
+                        strings (map raw strings)]
+                    (vec (concat strings toks)))}))
 
 (defn sql [s & body]
   "Constructs a SQL statement or fragment from its arguments.
