@@ -289,8 +289,13 @@
                 (expr-to-sql -e1-) => "e1"
                 (expr-to-sql -e2-) => "e2"))
 
-(facts (raw-to-sql {:raw :keyword}) => "keyword"
-       (raw-to-sql {:raw -raw-}) => "-raw-")
+(facts (raw-to-sql {:raw "literal SQL"}) => "literal SQL"
+       (raw-to-sql {:raw '(-raw-)}) => "-raw-"
+       (provided (seaquell.raw/sql$ '(-raw-)) => "-raw-")
+       (raw-to-sql {:raw [-raw-]}) => "-raw-"
+       (provided (seaquell.raw/sql$ [-raw-]) => "-raw-")
+       (raw-to-sql {:raw -raw-}) => "-raw-"
+       (provided (seaquell.raw/sql$ [-raw-]) => "-raw-"))
 
 (fact (interval-to-sql {:interval -e1- :units -units-}) => "INTERVAL -e1- -units-"
       (provided (expr-to-sql -e1-) => "-e1-"
