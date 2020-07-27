@@ -361,8 +361,8 @@
 (defn frame-to-sql [{:keys [frame bound lo-bound hi-bound exclude] :as f}]
   (when frame
     (let [frame (string/upper-case (name frame))
-          lo (bound-to-sql lo-bound)
-          hi (bound-to-sql hi-bound)
+          lo (bound-to-sql (or (:bound lo-bound) lo-bound))
+          hi (bound-to-sql (or (:bound hi-bound) hi-bound))
           bound (bound-to-sql bound)
           ex (when exclude (str "EXCLUDE " (normalize-fn-or-op exclude)))
           bound (if (and lo hi) (str "BETWEEN " lo " AND " hi) bound)]

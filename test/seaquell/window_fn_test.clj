@@ -3,24 +3,99 @@
   https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers"
   (:refer-clojure
     :exclude [alter distinct drop group-by into set update partition-by when])
-  (:require [clojure.java.jdbc :as jdb]
-            [diesel.core :refer [mk-map*]]
-            [diesel.edit :refer [edit-in]]
-            [midje.sweet :refer :all :exclude [after before]]
+  (:require [midje.sweet :refer :all :exclude [after before]]
             [seaquell.core :refer :all]
-            [seaquell.engine :refer :all]
-            [seaquell.sqlite :refer [db-spec]]))
+            [seaquell.engine :refer [db-conn]]
+            [seaquell.sqlite :refer [db-spec]]
+            [seaquell.to-sql :refer [bound-to-sql expr-to-sql over-clause
+                                     win-to-sql windef-to-sql window-clause]]))
+
+(fact "You can specify a starting or ending frame boundary"
+  (let [->sql #(-> % :bound bound-to-sql)]
+    (->sql current-row) => "CURRENT ROW"
+    (->sql (unbounded :following)) => "UNBOUNDED FOLLOWING"
+    (->sql unbounded-following) => "UNBOUNDED FOLLOWING"
+    (->sql (unbounded :preceding)) => "UNBOUNDED PRECEDING"
+    (->sql unbounded-preceding) => "UNBOUNDED PRECEDING"
+    (->sql (preceding -expr-)) => "-expr- PRECEDING"
+    (provided (expr-to-sql -expr-) => "-expr-")
+    (->sql (following -expr-)) => "-expr- FOLLOWING"
+    (provided (expr-to-sql -expr-) => "-expr-")))
+
+(fact "You can supply both frame boundaries or just the starting boundary"
+  (let [wd (windef (order-by :c) (frame :range))
+        wd-s "ORDER BY c RANGE "
+        ->sql windef-to-sql]
+    (->sql (windef wd (bounds (preceding 1) (following 1)))) =>
+    (str wd-s "BETWEEN 1 PRECEDING AND 1 FOLLOWING")
+    (->sql (windef wd (lo-bound (preceding 1)) (hi-bound (following 1)))) =>
+    (str wd-s "BETWEEN 1 PRECEDING AND 1 FOLLOWING")
+    (->sql (windef wd (bounds (unbounded :preceding)))) =>
+    (str wd-s "BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW")
+    (->sql (windef wd (unbounded :preceding))) => (str wd-s "UNBOUNDED PRECEDING")))
+
+(fact "You can add an EXCLUDE clause to a window frame"
+  (let [wd (windef (order-by :c) (frame :groups))
+        wd-s "ORDER BY c GROUPS "
+        ->sql windef-to-sql]
+    (->sql (windef wd (exclude :no-others))) => (str wd-s "EXCLUDE NO OTHERS")
+    (->sql (windef wd exclude-no-others)) => (str wd-s "EXCLUDE NO OTHERS")
+    (->sql (windef wd (exclude :current-row))) => (str wd-s "EXCLUDE CURRENT ROW")
+    (->sql (windef wd exclude-current-row)) => (str wd-s "EXCLUDE CURRENT ROW")
+    (->sql (windef wd (exclude :group))) => (str wd-s "EXCLUDE GROUP")
+    (->sql (windef wd exclude-group)) => (str wd-s "EXCLUDE GROUP")
+    (->sql (windef wd (exclude :ties))) => (str wd-s "EXCLUDE TIES")
+    (->sql (windef wd exclude-ties)) => (str wd-s "EXCLUDE TIES")))
+
+(fact "You can specify a window definition for a WINDOW or OVER clause"
+  (let [->sql windef-to-sql]
+    (->sql (windef (order-by :c))) => "ORDER BY c"
+    (->sql (windef (partition-by :c))) => "PARTITION BY c"
+    (->sql (windef (partition-by :c1) (order-by :c2) (frame :range)
+                   (bounds unbounded-preceding current-row) exclude-no-others)) =>
+    (str "PARTITION BY c1 ORDER BY c2 RANGE "
+         "BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS")
+    (->sql (windef :win (order-by :c))) => "win ORDER BY c"
+    (->sql (windef :win (partition-by :c))) => "win PARTITION BY c"
+    (->sql (windef :win (partition-by :c1) (order-by :c2) (frame :range)
+                   (bounds unbounded-preceding current-row) exclude-no-others)) =>
+    (str "win PARTITION BY c1 ORDER BY c2 RANGE "
+         "BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS")
+    (fact "windef is idempotent"
+      (windef (windef (order-by :c))) => (windef (order-by :c)))))
+
+(fact "You can use `win` to specify a named window for a WINDOW clause"
+  (let [->sql win-to-sql]
+    (->sql (win :w :as (windef (order-by :a)))) => "w AS (ORDER BY a)")
+  (fact "`win` is idempotent"
+    (win (win :w :as (windef (order-by :a)))) =>
+    (win :w :as (windef (order-by :a)))))
+
+(fact "You can specify a WINDOW clause"
+  (let [->sql #(-> % :window window-clause)]
+    (->sql (window (win :w :as (windef (order-by :a))))) =>
+    "WINDOW w AS (ORDER BY a)"
+    (->sql (window (win :w (as (windef (order-by :a)))))) =>
+    "WINDOW w AS (ORDER BY a)"
+    (->sql (window :w :as (windef (order-by :a)))) =>
+    "WINDOW w AS (ORDER BY a)"
+    (->sql (window :w (as (windef (order-by :a))))) =>
+    "WINDOW w AS (ORDER BY a)"
+    (->sql (window (raw :w :as '(order-by a)))) =>
+    "WINDOW w AS (ORDER BY a)"
+    (->sql (window "illegal")) => (throws #"Illegal window clause")))
+
+(fact "You can specify an OVER clause"
+  (let [->sql over-clause]
+    (->sql (over :win)) => "OVER win"
+    (->sql (over (windef :win (partition-by :c)))) => "OVER (win PARTITION BY c)"
+    (->sql (over (partition-by :c))) => "OVER (PARTITION BY c)"
+    (->sql (over (order-by :c))) => "OVER (ORDER BY c)"))
 
 (defn create-tbls [con]
-  (do-sql
-    "CREATE TABLE t0 (x INTEGER PRIMARY KEY, y TEXT);"
-    (db con))
-  (do-sql
-    "CREATE TABLE t1 (a INTEGER PRIMARY KEY, b, c);"
-    (db con))
-  (do-sql
-    "CREATE TABLE t2 (a, b);"
-    (db con)))
+  (create-table! :t0 [[:x INTEGER PRIMARY-KEY] [:y TEXT]] (db con))
+  (create-table! :t1 [[:a INTEGER PRIMARY-KEY] :b :c] (db con))
+  (create-table! :t2 [:a :b] (db con)))
 
 (defn insert-data [con]
   (let [t0 (insert :t0 (db con))

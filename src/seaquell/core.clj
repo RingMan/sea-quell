@@ -166,7 +166,6 @@
 (defn win [w & [a1 a2 :as body]]
   (cond
     (:win w) (mk-map* w body)
-    (alias? a1) ()
     :else (mk-map* {:win w} body)))
 
 (defn window* [m [a1 a2 a3 a4 a5 :as xs]]
@@ -198,7 +197,7 @@
 
 (defn bounds
   ([lo] (bounds lo current-row))
-  ([lo hi] {:lo-bound (:bound lo) :hi-bound (:bound hi)}))
+  ([lo hi] {:lo-bound lo :hi-bound hi}))
 
 (def exclude-no-others {:exclude :no-others})
 (def exclude-current-row {:exclude :current-row})
