@@ -1,0 +1,29 @@
+= Raw Seaquell
+:idprefix:
+:idseparator: -
+
+How to write SQL statements as sequences of tokens.
+
+The <<../README.adoc#, README>> introduced you to this way of writing SQL.
+I find it pretty easy to use, but there are a few tricks you'll need to know.
+
+== The `sql` Function
+
+To create raw SQL, just call the `sql` function with one or more arguments.
+
+CAUTION: If for some reason your first token represents a string literal, wrap it in a vector.
+Otherwise, `sql` will assume it's verbatim SQL, not a string literal.
+In practice this almost never happens because SQL statements always start with a SQL keyword.
+
+It's usually easiest to pass a quoted vector, so you can type symbols instead of keywords.
+
+[source,clojure]
+----
+(sql :select :* :from :t \;)
+(sql [:select :* :from :t \;])
+(sql '[select * from t\;])
+----
+
+== Helper Functions for Making Tuples
+
+== Helper Functions for Arrays

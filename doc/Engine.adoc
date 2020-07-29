@@ -1,0 +1,24 @@
+= Execution Engine (Draft)
+:idprefix:
+:idseparator: -
+
+The engine receives SQL strings and execution options, executes the statements, and returns the results.
+
+The eventual intent is to support multiple execution environments with a similar interface.
+But for now, `seaquell` simply uses `clojure.java.jdbc`.
+
+== Public API
+
+=== `exec` Function
+
+To do its job, `exec` tries to figure out whether the statement returns results or not.
+Most of the time it can do that by just looking at the SQL string.
+For statements with leading `with` clauses, however, `exec` would basically have to parse the SQL to call the right function.
+Instead, it relies on two additional checks.
+First, it uses the `select?` and `compound-select?` predicate functions from the `seaquell.utility` namespace.
+Those functions depend on one design detail of `seaquell`: SQL statements are maps with a `:sql-stmt` key to indicate their type.
+Next, is looks at the `:jdbc/query?` option, which lets the caller direct which function to call.
+
+Under the hood, `exec` calls either https://cljdoc.org/d/org.clojure/java.jdbc/0.7.11/api/clojure.java.jdbc#query[query] or https://cljdoc.org/d/org.clojure/java.jdbc/0.7.11/api/clojure.java.jdbc#execute![execute!].
+Follow the links to learn more about them.
+

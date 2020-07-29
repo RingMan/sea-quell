@@ -1,5 +1,7 @@
 = Insert Statement Representation
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 The structure of the _insert_ statement is based on https://sqlite.org/lang_insert.html[SQLite syntax].
 

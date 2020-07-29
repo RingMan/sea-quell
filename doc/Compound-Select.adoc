@@ -1,5 +1,7 @@
 = Compound Selects
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 A compound select statement is one that uses any of the set operations UNION, INTERSECT, or EXCEPT.
 

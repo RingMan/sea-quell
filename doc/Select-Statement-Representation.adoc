@@ -1,5 +1,7 @@
 = Select Statement Representation
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 A select statement is just an ordinary map with the following allowable keys:
 

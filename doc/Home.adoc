@@ -1,31 +1,169 @@
-= Welcome to Seaquell
+= Welcome to Seaquell (Draft)
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
+:toc: right
 
-== Installing Seaquell
+Everything (some things) you need to know to start using `seaquell`.
 
-If you haven't already done so, follow the instructions in the main <<../README.adoc#, README>> file and come back here.
+This document gives a comprehensive overview of using `seaquell` and helps you navigate the rest of the documentation, the source code, examples, and tests.
+For a more gentle introduction, start with the <<../README.adoc#, README>> file and come back here.
 
-== Creating Statements
+== Requiring Seaquell
 
-The *Statement* is the primary abstraction.
-It represents a single SQL statement.
-Individual statements can be grouped in two ways: they may be lumped in a *Statement Sequence* or wrapped in a *Transaction*.
+Unfortunately, a number of SQL keywords clash with the names of Clojure core functions.
+But for the DSL to be intuitive, you need to use the most natural function names, so that's what I did.
 
-At its heart, `seaquell` gives you a syntax for creating instances of SQL statements as simple values.
-Here's the "Hello, world" of _seaquell_:
+For symbols you refer, you only have two choices with respect to conflicting symbols: exclude them or rename them. I prefer to exclude conflicting symbols and qualify them with a short namespace alias.
+
+So that leaves us with four choices when requiring `seaquell`.
+
+* Refer all
+* Refer all, exclude some
+* Refer some
+* Refer none
+
+I'll describe each one briefly.
+
+=== Refer All
+
+My recommendation is to isolate your SQL statements to a few namespaces and make unqualified calls to the `seaquell.core` functions.
+This results in the most readable SQL.
+By aliasing the `clojure.core` namespace, you can easily call core functions without having to fully qualify them.
 
 [source,clojure]
 ----
-(select :* (from :user))
+(ns myproj.myns
+  (:refer-clojure
+    :exclude [alter distinct drop group-by into set update partition-by when])
+  (:require [clojure.core :as c]
+            [seaquell.core :refer :all]))
+----
+
+=== Refer All, Exclude Some
+
+If you want to avoid clashes with `clojure.core` but prefer mostly unqualified calls to `seaquell` functions, this next one's for you:
+
+[source,clojure]
+----
+(ns myproj.myns
+  (:require [seaquell.core :as s :refer :all
+             :exclude [alter distinct drop group-by into set update partition-by when]]))
+----
+
+This is my second favorite approach for a namespace with lots of SQL.
+
+=== Refer Some
+
+Here we refer just the symbols we need, but no conflicting names.
+However, since the DSL offers more than 500 functions, explicitly referring functions may prove challenging.
+This is probably my least favorite approach.
+
+[source,clojure]
+----
+(ns myproj.myns
+  (:require [seaquell.core :as s :refer [select from where having order-by]]))
+----
+
+
+=== Refer None
+
+If you just want to avoid clashes altogether and don't mind qualifying every DSL call, the following `ns` declaration will do the trick:
+You'll want a short alias like `s` or `sql` to keep your SQL somewhat readable.
+This approach is appropriate for namespaces with only a little SQL.
+It also results in the shortest namespace form.
+
+[source,clojure]
+----
+(ns myproj.myns
+  (:require [seaquell.core :as s]))
+----
+
+== Creating Statements
+
+`seaquell` has full support for _all_ SQLite (version 3.32.3) statements.
+
+* SQL DML statements
+ ** Select (including WITH clause, WINDOW functions)
+ ** Compound Select (using UNION, INTERSECT, EXCEPT)
+ ** Insert (including UPSERT syntax)
+ ** Update
+ ** Delete
+* SQL DDL statements
+ ** Create Table
+ ** Create Virtual Table
+ ** Create Index
+ ** Create Trigger
+ ** Create View
+ ** Drop Table
+ ** Drop Index
+ ** Drop Trigger
+ ** Drop View
+ ** Alter Table
+* Transaction Support
+ ** Begin and Commit Transaction
+ ** Rollback
+ ** Savepoint and Release
+* Other
+ ** Analyze
+ ** Attach
+ ** Detach
+ ** Explain
+ ** Pragma
+ ** Reindex
+ ** Vacuum
+
+The *Statement* is the primary abstraction.
+At its heart, `seaquell` gives you a syntax for creating instances of SQL statements as simple values.
+Statements are represented as one of the following types:
+
+* a map
+* a sequence (vector or list)
+* a verbatim SQL string
+
+To create a statement, simply call the function named for it.
+You can mix in execution options such as `db` and `params` or supply them later.
+
+[source,clojure]
+----
+(select [:? (as :hi)] (db c) (params "hello"))
 ----
 
 Calling `select` doesn't actually execute a SELECT query, it creates an internal representation of one.
-Once the statement exists you can do something useful with it like convert it to a string or execute it.
+Once the statement exists you can do something useful with it like render it as a string or execute it.
 
-Since every library has to start somewhere, we'll start with the `select` statement and add more over time.
+Here are some articles explaining how to write simple and compound select statements as well as other statements in `seaquell`.
 
 * <<Select.adoc#, Select>>
 * <<Compound-Select.adoc#, Compound Select>>
+* <<Examples.adoc#, Other statements>>
+
+=== SQL Tokens
+
+To create SQL statements as a sequence of tokens, call `sql`.
+Leading strings are treated as verbatim SQL and joined by a space.
+You can mix in execution options such as `db` and `params` or supply them later.
+
+[source,clojure]
+----
+(sql :select :? :as :hi \; (db c) (params "hello"))
+(sql 'select '? 'as 'hi \; (db c) (params "hello"))
+(sql '[select ? as hi \;] (db c) (params "hello"))
+----
+
+Read this <<Raw.adoc#, article>> to learn more about using SQL tokens.
+
+=== Verbatim SQL
+
+To create SQL statements from verbatim text, call `sql`.
+Leading strings are treated as verbatim SQL and joined by a space.
+You can mix in execution options such as `db` and `params` or supply them later.
+
+[source,clojure]
+----
+(sql "select ? as hi;" (db c) (params "hello"))
+(sql "select" "? as hi;" (db c) (params "hello"))
+----
 
 == Composing Statements
 
@@ -34,7 +172,7 @@ Of course, one of the main reasons for treating SQL statements as data is so tha
 Here's how to compose a select statement in `seaquell`.
 
 . Create the base query with `select`
-. Pass it to `select` to add new clauses or replace existing ones
+. Pass it to `select` or `sql` to add new clauses or replace existing ones
 
 [source,clojure]
 ----
@@ -56,11 +194,35 @@ Here's how to compose a select statement in `seaquell`.
 
 As you can see, it's very natural to add or replace clauses.
 But what if you want to modify existing ones?
-For now, you'll have to know how statements are <<Select-Statement-Representation.adoc#, represented>> and use the tools that Clojure already provides.
-
 Check out the <<Composing-Statements.adoc#, Composing Statements>> page for more thoughts on this subject.
+Functions in the `diesel.edit` namespace provide many useful functions for manipulating nested data structures.
+Finally, you can use functions in `clojure.walk` or `clojure.zip` or core functions like `update-in`, `assoc-in`, and `dissoc-in` to modify statements.
+See <<Representing Statements>> below to learn more about their structure.
 
 == Executing Statements
+
+To execute a statement, you'll need to supply a database spec or connection and possibly parameter values.
+You may also want to supply additional execution options such as `row-fn`.
+As we saw above, the execution related properties can be mixed right in to the statement prior to execution.
+They don't affect how the statement renders.
+
+We'll only use the `db` and `params` properties in the following examples, but you can read more about the <<Engine.adoc#, execution engine>> and its other options.
+
+There are basically two approaches to 
+
+* Immediate execution
+* Deferred execution
+
+* Mixed into the statement
+* Supplied to the execution function
+
+I find this especially useful at the REPL.
+Let's look at a simple `select` assuming an existing database connection named `c`.
+
+[source,clojure]
+----
+(do-sql (select :* (from :user)))
+----
 
 To execute a statement just call `do-sql` passing it as an argument.
 
@@ -86,6 +248,27 @@ If you don't need to specify any parameters or save your query definition, the e
 (select! :* (from :user))
 ----
 
+In practical usage, there are times when you want to execute a statement right away, such as in a REPL session.
+There are also times when you need to create a statement and then execute it later.
+Let's take a look at both use cases.
+
+Regardless of when you execute a statement, there are three ways: `sql!`, `do-sql`, `<stmt>!` (e.g., `select!`).
+Also, the database spec or connection and any parameters need to be provided.
+
+=== Immediate Execution
+
+For SQL statements you intend to execute immediately:
+
+[source,clojure]
+----
+(do-sql (select [:? (as :hi)]) (db c) (params "hello"))
+(do-sql (select [:? (as :hi)] (db c) (params "hello")))
+(sql! (select [:? (as :hi)]) (db c) (params "hello"))
+(sql! (select [:? (as :hi)] (db c) (params "hello")))
+----
+
+=== Deferred Execution
+
 == Parameterizing Statements
 
 For now, `seaquell` doesn't automatically parameterize your query.
@@ -99,7 +282,7 @@ Then call `do-sql` with the actual parameter values:
 [{:owner "Harold", :name "Buffy"}]
 ----
 
-== Converting Statements
+== Rendering Statements
 
 Sometimes it's useful to see what SQL string your statement expands to.
 Use `to-sql` to convert a statement to a string:
@@ -123,41 +306,78 @@ Another way to define a select statement and convert it to a string in one step 
 Every statement is just a map with a `:sql-stmt` key.
 Each kind of statement will have its own set of keys used to define it and rules for what values are permissible.
 
-Most `seaquell` functions simply return a value representing
-
-* a fragment of a statement
-* a complete statement
-* a sequence of statements
-* a transaction
-
-To understand the internal specification of any given kind of statement, follow the links below.
+When I first started this project, `clojure.spec` did not exist.
+So I wrote a few articles to explain the representation of these statements:
 
 * <<Documentation-Conventions.adoc#, Documentation Conventions>>
 * <<Select-Statement-Representation.adoc#, Select>>
-* <<Delete-Statement-Representation.adoc#, Delete>> (proposed)
-* <<Insert-Statement-Representation.adoc#, Insert>> (proposed)
-* <<Update-Statement-Representation.adoc#, Update>> (proposed)
+* <<Delete-Statement-Representation.adoc#, Delete>>
+* <<Insert-Statement-Representation.adoc#, Insert>>
+* <<Update-Statement-Representation.adoc#, Update>>
+
+I'm starting to use link:../src/seaquell/spec.clj[specs] to document the internal structure of statements and clauses.
 
 == Learning Statements
 
 An excellent way to learn a new library is to see it in action.
-With that in mind, here are some answers to various http://SQLZoo.net[SQL Zoo] tutorials:
+The `seaquell.zoo` namespace contains a number of <<Zoo.adoc#, solutions>> to various http://SQLZoo.net[SQL Zoo] tutorials.
 
-* link:../src/seaquell/zoo/select_within_select.clj[Select within Select]
-* link:../src/seaquell/zoo/join.clj[Joins]
+Since `seaquell` heavily targets SQLite, its documentation can actually help you, especially the syntax diagrams.
+Also, the tests described below offer many, many examples of `seaquell` usage.
+Check out the <<Examples.adoc#, statement index>> for useful links related to each type of statement.
+
+== Testing Seaquell
+
+To check your installation or if you choose to contribute, you may want to execute the units tests.
+Sea-quell uses the excellent https://github.com/marick/Midje[midje] library for this purpose.
+Just type `lein midje` from the command prompt to run the tests.
+They should all pass.
+
+ λ lein midje
+ nil
+ All checks (1053) succeeded.
+
+You can also run the `test-all` task.
+
+ λ lein test-all
+ Performing task 'midje' with profile(s): 'test,1.9'
+ nil
+ All checks (1053) succeeded.
+ Performing task 'midje' with profile(s): 'test'
+ nil
+ All checks (1053) succeeded.
+
+Finally, there's the `check-all` task.
+
+ λ lein check-all
+ Performing task 'check' with profile(s): '1.9'
+ Compiling namespace seaquell.core
+ Compiling namespace seaquell.edit
+ ...
+ Compiling namespace seaquell.zoo.window-fns
+ Performing task 'check' with profile(s): 'test'
+ Compiling namespace seaquell.core
+ Compiling namespace seaquell.edit
+ ...
+ Compiling namespace seaquell.zoo.window-fns
+
+Looking at the link:../test/seaquell[tests] is a great way to learn what sea-quell can and can't do.
+
+== Navigating Seaquell
+
+At some point, you may want to look more closely at the source code.
+Perhaps you just want to understand a particular function better.
+Maybe you want to change or extend what the library does.
+This <<./org/org.adoc#, article>> gives an overview of how the code is organized.
+
+== Designing Seaquell
+
+<<./design/design.adoc#, Here>> are various thoughts regarding `seaquell` design rationale and direction.
+Mostly, these are notes to my future self so I can remember certain ideas.
+You may or may not find them interesting.
 
 == What's next?
 
 There's still a lot of work to do.
-Select statements are coming along nicely.
-You can express some very complicated queries with a fairly intuitive syntax.
+For a glimpse of possible future directions, check out the <<Roadmap.adoc#, road map>>.
 
-Below are some of the things that are still missing:
-
-* Automatic parameter extraction
-* Automatic quoting for table and field identifiers
-* Comprehensive support for modifying existing queries.
-It's easy to completely replace clauses, but not so easy to modify existing ones (although you do have the full power of Clojure functions like `update-in` and so on)
-* Entity definitions and automatic joins based on them
-* Other statement types (particularly DELETE, UPDATE, INSERT)
-* A mechanism for extending the default SQL generator for specific dialects

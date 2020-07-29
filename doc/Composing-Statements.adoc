@@ -1,5 +1,7 @@
 = Composing Statements
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 `Seaquell` gives you a variety of ways to alter a query over time.
 

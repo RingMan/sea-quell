@@ -1,0 +1,54 @@
+= SQL Zoo Queries
+:idprefix:
+:idseparator: -
+
+These answers to the https://sqlzoo.net[SQLZoo] queries give many examples of using _select_ statements.
+
+.SQL Zoo Examples
+|===
+|SQLZoo Topic |Answers |Last Checked
+|https://sqlzoo.net/wiki/SELECT_basics[SELECT basics]
+|link:../src/seaquell/zoo/select_basics.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/SELECT_names[SELECT name]
+|link:../src/seaquell/zoo/select_names.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/SELECT_from_WORLD_Tutorial[SELECT from World]
+|link:../src/seaquell/zoo/select_from_world.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/SELECT_from_Nobel_Tutorial[SELECT from Nobel]
+|link:../src/seaquell/zoo/select_from_nobel.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/SELECT_within_SELECT_Tutorial[SELECT within SELECT]
+|link:../src/seaquell/zoo/select_within_select.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/SUM_and_COUNT[SUM and COUNT]
+|link:../src/seaquell/zoo/sum_and_count.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/The_JOIN_operation[JOIN]
+|link:../src/seaquell/zoo/join.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/More_JOIN_operations[More JOIN operations]
+|link:../src/seaquell/zoo/more_joins.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/Using_Null[Using NULL]
+|link:../src/seaquell/zoo/using_null.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/NSS_Tutorial[Numeric Examples (NSS)]
+|link:../src/seaquell/zoo/nss.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/Window_functions[Window function]
+|link:../src/seaquell/zoo/window_fns.clj[Answers] | 7/21/2020
+
+|https://sqlzoo.net/wiki/Window_LAG[COVID 19]
+|link:../src/seaquell/zoo/covid.clj[Answers]
+The last question does not always give the correct answer (sort order).
+You may need to submit it multiple times.
+| 7/21/2020
+
+|https://sqlzoo.net/wiki/Self_join[Self join]
+|link:../src/seaquell/zoo/self_join.clj[Answers]
+For question 10, use the MySQL engine and insert `SET SQL_BIG_SELECTS=1;` before the `SELECT`
+| 7/21/2020
+|===
+

@@ -1,80 +1,416 @@
-= seaquell image:https://travis-ci.org/RingMan/sea-quell.png[Build Status,link=https://travis-ci.org/RingMan/sea-quell]
+= seaquell
+:idprefix:
+:idseparator: -
+:toc: right
 
 _Tame the stormy seas of SQL with seaquell, another Clojure DSL for generating SQL statements_
 
-Mainly, this is a personal experiment.
-It's also a wish list for what I'd love to see:
+== Introduction
 
-* A front-end syntax for creating SQL statements as values
- ** Resembles SQL itself
- ** Lets you define objects and the relationships between them
-* A set of well-defined data structures for each kind of statement
-* A back-end transformation to convert SQL values to SQL strings suitable to pass on to JDBC
-* Support for vendor-specific transformations
-* Clear separation of the front-end and back-end where the data itself is the only connection between the two
+image:https://img.shields.io/clojars/v/seaquell[Clojars Project,link=https://clojars.org/seaquell]
+image:https://versions.deps.co/ringman/sea-quell/status.svg[Dependencies Status,link=https://versions.deps.co/ringman/sea-quell]
+image:https://img.shields.io/travis/ringman/sea-quell[Build Status,link=https://travis-ci.org/RingMan/sea-quell]
+image:https://img.shields.io/codecov/c/gh/ringman/sea-quell[Codecov,link=https://codecov.io/gh/ringman/sea-quell]
+image:https://cljdoc.org/badge/seaquell/seaquell[cljdoc badge,link=https://cljdoc.org/d/seaquell/seaquell/CURRENT]
 
-== Getting Started
+What started as an experiment has grown into a fairly capable library.
+`seaquell` provides the following features:
 
-To create a new leiningen project that downloads `seaquell` from https://clojars.org/seaquell[clojars]:
+* Three representations of SQL statements
+ ** A high-level DSL to create SQL statements as simple maps
+  *** Supports _all_ SQLite statements
+  *** Easy to learn if you already know SQL
+  *** Probably useful for other highly compliant SQL dialects
+ ** A lower-level DSL with vectors of SQL tokens
+  *** Can represent virtually any SQL statement
+  *** Maybe even easier to learn
+  *** Actually reads very nicely
+ ** Literal SQL strings if neither of the above methods will do
+* A unified way of creating, rendering, and executing SQL statements
+* A way to transform the statement representations to SQL text
+* A way to execute the resulting statements using JDBC
+
+== Who is This Library For?
+
+You may enjoy using `seaquell` if any of these are true:
+
+* You use SQLite or a highly compliant database
+* You know SQL well but prefer writing queries in Clojure if the DSL is similar enough
+* You want to compose your statements over time
+* You don't mind using a library that doesn't have a community yet
+
+You may prefer another library if these apply:
+
+* You need to write very complicated queries in a dialect not directly supported
+* You prefer just writing your SQL statements as text
+* You don't need to compose statements
+* You want to work at a higher level of abstraction than SQL
+* You already use another library with an established community
+
+== Quick Start
+
+Let's use the Clojure `clj` command to start a REPL.
+We'll also pull in a dependency on SQLite so we can use an in-memory database.
 
 [source,bash]
 ----
-$ lein new my-app
-$ cd my-app
+clj -Sdeps '{:deps {seaquell/seaquell {:mvn/version "0.5.0-SNAPSHOT"} org.xerial/sqlite-jdbc {:mvn/version "3.32.3"}}}'
+Clojure 1.10.1
+user=>
 ----
 
-Edit `project.clj` so your project looks something like this...
+=== Requiring the Seaquell Namespaces
+
+Next, let's require the core `seaquell` functions.
 
 [source,clojure]
 ----
-(defproject my-app "0.1.0-SNAPSHOT"
-  ;; ...
-  :dependencies [[org.clojure/clojure "1.4.0"]
-                 [seaquell "0.1.0"]])
+user=> (require '[seaquell.core :refer :all])
+WARNING: set already refers to: #'clojure.core/set in namespace: user, being replaced by: #'seaquell.core/set
+WARNING: alter already refers to: #'clojure.core/alter in namespace: user, being replaced by: #'seaquell.core/alter
+WARNING: into already refers to: #'clojure.core/into in namespace: user, being replaced by: #'seaquell.core/into
+WARNING: when already refers to: #'clojure.core/when in namespace: user, being replaced by: #'seaquell.core/when
+WARNING: group-by already refers to: #'clojure.core/group-by in namespace: user, being replaced by: #'seaquell.core/group-by
+WARNING: drop already refers to: #'clojure.core/drop in namespace: user, being replaced by: #'seaquell.core/drop
+WARNING: update already refers to: #'clojure.core/update in namespace: user, being replaced by: #'seaquell.core/update
+WARNING: distinct already refers to: #'clojure.core/distinct in namespace: user, being replaced by: #'seaquell.core/distinct
+WARNING: partition-by already refers to: #'clojure.core/partition-by in namespace: user, being replaced by: #'seaquell.core/partition-by
+nil
+user=>
 ----
 
-To work from source, clone `seaquell`, grab its dependencies, and open up a repl.
+As you can see, a number of SQL keywords clash with the names of Clojure functions.
+However, for playing at the REPL, it's nice to use unqualified names.
+You can read more about <<doc/Home#requiring-seaquell, requiring seaquell>> in your own projects.
 
-[source,bash]
-----
-$ git clone https://github.com/RingMan/sea-quell.git
-$ cd sea-quell
-$ lein deps
-$ lein repl
-----
+Now we need a function to create the database spec for a SQLite connection.
 
-To play with query definitions and see them as SQL strings
-
+[source,clojure]
 ----
-user=> (use 'seaquell.core)
-user=> (def q1 (select :* (from :users)))
-user=> (def q2 (select [:id :passwd] (from :users)))
-user=> (to-sql q1)
+user=> (require '[seaquell.sqlite :refer [db-spec]])
+nil
 ----
 
-Finally, connect to a database and execute your queries
+We also need a few functions from the execution engine:
 
+* to create the database connection from a database spec
+* to specify a function to apply to each row
+* to specify a function to apply to the overall result set
+* to specify an option to not execute a statement in a transaction
+
+We won't need those last three functions until later.
+
+[source,clojure]
 ----
-user=> (use 'korma.db)
-user=> (defdb mydb (sqlite3 {:db "/path/to/sqlite.db"}))
-user=> (do-sql q2)
+user=> (require '[seaquell.engine :refer [db-conn row-fn result-set-fn transaction?]])
+nil
 ----
 
-== Documentation and Examples
+=== Creating a Connection
 
-Check out the https://github.com/RingMan/sea-quell/wiki[wiki] to learn more about using `seaquell` and how it's designed.
-For some full-featured examples, take a peek at these link:src/seaquell/zoo/select_within_select.clj[answers] to the http://sqlzoo.net[SQL Zoo] _Select within Select_ tutorial.
+Next we'll create a connection to an in-memory SQLite database so we can experiment.
+We'll pass that connection with every statement we execute.
 
-== Testing
+[source,clojure]
+----
+user=> (def c (db-conn (db-spec)))
+#'user/c
+----
 
-To check your installation or if you choose to contribute, you may want to execute the units tests.
-Sea-quell uses the excellent https://github.com/marick/Midje[midje] library for this purpose.
-Just type `lein midje` from the command prompt to run the tests.
-They should all pass.
+Cool!
+Let's play!
 
-Looking at the link:test/seaquell/core_test.clj[tests] is a great way to learn what sea-quell can and can't do.
+=== Writing SQL with the Core Syntax
+
+First, we'll create a simple table.
+
+[source,clojure]
+----
+user=> (create-table! :mytable [:greeting :entity] (db c))
+[0]
+----
+
+TIP: Functions that end with an exclamation point actually execute a SQL statement.
+`seaquell` doesn't maintain any global state or use dynamic vars so you need to pass a database spec or connection whenever you execute a statement.
+There's no concept of a default connection or anything like that.
+
+Um, I'd rather call it just `t` to make it easier to use at the REPL.
+
+[source,clojure]
+----
+user=> (alter-table! :mytable (rename-to :t) (db c))
+()
+----
+
+Now we can insert a few rows into the table.
+
+[source,clojure]
+----
+user=> (insert! (into :t) (value "Hello" "world") (db c))
+[1]
+user=> (insert! (into :t) (values ["Greetings" "earthlings"] ["Howdy" "partner"]) (db c))
+[2]
+----
+
+TIP: You can use `value` when you only need to insert one record.
+
+Great.
+Now we can query the database.
+I formatted the output to make it more readable.
+
+[source,clojure]
+----
+user=> (select! :* (from :t) (db c))
+({:greeting "Hello", :entity "world"}
+ {:greeting "Greetings", :entity "earthlings"}
+ {:greeting "Howdy", :entity "partner"})
+----
+
+Hmm, pretty good but let's concatenate the strings using an expression.
+
+[source,clojure]
+----
+user=> (select! ['(|| greeting ", " entity)] (from :t) (db c))
+({:greeting || ', ' || entity "Hello, world"}
+ {:greeting || ', ' || entity "Greetings, earthlings"}
+ {:greeting || ', ' || entity "Howdy, partner"})
+----
+
+The inner sequence is a string concatenation expression that looks very similar to a Clojure function call.
+In SQLite, `||` is the string concatenation operator.
+The outer vector is so `seaquell` will treat the inner list as an expression instead of a collection of fields to select.
+
+So far, so good, but the column name in the result looks wierd.
+Let's alias it.
+While we're at it, we'll save the query so we can refer to it.
+
+[source,clojure]
+----
+user=> (def q (select [[:|| :greeting ", " :entity] :as :hi] (from :t) (db c)))
+#'user/q
+user=> (select! q)
+({:hi "Hello, world"} {:hi "Greetings, earthlings"} {:hi "Howdy, partner"})
+user=> (sql! q)
+({:hi "Hello, world"} {:hi "Greetings, earthlings"} {:hi "Howdy, partner"})
+user=> (do-sql q)
+({:hi "Hello, world"} {:hi "Greetings, earthlings"} {:hi "Howdy, partner"})
+----
+
+[TIP]
+====
+The `select` function (with no exclamation point) returns a map value representing a select statement.
+There's also `select$` which returns the SQL string (`$` is for "string") for a select statement.
+For example
+
+[source,clojure]
+----
+ user=> (select$ q)
+ "SELECT greeting || ', ' || entity AS hi FROM t;"
+----
+
+_Every_ statement provides this family of three functions to create it, render it, and execute it.
+====
+
+Ok, that's better. Now let's apply a row function to the result to extract the greeting.
+
+[source,clojure]
+----
+user=> (select! q (row-fn :hi))
+("Hello, world" "Greetings, earthlings" "Howdy, partner")
+----
+
+Nice! But I don't want to greet the whole world, just Clojure users.
+
+[source,clojure]
+----
+user=> (update! :t (set {:entity "Clojurians"}) (where {:entity "world"}) (db c))
+[1]
+----
+
+Let's see if it worked.
+
+[source,clojure]
+----
+user=> (select! q (row-fn :hi))
+("Hello, Clojurians" "Greetings, earthlings" "Howdy, partner")
+----
+
+There we go.
+My work is almost done.
+Let's make one more tweak.
+I only want to see the one result.
+
+[source,clojure]
+----
+user=> (select! q (row-fn :hi) (result-set-fn first))
+"Hello, Clojurians"
+user=> (select! q (order-by :entity) (limit 1) (row-fn :hi))
+("Hello, Clojurians")
+----
+
+In the first call, I used `result-set-fn` to grab the `first` of several result records.
+In the second, I composed `order-by` and `limit` clauses into the original query to return our one result.
+
+==== Using Transactions at the REPL
+
+In this next section, I'll show you how to execute transactions over the course of multiple statements.
+Let's start the transaction.
+
+[source,clojure]
+----
+user=> (begin! (db c))
+Execution error (SQLiteException) at org.sqlite.core.DB/newSQLException (DB.java:1010).
+[SQLITE_ERROR] SQL error or missing database (cannot start a transaction within a transaction)
+----
+
+What happened?
+Oh, I see.
+By default, statements are executed in a transaction.
+So we need to tell the execution environment not to wrap our statement in a transaction.
+
+[source,clojure]
+----
+user=> (begin! (db c) (transaction? false))
+[1]
+user=> (end! (db c) (transaction? false))
+[1]
+----
+
+That worked, but I'd prefer shorter function calls.
+Let's define a var to hold the two arguments.
+
+[source,clojure]
+----
+user=> (def opt (merge (db c) (transaction? false)))
+#'user/opt
+----
+
+Now we're ready.
+
+[source,clojure]
+----
+user=> (begin! opt)
+[1]
+user=> (delete! (from :t) (where {:entity [not= "Clojurians"]}) opt)
+[2]
+user=> (select! q opt)
+({:hi "Hello, Clojurians"})
+user=> (drop-table! :t opt)
+[2]
+user=> (rollback! opt)
+[2]
+user=> (select! q (row-fn :hi))
+("Hello, Clojurians" "Greetings, earthlings" "Howdy, partner")
+----
+
+I rolled back the transaction, putting back the rows we had deleted earlier.
+That's because I want to show you the other ways of writing SQL statements.
+Onward!
+
+=== Writing SQL as a Sequence of Tokens
+
+So far you've only used the core DSL functions to create and execute SQL statements.
+In this section we'll look at a powerful way to write almost any SQL statement in any dialect.
+If you can't express your SQL statement using the core DSL, or if you simply prefer writing your statements this way, you can write SQL as a sequence of tokens.
+
+Let's begin another transaction.
+
+[source,clojure]
+----
+user=> (sql! '[begin \;] opt)
+[2]
+----
+
+And delete all the rows that don't greet Clojurians.
+
+[source,clojure]
+----
+user=> (sql! '[delete from t where entity <> "Clojurians"\;] opt)
+[2]
+----
+
+Now use select (with and without applying a row function) to confirm the deletion.
+
+[source,clojure]
+----
+user=> (sql! '[select greeting || ", " || entity as hi from t\;] opt)
+({:hi "Hello, Clojurians"})
+user=> (sql! '[select greeting || ", " || entity as hi from t\;] (row-fn :hi) opt)
+("Hello, Clojurians")
+----
+
+Finally, drop the table.
+We don't need it anymore.
+
+[source,clojure]
+----
+user=> (sql! '[drop table t\;] opt)
+[2]
+----
+
+Ha!
+Just kidding!
+Let's rollback again, because there's one more way to write your SQL.
+
+[source,clojure]
+----
+user=> (sql! '[rollback\;] opt)
+[2]
+----
+
+=== Writing SQL as a Verbatim String
+
+When push comes to shove, you can always write your SQL as a verbatim string.
+In one sense, it's the last resort if you can't express it using the other methods.
+But it's often useful in the REPL, like when you're trying to finish the "quick" start.
+
+[source,clojure]
+----
+user=> (sql! "delete from t where entity <> 'Clojurians';" opt)
+[2]
+user=> (sql! "drop table t;" opt)
+[2]
+user=> (sql! "select * from t;" opt)
+Execution error (SQLiteException) at org.sqlite.core.DB/newSQLException (DB.java:1010).
+[SQLITE_ERROR] SQL error or missing database (no such table: t)
+----
+
+As you can see from the exception, we really did delete the table.
+
+So there you have it, a quick look at what `seaquell` can do.
+Hopefully, you've seen enough to know whether you want to try it out in your own work.
+
+== Documentation, Examples, and Tests
+
+Here are some links to more documentation, examples, and tests:
+
+* More <<doc/Home.adoc#, documentation>>
+* <<doc/Examples.adoc#, Examples>> (draft) organized by statement type.
+* How to run the <<doc/Home#testing-seaquell, tests>>
+
+== A Challenge
+
+I'm very interested in knowing if this library is actually useful to Clojurists other than me.
+(But hey, it's cool if I'm the only user; it's been fun and absolutely worth the effort).
+
+It is the express goal of this project to support the entire SQLite syntax.
+If you find a SQLite statement you can execute from Clojure but can't write using the main `seaquell` DSL, please create an issue.
+You'll be doing me a huge favor.
+
+It is also an express goal to write _any_ SQL statement in _any_ dialect using the "SQL as a vector of tokens" approach.
+If you find a statement that can't be expressed that way, please create an issue.
+It will help me improve the library.
+
+It is not at all a goal to support every SQL dialect out there.
+It sort of used to be but I just can't keep up.
+That said, it _is_ a goal to express the basic SQL CRUD operations (especially _select_ statements) in the most popular dialects.
+So let me know what's missing, what you absolutely have to have.
+What's the one thing `seaquell` doesn't yet provide that would convince you or others to try it?
 
 == A Note About MS Access
+
+*WARNING*: The `paren-joins` branch described below is no longer actively maintained.
+If you like this library and need to target MS Access, please create an issue.
 
 For those of you who work with Microsoft Access, you'll probably want to switch to the `paren-joins` branch.
 Unlike `master`, the `paren-joins` branch is subject to rebasing (you've been warned), but it has a few differences that make it work well with Access.
@@ -88,3 +424,4 @@ Finally, I changed the delimiters to square brackets (reads nicer).
 
 *IMPORTANT*: When you're doing joins targeting an Access database, you'll need to qualify all column names with the table they came from, even if the column name is unambiguous.
 This may be good practice anyway, but Access insists on it.
+

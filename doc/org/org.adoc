@@ -1,0 +1,85 @@
+= How `seaquell` Namespaces are Organized (Draft)
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:toc:
+
+== Source Files
+
+Here's how the `src` files are organized.
+
+core.clj::
+Defines the primary DSL syntax for creating, rendering, and executing SQL statements.
+
+edit.clj::
+Provides a number of public API functions for altering existing _select_ statements.
+
+to_sql.clj::
+Transforms SQL statement values (maps) into SQL strings.
+
+raw.clj::
+Transforms sequences of SQL tokens to SQL strings and provides a number of helper functions for defining parenthesized value tuples.
+
+engine.clj::
+Executes SQL strings using the `clojure.java.jdbc` library.
+
+util.clj::
+Provides a number of internal utility functions, mostly predicates, used by other `seaquell` namespaces.
+
+spec.clj::
+Uses `clojure.spec.alpha` to define specs for some of the DSL.
+
+sqlite.clj::
+Provides a few public functions for working with SQLite databases.
+
+seaquell.zoo::
+Provides solutions to a number of SQLZoo tutorials on using _select_ statements.
+
+== Test Files
+
+Here's how the `test` files are organized.
+
+core_test::
+
+edit_test::
+
+to_sql_test::
+
+raw_fn_test::
+Tests the public `raw` function.
+
+raw_test::
+Tests the use of SQL tokens.
+
+sql_ex_pieces_providers::
+
+sqlite_test::
+Tests some of the functions in the `sqlite` namespace.
+
+=== Statement Tests
+
+My testing philosophy has evolved since starting the project.
+With more recent commits, the primary purpose of the tests is to show how to use the DSL.
+The secondary purpose is to confirm the DSL works as intended.
+Newer tests exercise statement creation and rendering or execution together, rather than separately.
+As a consequence, newer tests may be closer to integration tests than unit tests, but they work better to document DSL usage.
+
+The following `seaquell` namespaces use the new approach:
+
+ * link:../../test/seaquell/alter_test.clj[alter-test]
+ * link:../../test/seaquell/analyze_test.clj[analyze-test]
+ * link:../../test/seaquell/attach_detach_test.clj[attach-detach-test]
+ * link:../../test/seaquell/compound_select_test.clj[compound-select-test]
+ * link:../../test/seaquell/create_test.clj[create-test]
+  ** link:../../test/seaquell/constraint_test.clj[constraint-test]
+ * link:../../test/seaquell/delete_test.clj[delete-test]
+ * link:../../test/seaquell/drop_test.clj[drop-test]
+ * link:../../test/seaquell/insert_test.clj[insert-test]
+  ** link:../../test/seaquell/upsert_test.clj[upsert-test]
+ * link:../../test/seaquell/pragma_test.clj[pragma-test]
+ * link:../../test/seaquell/reindex_test.clj[reindex-test]
+ * link:../../test/seaquell/select_test.clj[select-test]
+  ** link:../../test/seaquell/window_fn_test.clj[window-fn-test]
+  ** link:../../test/seaquell/with_test.clj[with-test]
+ * link:../../test/seaquell/transaction_test.clj[transaction-test]
+ * link:../../test/seaquell/update_test.clj[update-test]
+ * link:../../test/seaquell/vacuum_test.clj[vacuum-test]
+

@@ -1,0 +1,118 @@
+= Roadmap
+:idprefix:
+:idseparator: -
+
+A high-level look at where `seaquell` is trying to go.
+
+== Where We are Now
+
+The primary DSL syntax is pretty complete and relatively stable.
+It has complete coverage for SQLite and decent coverage for standard SQL.
+As I've said previously, I don't really intend to provide syntax for every statement in every dialect.
+
+The secondary DSL (SQL as a sequence of tokens) is pretty powerful.
+However, it's newer and a little less stable.
+
+There is some integration between the two styles, but they're largely independent.
+
+There are many, many tests and some halfway decent documentation.
+
+I would characterize this library as late alpha, early beta.
+The rest of this document highlights some areas of focus going forward.
+
+== Documentation
+
+Flesh out the documentation.
+Find the holes and fill them.
+Make it easy for someone who wants to use the library to learn how.
+
+== Testing
+
+At the very least, I want the tests to act as documentation for `seaquell`.
+Again, find the holes.
+It would be nice to shoot for 100% coverage according to `lein cloverage`.
+
+I currently use the midje library.
+It's very powerful, but it only supports Clojure.
+Most of this DSL should work just as easily in Clojurescript.
+The execution engine is the only thing that's Clojure specific.
+
+Anyway, to target Clojurescript, it may make sense to migrate away from midje.
+
+== Refactor Core Functions
+
+Many of the core statement functions have a similar structure.
+Each is designed to be idempotent.
+Also, each one accepts one or more positional arguments, followed by arguments to compose into the statement using `mk-map*`.
+This is often to make the syntax less verbose and more like hand-written SQL.
+Usually, the positional arguments are transformed to composable arguments and then passed to `mk-map*`.
+It may be possible to leverage this commonality to make supporting new statements easier.
+
+== Specs
+
+Another intention is to use `clojure.spec` to describe SQL statement maps.
+They help document what clauses and properties each statement can have and aid API discovery since almost all syntax functions have the same name as a map key in some data structure.
+Specs exist for some of the newly supported statements, but many are missing or incomplete.
+
+== Find Points of Extension
+
+ * Add whole new statements.
+ I believe this is possible now.
+ You would write your own syntax functions and then implement the `to-sql` multimethod for your new statement.
+ * Add clauses to existing statements
+ * Modify how statements are rendered
+
+== Design to Allow Alternate Backends
+
+Currently, the `to-sql` namespace targets standard SQL and SQLite.
+This includes things like how strings and identifiers are quoted, what names are keywords, and so forth.
+The design uses a multimethod and dispatches on the statement type.
+If I wanted to create a whole new dialect that wanted to provide its own methods, I don't think I could.
+You can add new methods that dispatch on different values, but not multiple possibilities for dispatching on the same value.
+
+One possible alternative is to make a simple protocol.
+That protocol could have a to-sql method in it, as well as others.
+
+I've also thought about trying to use a more data-driven approach to rendering SQL.
+For example, there's a set of top-level statements, a set of language keywords, a set of built-in functions.
+There are characters used to quote strings and to quote identifiers.
+There are characters in strings that need to be escaped.
+There are perhaps unary and binary operators and their precedence.
+All of this is just data.
+
+So it feels like much of the transformation algorithm is the same across dialects, but the configuration data is different.
+Also, I think the transformation itself feels quite composable.
+For example, at the top is just a map from SQL statement type to rendering function.
+But the algorithm of many transformation functions is quite similar: 1) destructure a map to grab the clauses, 2) call a function to render that clause if present, 3) assemble the non-empty clauses in the correct order.
+This is something else that feels quite data driven.
+
+== Update `to-sql` Namespace to Generate SQL Tokens
+
+Another thing I would like to change about the back end is what it generates.
+Right now, the `to-sql` namespace produces a SQL string.
+The `seaquell.raw/sql$` function does too.
+I would like to change that so the SQL statement maps are first transformed to a vector of SQL tokens.
+In, other words, the primary DSL is transformed to the secondary DSL, which is then transformed to a string.
+
+Thus, you end up with three stages in the SQL pipeline.
+The first stage applies DSL syntax to produce SQL maps.
+The second stage tranforms SQL maps to SQL token sequences.
+The last stage tranforms the tokens to a SQL string.
+
+== Round-trip SQL
+
+That's transformation in the forward direction.
+But what if we could start with a SQL string and go the other way?
+After all, we frequently start with a query or statement that already exists, and we want to express it in our DSL.
+
+In this dream, there's a parser for each supported dialect that accepts a string and produces a sequence of SQL tokens.
+Next, there's a way to take those tokens and transform them to a SQL statement map.
+Finally, the map can be transformed to an s-expression in the syntax of the DSL.
+
+== Pretty Printing
+
+I like syntax coloring for working with languages.
+When rendering SQL, it would be nice to format it across multiple lines and apply color and styling, much like we pretty print Clojure data.
+It wouldn't be difficult to allow the sequence of tokens to include ANSI tokens that only apply color and style.
+Character literals are already supported, so you would just have to insert newline literals at line endings.
+Newlines and ANSI would be easy to filter out if present.

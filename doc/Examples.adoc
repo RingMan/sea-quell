@@ -1,0 +1,26 @@
+= Examples
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
+:toc: right
+
+This document helps you find examples of the different SQL statements so you can use them.
+Each statement provides a link to its corresponding SQLite page.
+I find the syntax diagrams very helpful.
+
+== Alter Table
+
+Use `ALTER TABLE` to rename a table, rename a column, or add a column.
+
+* SQLite https://sqlite.org/lang_altertable.html[reference]
+* link:../test/seaquell/alter_test.clj[Tests]
+* Functions: `alter`, `alter-table`
+* Properties: `add`, `add-column`, `column`, `rename`, `rename-column`, `rename-to`, `to`
+
+== Analyze
+
+== Attach Database
+
+== Begin Transaction
+
+== Commit Transaction

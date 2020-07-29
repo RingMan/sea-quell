@@ -1,5 +1,7 @@
 = Documentation Conventions
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 I use a few simple conventions for documenting `seaquell`.
 In particular, I use midje-style metaconstants.

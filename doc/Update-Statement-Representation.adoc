@@ -1,5 +1,7 @@
 = Update Statement Representation
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 
 The map below shows the structure of the _update_ statement.
 The `sql-stmt`, `op`, `source` and `set-cols` keys are required.
