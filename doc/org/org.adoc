@@ -1,5 +1,7 @@
 = How `seaquell` Namespaces are Organized (Draft)
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
+:idprefix:
+:idseparator: -
 :toc:
 
 == Source Files

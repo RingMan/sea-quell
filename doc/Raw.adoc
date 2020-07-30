@@ -1,4 +1,5 @@
 = Raw Seaquell
+ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 :idprefix:
 :idseparator: -
 
