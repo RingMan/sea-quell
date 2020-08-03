@@ -19,8 +19,122 @@ Use `ALTER TABLE` to rename a table, rename a column, or add a column.
 
 == Analyze
 
+* SQLite https://sqlite.org/lang_analyze.html[reference]
+* link:../test/seaquell/analyze_test.clj[Tests]
+* Functions: `analyze`
+* Properties: `schema`
+
 == Attach Database
+
+* SQLite https://sqlite.org/lang_attach.html[reference]
+* link:../test/seaquell/attach_detach_test.clj[Tests]
+* Functions: `attach`, `attach-database`
+* Properties: `as`
 
 == Begin Transaction
 
+* SQLite https://sqlite.org/lang_transaction.html[reference]
+
 == Commit Transaction
+
+* SQLite https://sqlite.org/lang_transaction.html[reference]
+
+== Create Index
+
+* SQLite https://sqlite.org/lang_createindex.html[reference]
+
+== Create Table
+
+* SQLite https://sqlite.org/lang_createtable.html[reference]
+
+== Create Virtual Table
+
+* SQLite https://sqlite.org/lang_createvtab.html[reference]
+
+== Create Trigger
+
+* SQLite https://sqlite.org/lang_createtrigger.html[reference]
+
+== Create View
+
+* SQLite https://sqlite.org/lang_createview.html[reference]
+
+== Delete
+
+* SQLite https://sqlite.org/lang_delete.html[reference]
+
+== Detach
+
+* SQLite https://sqlite.org/lang_detach.html[reference]
+
+== Drop Index
+
+* SQLite https://sqlite.org/lang_dropindex.html[reference]
+
+== Drop Table
+
+* SQLite https://sqlite.org/lang_droptable.html[reference]
+
+== Drop Trigger
+
+* SQLite https://sqlite.org/lang_droptrigger.html[reference]
+
+== Drop View
+
+* SQLite https://sqlite.org/lang_dropview.html[reference]
+
+== End Transaction
+
+* SQLite https://sqlite.org/lang_transaction.html[reference]
+
+== Explain
+
+* SQLite https://sqlite.org/lang_explain.html[reference]
+
+== Insert
+
+* SQLite https://sqlite.org/lang_insert.html[reference]
+
+== Pragma
+
+* SQLite https://sqlite.org/pragma.html#syntax[reference]
+
+== Reindex
+
+* SQLite https://sqlite.org/lang_reindex.html[reference]
+
+== Release
+
+* SQLite https://sqlite.org/lang_savepoint.html[reference]
+
+== Replace
+
+* SQLite https://sqlite.org/lang_replace.html[reference]
+
+== Rollback
+
+* SQLite reference (https://sqlite.org/lang_transaction.html[transaction], https://sqlite.org/lang_savepoint.html[savepoint])
+
+== Savepoint
+
+* SQLite https://sqlite.org/lang_savepoint.html[reference]
+
+== Select
+
+* SQLite https://sqlite.org/lang_select.html[reference]
+* Tests (link:../test/seaquell/select_test.clj[Select], link:../test/seaquell/compound_select_test.clj[Compound Select], link:../test/seaquell/values_test.clj[Values])
+* <<Zoo.adoc#, SQLZoo Examples>>
+* Functions: `select`, `select-all`, `select-distinct`, `select-from`, `value`, `values`
+* Compound: `compound-select`, `intersect`, `intersect-all`, `except`, `except all`, `union`, `union-all`
+* Clauses: `with`, `from`, `where`, `group-by`, `having`, `window`, `order-by`, `limit`, `offset`
+
+=== With Clause
+
+== Update
+
+* SQLite https://sqlite.org/lang_update.html[reference]
+
+== Vacuum
+
+* SQLite https://sqlite.org/lang_vacuum.html[reference]
+
