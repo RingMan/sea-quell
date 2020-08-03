@@ -4,8 +4,55 @@ There are some fairly powerful abilities but I don't remember them when too
 much time goes by. In general, show more examples and write more tests to show
 the usage.
 
+== Docs
+
+Add TOC directive to readme and home, especially.
+
+* Usage
+ ** Explain how to `require`
+ ** Statements
+  *** Explain select, select$, select! trio
+  *** Explain sql, sql$, sql! trio
+  *** Explain use of `db` and `params` and JDBC options
+  *** Every stmt link to SQLite syntax, tests, or examples
+  *** Compound select
+  *** Values
+ ** Expressions
+* Reference
+ ** Statements (link to tests or examples)
+  *** list of fns for each statement. also try to list clause fns and property fns
+ ** Modifying statements
+  *** list of fns
+ ** Representation
+  *** Expressions
+  *** Of statements
+ ** Engine
+ ** How code is organized
+  *** Add page describing organization of source
+  *** Add page describing the tests.
+* Design
+* Roadmap
+ ** More docs
+ ** Translate to intermediate rep
+ ** User-defined dialect/engine
+ ** Extensible clauses
+
 == NOW!
 
+ * Convert everything you can to cljc files
+ * Replace wiki docs with docs folder. Keep in sync with code. Make it work
+   with cljdocs
+ * I just realized that regex is not a general solution to raw unescaped SQL.
+   You can't just hold arbitrary strings in a regex. The problems start when
+   you want to use regex metacharacters in your string.
+ * maybe add a seaquell.frags namespace with all the upper case frags
+ * add ALL, DISTINCT frags
+ * Add specs for vacuum statement
+ * Add specs, tests for analyze statement
+ * vacuum can't run in a transaction. maybe let engine take care of it
+ * Pull in sqlite namespace from NmwsNgJni project
+   ** write sqlite util fn to get value of pragma
+   ** add fns to show triggers, indices, views, or subset of entities
  * Integrate experimental raw sql vectors
    ** Let it be arg of `raw` function
    ** Pass it to `sql!` function as a vector
@@ -69,6 +116,9 @@ a progression:
 
 Other databases:
 
+ * H2
+ * Apache Derby
+ * HSQLDB
  * PostgreSQL
  * MySQL
  * MariaDB
@@ -76,7 +126,6 @@ Other databases:
  * Microsoft Access
  * Oracle
  * DB2
- * H2
  * etc
 
 === Fill in SQLite Gaps
@@ -181,11 +230,11 @@ map because set-cols uses mk-map* under the hood.
 
 This doesn't work:
 
- (set-cols [val :x :y] [val 1 2])
+ (set [val :x :y] [val 1 2])
 
 This does:
 
- (set-cols {[val :x :y] [val 1 2]})
+ (set {[val :x :y] [val 1 2]})
 
 == Add Help in REPL
 
