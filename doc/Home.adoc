@@ -368,11 +368,11 @@ Looking at the link:../test/seaquell[tests] is a great way to learn what sea-que
 At some point, you may want to look more closely at the source code.
 Perhaps you just want to understand a particular function better.
 Maybe you want to change or extend what the library does.
-This <<./org/org.adoc#, article>> gives an overview of how the code is organized.
+This <<Org.adoc#, article>> gives an overview of how the code is organized.
 
 == Designing Seaquell
 
-<<./design/design.adoc#, Here>> are various thoughts regarding `seaquell` design rationale and direction.
+<<Design.adoc#, Here>> are various thoughts regarding `seaquell` design rationale and direction.
 Mostly, these are notes to my future self so I can remember certain ideas.
 You may or may not find them interesting.
 
