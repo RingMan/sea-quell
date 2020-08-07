@@ -1,12 +1,17 @@
-= Examples
+= Statement Index
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 :idprefix:
 :idseparator: -
 :toc: right
 
-This document helps you find examples of the different SQL statements so you can use them.
-Each statement provides a link to its corresponding SQLite page.
-I find the syntax diagrams very helpful.
+The `seaquell` DSL provides over 500 functions for building SQL statements.
+This document helps you know which ones to use for each kind of statement.
+It is organized alphabetically by statement and provides the following information:
+
+ * Links to SQLite documentation with helpful syntax diagrams
+ * Links to relevant tests
+ * Functions used to create the statement
+ * Functions used to define clauses or properties of the statement
 
 == Alter Table
 
@@ -34,107 +39,239 @@ Use `ALTER TABLE` to rename a table, rename a column, or add a column.
 == Begin Transaction
 
 * SQLite https://sqlite.org/lang_transaction.html[reference]
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `begin`, `begin-deferred`, `begin-deferred-transaction`,
+  `begin-exclusive`, `begin-exclusive-transaction`,
+  `begin-immediate`, `begin-immediate-transaction`, `begin-transaction`
+* See also <<commit-transaction>>, <<end-transaction>>, <<rollback>>
 
 == Commit Transaction
 
 * SQLite https://sqlite.org/lang_transaction.html[reference]
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `commit`, `commit-transaction`, `end`, `end-transaction`
+* See also <<begin-transaction>>, <<end-transaction>>, <<rollback>>
 
 == Create Index
 
-* SQLite https://sqlite.org/lang_createindex.html[reference]
+* SQLite reference (https://sqlite.org/lang_createindex.html[create index], https://sqlite.org/partialindex.html[partial indexes], https://sqlite.org/expridx.html[indexes on expressions])
+* link:../test/seaquell/create_test.clj[Tests]
+* Functions: `create`, `create-index`,
+  `create-if-not-exists`, `create-index-if-not-exists`,
+  `create-unique-index`, `create-unique-index-if-not-exists`
+* Properties: `index`, `if-not-exists`, `unique`, `on`, `columns`,
+  `collate`, `asc`, `desc`, `where`
 
 == Create Table
 
-* SQLite https://sqlite.org/lang_createtable.html[reference]
+* SQLite reference (https://sqlite.org/lang_createtable.html[create table], https://sqlite.org/foreignkeys.html[foreign keys], https://sqlite.org/gencol.html[generated columns], https://sqlite.org/withoutrowid.html[WITHOUT ROWID])
+* Tests (link:../test/seaquell/create_test.clj[create], link:../test/seaquell/constraint_test.clj[constraints])
+* Functions: `create`, `create-table`,
+  `create-if-not-exists`, `create-table-if-not-exists`,
+  `create-temp`, `create-temp-table`, `create-temporary`, `create-temporary-table`
+  `create-temp-if-not-exists`, `create-temp-table-if-not-exists`,
+  `create-temporary-if-not-exists`, `create-temporary-table-if-not-exists`
+* Properties: `columns`, `column`, `ctype`, `as`, `without-rowid`
+* Column constraints: `constraints`, `constraint`, `check`, `collate`, `default`,
+  `primary-key`, `asc`, `desc`, `order`, `autoincrement`, `unique`, `not-null`, <<conflict-clause,`on-conflict`>>,
+  `generated`, `generated-as`, `generated-always`, `generated-always-as`, `always`, `as`, `stored`, `virtual`,
+  <<foreign-key-clause, `references`>>
+* Table constraints: `constraints`, `constraint`,
+  `primary-key`, `unique`, `columns`, `column`, `collate`, `asc`, `desc`, `order`,
+  `check`, `foreign-key`, <<foreign-key-clause, `references`>>
+* See also <<select>>
+
+=== Conflict Clause
+
+* Functions: `on-conflict`, `on-conflict-abort`, `on-conflict-fail`, `on-conflict-ignore`,
+  `on-conflict-replace`, `on-conflict-rollback`
+
+=== Foreign Key Clause
+
+* Functions: `references`
+* Properties: `table`, `columns`, `column`, `match`
+* On Delete/Update Actions:
+  `on-delete`, `on-delete-cascade`, `on-delete-no-action`, `on-delete-restrict`, `on-delete-set-default`, `on-delete-set-null`,
+  `on-update`, `on-update-cascade`, `on-update-no-action`, `on-update-restrict`, `on-update-set-default`, `on-update-set-null`,
+* Deferred: `deferrable`, `not-deferrable`, `initially`, `modifier`,
+  `deferrable-initially-deferred`, `deferrable-initially-immediate`,
+  `not-deferrable-initially-deferred`, `not-deferrable-initially-immediate`,
 
 == Create Virtual Table
 
 * SQLite https://sqlite.org/lang_createvtab.html[reference]
+* link:../test/seaquell/create_test.clj[Tests]
+* Functions: `create`, `create-table`, `create-virtual-table`,
+  `create-if-not-exists`, `create-virtual-table-if-not-exists`,
+* Properties: `table`, `virtual`, `if-not-exists`, `using`
 
 == Create Trigger
 
 * SQLite https://sqlite.org/lang_createtrigger.html[reference]
+* link:../test/seaquell/create_test.clj[Tests]
+* Functions: `create`, `create-trigger`,
+  `create-if-not-exists`, `create-trigger-if-not-exists`,
+  `create-temp`, `create-temp-trigger`, `create-temporary`, `create-temporary-trigger`
+  `create-temp-if-not-exists`, `create-temp-trigger-if-not-exists`,
+  `create-temporary-if-not-exists`, `create-temporary-trigger-if-not-exists`
+* Properties: `trigger`, `temp`, `temporary`, `if-not-exists`,
+  `after`, `after-delete`, `after-insert`, `after-update-of`,
+  `before`, `before-delete`, `before-insert`, `before-update-of`,
+  `instead-of`, `instead-of-delete`, `instead-of-insert`, `instead-of-update-of`
+  `fire`, `delete`, `insert`, `update-of`, `op`, `on`, `for-each-row`,
+  `when`, `begin`
+* See also <<delete>>, <<insert>>, <<select>>, <<update>>
 
 == Create View
 
 * SQLite https://sqlite.org/lang_createview.html[reference]
+* link:../test/seaquell/create_test.clj[Tests]
+* Functions: `create`, `create-view`,
+  `create-if-not-exists`, `create-view-if-not-exists`,
+  `create-temp`, `create-temp-view`, `create-temporary`, `create-temporary-view`
+  `create-temp-if-not-exists`, `create-temp-view-if-not-exists`,
+  `create-temporary-if-not-exists`, `create-temporary-view-if-not-exists`
+* Properties: `view`, `temp`, `temporary`, `if-not-exists`, `columns`, `column`, `as`
+* See also <<select>>
 
 == Delete
 
 * SQLite https://sqlite.org/lang_delete.html[reference]
+* link:../test/seaquell/delete_test.clj[Tests]
+* Functions: `delete`, `delete-from`
+* Properties: `with`, `with-recursive`, `from`, `indexed-by`, `not-indexed`, `where`
 
 == Detach
 
 * SQLite https://sqlite.org/lang_detach.html[reference]
+* link:../test/seaquell/attach_detach_test.clj[Tests]
+* Functions: `detach`, `detach-database`
+* Properties: `database`
 
 == Drop Index
 
 * SQLite https://sqlite.org/lang_dropindex.html[reference]
+* link:../test/seaquell/drop_test.clj[Tests]
+* Functions: `drop`, `drop-if-exists`, `drop-index`, `drop-index-if-exists`
+* Properties: `index`, `if-exists`
 
 == Drop Table
 
 * SQLite https://sqlite.org/lang_droptable.html[reference]
+* link:../test/seaquell/drop_test.clj[Tests]
+* Functions: `drop`, `drop-if-exists`, `drop-table`, `drop-table-if-exists`
+* Properties: `table`, `if-exists`
+
 
 == Drop Trigger
 
 * SQLite https://sqlite.org/lang_droptrigger.html[reference]
+* link:../test/seaquell/drop_test.clj[Tests]
+* Functions: `drop`, `drop-if-exists`, `drop-trigger`, `drop-trigger-if-exists`
+* Properties: `trigger`, `if-exists`
 
 == Drop View
 
 * SQLite https://sqlite.org/lang_dropview.html[reference]
+* link:../test/seaquell/drop_test.clj[Tests]
+* Functions: `drop`, `drop-if-exists`, `drop-view`, `drop-view-if-exists`
+* Properties: `view`, `if-exists`
 
 == End Transaction
 
 * SQLite https://sqlite.org/lang_transaction.html[reference]
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `end`, `end-transaction`, `commit`, `commit-transaction`
+* See also <<begin-transaction>>, <<commit-transaction>>, <<rollback>>
 
 == Explain
 
 * SQLite https://sqlite.org/lang_explain.html[reference]
+* link:../test/seaquell/core_test.clj[Tests]
+* Functions: `explain`, `explain-query-plan`
 
 == Insert
 
-* SQLite https://sqlite.org/lang_insert.html[reference]
+* SQLite reference (https://sqlite.org/lang_insert.html[insert], https://sqlite.org/lang_upsert.html[upsert clause], https://sqlite.org/lang_with.html[with clause])
+* Tests (link:../test/seaquell/insert_test.clj[insert], link:../test/seaquell/upsert_test.clj[upsert])
+* Functions: `insert`, `insert-into`, `replace-into`, `insert-or-replace`, `insert-or-rollback`, `insert-or-abort`, `insert-or-fail`, `insert-or-ignore`
+* Properties: `with`, `with-recursive`, `columns`, `defaults`, `default-values`, `do-nothing`, `do-update`, `on-conflict`, `on-conflict-do-nothing`, `set`, `value`, `values`, `where`
 
 == Pragma
 
 * SQLite https://sqlite.org/pragma.html#syntax[reference]
+* link:../test/seaquell/pragma_test.clj[Tests]
+* Functions: `pragma`
+* Properties: `expr`
 
 == Reindex
 
 * SQLite https://sqlite.org/lang_reindex.html[reference]
+* link:../test/seaquell/reindex_test.clj[Tests]
+* Functions: `reindex`
 
 == Release
 
 * SQLite https://sqlite.org/lang_savepoint.html[reference]
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `release`, `release-savepoint`
+* See also <<savepoint>>, <<rollback>>
 
 == Replace
 
 * SQLite https://sqlite.org/lang_replace.html[reference]
+* Functions: `replace-into`
+* See <<Insert>>
 
 == Rollback
 
 * SQLite reference (https://sqlite.org/lang_transaction.html[transaction], https://sqlite.org/lang_savepoint.html[savepoint])
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `rollback`, `rollback-transaction`,
+  `rollback-to`, `rollback-to-savepoint`, `rollback-transaction-to`, `rollback-transaction-to-savepoint`
+* Properties: `to`, `to-savepoint`
+* See also <<begin-transaction>>, <<commit-transaction>>, <<savepoint>>
 
 == Savepoint
 
 * SQLite https://sqlite.org/lang_savepoint.html[reference]
+* link:../test/seaquell/transaction_test.clj[Tests]
+* Functions: `savepoint`
+* See also <<release>>, <<rollback>>
 
 == Select
 
-* SQLite https://sqlite.org/lang_select.html[reference]
+* SQLite reference (https://sqlite.org/lang_select.html[select], https://sqlite.org/windowfunctions.html[window functions], https://sqlite.org/lang_with.html[with clause])
 * Tests (link:../test/seaquell/select_test.clj[Select], link:../test/seaquell/compound_select_test.clj[Compound Select], link:../test/seaquell/values_test.clj[Values])
 * <<Zoo.adoc#, SQLZoo Examples>>
 * Functions: `select`, `select-all`, `select-distinct`, `select-from`, `value`, `values`
-* Compound: `compound-select`, `intersect`, `intersect-all`, `except`, `except all`, `union`, `union-all`
-* Clauses: `with`, `from`, `where`, `group-by`, `having`, `window`, `order-by`, `limit`, `offset`
-
-=== With Clause
+* Modifiers: `modifier`, `all`, `distinct`
+* Compound: `compound-select`, `intersect`, `intersect-all`, `except`, `except-all`, `union`, `union-all`
+* Clauses: `with`, `with-recursive`, `from`, `where`, `group-by`, `having`, `window`, `order-by`, `limit`, `offset`
+* Order Term: `order-term`, `order`, `asc`, `collate`, `desc`, `nulls`, `nulls-first`, `nulls-last`
+* Joins: `on`, `using`, `src`, `op`,
+  `comma-join`, `nil-join`, `straight-join`,
+  `cross-join`, `inner-join`, `left-join`, `right-join`, `full-join`, 
+  `left-outer-join`, `right-outer-join`, `full-outer-join`, 
+  `natural-join`, `natural-cross-join`, `natural-inner-join`, 
+  `natural-left-join`, `natural-right-join`, `natural-full-join`, 
+  `natural-left-outer-join`, `natural-right-outer-join`, `natural-full-outer-join`
+* Window functions: `window`, `as`, `partition-by`, `order-by`, `frame`,
+  `bounds`, `lo-bound`, `hi-bound`, `unbounded`,
+  `unbounded-following`, `unbounded-preceding`, `following`, `preceding`, `current-row`,
+  `exclude`, `exclude-current-row`, `exclude-group`, `exclude-no-others`, `exclude-ties`,
 
 == Update
 
-* SQLite https://sqlite.org/lang_update.html[reference]
+* SQLite reference (https://sqlite.org/lang_update.html[update], https://sqlite.org/lang_with.html[with clause])
+* link:../test/seaquell/update_test.clj[Tests]
+* Functions: `update`, `update-or-replace`, `update-or-rollback`, `update-or-abort`, `update-or-fail`, `update-or-ignore`
+* Properties: `as`, `with`, `with-recursive`, `columns`, `indexed-by`, `not-indexed`, `set`, `where`
 
 == Vacuum
 
 * SQLite https://sqlite.org/lang_vacuum.html[reference]
+* link:../test/seaquell/vacuum_test.clj[Tests]
+* Functions: `vacuum`, `vacuum-into`
+* Properties: `into`, `schema`
 

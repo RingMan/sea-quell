@@ -39,11 +39,22 @@ Provides solutions to a number of SQLZoo tutorials on using _select_ statements.
 
 Here's how the `test` files are organized.
 
-core_test::
+=== Core Tests
 
-edit_test::
+The two files below comprised the primary DSL tests in early versions of `seaquell`.
+This approach tested the generation of SQL values and the tranformation of SQL values separately.
+However, in my opinion, reading these tests is of more value to a developer than a user and recent tests are targeted more toward library users.
+
+core_test::
+Tests that core DSL syntax functions produce the correct data value.
 
 to_sql_test::
+Tests the transformation of SQL data values (statements, clauses, and properties) to SQL strings.
+
+=== Supplemental Tests
+
+edit_test::
+Incomplete testing of some of the functions used to edit _select_ statements.
 
 raw_fn_test::
 Tests the public `raw` function.
@@ -52,6 +63,7 @@ raw_test::
 Tests the use of SQL tokens.
 
 sql_ex_pieces_providers::
+Uses an in-memory database to work through an https://en.wikibooks.org/wiki/SQL_Exercises/Pieces_and_providers[exercise] on using SQL CRUD operations.
 
 sqlite_test::
 Tests some of the functions in the `sqlite` namespace.

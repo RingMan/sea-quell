@@ -1,9 +1,12 @@
-= Select Statements
+= Select Statements (Draft)
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 :idprefix:
 :idseparator: -
 
-So far, `seaquell` supports precisely one kind of SQL statement: `select`
+Let's talk about the most widely used SQL statement: `select`
+
+NOTE: `seaquell` has grown since this was first written.
+It now also supports WITH clauses and the use of WINDOW functions.
 
 Most of the example statements here are written against the `pet` or `event` table of the `menagerie` example MySQL database.
 Here are the rows in the `pet` table:
@@ -44,7 +47,6 @@ The first argument to `select` is a single value specifying what field or fields
 
 ;; To select multiple fields, put them in a vector or list
 (select [:name :owner] (from :pet))
-(select [:name :owner] (from :pet))
 ----
 
 Here's an example of multiple fields with aliases using two styles of syntax.
@@ -74,11 +76,13 @@ So can scalar subqueries.
 
 == Selecting Distinct Rows
 
-There are other ways, but probably the easiest is to call `select-distinct` instead of `select`.
+To select distinct rows, call `select-distinct` instead of `select`.
+You can also call `select` and supply a `modifier`.
 
 [source,clojure]
 ----
 (select-distinct :owner :from :pet)
+(select :owner (modifier :distinct) (from :pet))
 ----
 
 == From Clause
@@ -102,8 +106,8 @@ This example shows the owner, pet name, and pet birthday for pets that had a bir
 [source,clojure]
 ----
   => (select$ [:owner :e.name :birth]
-#_=> (from :event :as :e (join :pet :as :p (on {:p.name :e.name})))
-#_=> (where {:type "birthday"}))
+#_=>   (from :event :as :e (join :pet :as :p (on {:p.name :e.name})))
+#_=>   (where {:type "birthday"}))
 "SELECT owner, e.name, birth
  FROM event AS e JOIN pet AS p ON p.name = e.name
  WHERE type = 'birthday';"
@@ -202,18 +206,18 @@ The `where` function takes a boolean <<expressions.adoc#, expression>>.
 
 == Group By Clause
 
-The `group` function (since `group-by` conflicts with Clojure) takes one or more expressions to group by.
+The `group-by` function takes one or more expressions to group by.
 
 [source,clojure]
 ----
-(group ...expr1... ...expr2... ...)
+(group-by ...expr1... ...expr2... ...)
 ----
 
 Here's an example that counts the number of pets for each owner.
 
 [source,clojure]
 ----
-=> (select$ [:owner [count :name] :as :pets] (from :pet) (group :owner))
+=> (select$ [:owner [count :name] :as :pets] (from :pet) (group-by :owner))
 "SELECT owner, COUNT(name) AS pets FROM pet GROUP BY owner;"
 ----
 
@@ -230,7 +234,7 @@ This example limits the query above to just the owners with more than two pets
 
 [source,clojure]
 ----
-=> (select$ [:owner [count :name] :as :pets] (from :pet) (group :owner) (having [> :pets 2]))
+=> (select$ [:owner [count :name] :as :pets] (from :pet) (group-by :owner) (having [> :pets 2]))
 "SELECT owner, COUNT(name) AS pets FROM pet GROUP BY owner HAVING pets > 2;"
 ----
 
@@ -244,8 +248,6 @@ Each order item can be an expression (usually a field name) or the result of cal
 => (def q (select [:owner :name] :from :pet))
 => (select$ q (order-by :owner :name))
 "SELECT owner, name FROM pet ORDER BY owner, name;"
-=> (select$ q (order-by (desc :owner :name)))
-"SELECT owner, name FROM pet ORDER BY owner DESC, name DESC;"
 => (select$ q (order-by (desc :owner) (asc :name)))
 "SELECT owner, name FROM pet ORDER BY owner DESC, name ASC;"
 ----
