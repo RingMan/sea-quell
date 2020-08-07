@@ -386,7 +386,8 @@ Hopefully, you've seen enough to know whether you want to try it out in your own
 Here are some links to more documentation, examples, and tests:
 
 * More <<doc/Home.adoc#, documentation>>
-* <<doc/Examples.adoc#, Examples>> (draft) organized by statement type.
+* <<doc/Zoo.adoc#, SQLZoo>> examples
+* <<doc/Statement-Index.adoc#, Statement Index>>
 * How to run the <<doc/Home#testing-seaquell, tests>>
 
 == A Challenge

@@ -132,11 +132,11 @@ You can mix in execution options such as `db` and `params` or supply them later.
 Calling `select` doesn't actually execute a SELECT query, it creates an internal representation of one.
 Once the statement exists you can do something useful with it like render it as a string or execute it.
 
-Here are some articles explaining how to write simple and compound select statements as well as other statements in `seaquell`.
+Here are some articles explaining how to write simple and compound select statements and a handy reference that groups `seaquell` functions by statement.
 
 * <<Select.adoc#, Select>>
 * <<Compound-Select.adoc#, Compound Select>>
-* <<Examples.adoc#, Other statements>>
+* <<Statement-Index.adoc#, Statement Index>>
 
 === SQL Tokens
 
@@ -324,7 +324,7 @@ The `seaquell.zoo` namespace contains a number of <<Zoo.adoc#, solutions>> to va
 
 Since `seaquell` heavily targets SQLite, its documentation can actually help you, especially the syntax diagrams.
 Also, the tests described below offer many, many examples of `seaquell` usage.
-Check out the <<Examples.adoc#, statement index>> for useful links related to each type of statement.
+Check out the <<Statement-Index.adoc#, statement index>> for useful links related to each type of statement.
 
 == Testing Seaquell
 

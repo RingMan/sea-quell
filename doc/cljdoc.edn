@@ -11,10 +11,10 @@
    ["Select Statement Representation" {:file "doc/Select-Statement-Representation.adoc"}]
    ["Update Statement Representation" {:file "doc/Update-Statement-Representation.adoc"}]
    ["Expression Representation" {:file "doc/Expression-Representation.adoc"}]
-   ["Statement Index" {:file "doc/Examples.adoc"}]
+   ["Statement Index" {:file "doc/Statement-Index.adoc"}]
    ["SQLZoo Solutions" {:file "doc/Zoo.adoc"}]
    ["Raw SQL Tokens" {:file "doc/Raw.adoc"}]
    ["Execution Engine" {:file "doc/Engine.adoc"}]
-   ["Code Layout" {:file "doc/org/org.adoc"}]
-   ["Design Thoughts" {:file "doc/design/design.adoc"}]
+   ["Code Layout" {:file "doc/Org.adoc"}]
+   ["Design Thoughts" {:file "doc/Design.adoc"}]
    ["Roadmap" {:file "doc/Roadmap.adoc"}]]]}
