@@ -1,7 +1,9 @@
-= Some Design Thoughts
+= Design Thoughts
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 :idprefix:
 :idseparator: -
+
+Somewhat chaotic collection of design ideas.
 
 == Unqualified vs Namespaced Keys
 

@@ -271,35 +271,97 @@ For SQL statements you intend to execute immediately:
 
 == Parameterizing Statements
 
-For now, `seaquell` doesn't automatically parameterize your query.
-To do so yourself, just use `:?` instead of a literal value.
-Then call `do-sql` with the actual parameter values:
+`Seaquell` doesn't automatically parameterize your query.
+To do so yourself, just use `:?` or any parameter placeholder instead of a literal value.
+Then use `params` to supply the parameter values when you <<executing-statements, execute>> the statement.
 
 [source,clojure]
 ----
-=> (def q (select [:name :owner] :from :pet :where {:name [:like :?] :species :?}))
-=> (do-sql q "%uff%" "dog")
+=> (def q (select [:name :owner] (from :pet) (where {:name [:like :?] :species :?})))
+=> (sql! q (db c) (params "%uff%" "dog"))
 [{:owner "Harold", :name "Buffy"}]
+----
+
+SQLite supports multiple https://sqlite.org/lang_expr.html#parameters[parameter] placeholders.
+
+You can use numbered parameters:
+
+[source,clojure]
+----
+user=> (select! [:? :? :?] (db c) (params 4 2 42))
+({:? 4, :?_2 2, :?_3 42})
+user=> (select! [:? :?2 :?3] (db c) (params 4 2 42))
+({:? 4, :?2 2, :?3 42})
+----
+
+You can use named parameters:
+
+[source,clojure]
+----
+user=> (select! [:$user :$repo] (db c) (params "ringman" "seaquell"))
+({:$repo "seaquell", :$user "ringman"})
+----
+
+If your really need to, you can use `raw` to create the other flavors of named parameters:
+
+[source,clojure]
+----
+user=> (select! [(raw "@user") (raw "@repo")] (db c) (params "ringman" "seaquell"))
+({:@repo "seaquell", :@user "ringman"})
+
+user=> (select! [(raw ":user") (raw ":repo")] (db c) (params "ringman" "seaquell"))
+({::repo "seaquell", ::user "ringman"})
+
+user=> (select! (raw "$::github::ringman(repo)") (db c) (params "seaquell"))
+({:$::github::ringman(repo) "seaquell"})
 ----
 
 == Rendering Statements
 
-Sometimes it's useful to see what SQL string your statement expands to.
-Use `to-sql` to convert a statement to a string:
+Sometimes it's useful to see what SQL string your statement expands to or maybe you need the SQL string to pass it to another library.
+There are generally three ways to render a statement:
+
+ * Call `to-sql`
+ * Call its alias `sql$`
+ * Call the render function for that kind of statement
+
+Here's a small example that uses all three techniques and then executes the statement.
 
 [source,clojure]
 ----
-(to-sql (select :* (from :user)))
+user=> (def q (select ["Hello" "seaquell"]))
+#'user/q
+
+user=> (to-sql q)
+"SELECT 'Hello', 'seaquell';"
+
+user=> (sql$ q)
+"SELECT 'Hello', 'seaquell';"
+
+user=> (select$ q)
+"SELECT 'Hello', 'seaquell';"
+
+user=> (select! q (db c))
+({:'hello' "Hello", :'seaquell' "seaquell"})
 ----
 
-The `do-sql` function calls `to-sql` on your statement internally before executing it.
-
-Another way to define a select statement and convert it to a string in one step is this:
+The previous example defined a query and then rendered it in a separate call.
+You can define a statement and render it in one step.
 
 [source,clojure]
 ----
-(select$ :* (from :user))
+user=> (select$ ["Hello" "seaquell"])  ;;<1>
+"SELECT 'Hello', 'seaquell';"
+
+user=> (sql$ :select "Hello" \, "seaquell"\; (db c))  ;;<2>
+"SELECT 'Hello' , 'seaquell' ;"
+
+user=> (sql$ "select" "'Hello', 'seaquell';")  ;;<3>
+"select 'Hello', 'seaquell';"
 ----
+<1> Statement created with the core DSL
+<2> Statement as sequence of SQL tokens
+<3> Statement as verbatim SQL strings
 
 == Representing Statements
 

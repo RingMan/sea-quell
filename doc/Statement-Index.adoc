@@ -243,7 +243,7 @@ Use `ALTER TABLE` to rename a table, rename a column, or add a column.
 
 * SQLite reference (https://sqlite.org/lang_select.html[select], https://sqlite.org/windowfunctions.html[window functions], https://sqlite.org/lang_with.html[with clause])
 * Tests (link:../test/seaquell/select_test.clj[Select], link:../test/seaquell/compound_select_test.clj[Compound Select], link:../test/seaquell/values_test.clj[Values])
-* <<Zoo.adoc#, SQLZoo Examples>>
+* Examples (<<Zoo.adoc#, SQLZoo>>, link:../test/seaquell/sql_ex_pieces_providers.clj[Pieces and Providers])
 * Functions: `select`, `select-all`, `select-distinct`, `select-from`, `value`, `values`
 * Modifiers: `modifier`, `all`, `distinct`
 * Compound: `compound-select`, `intersect`, `intersect-all`, `except`, `except-all`, `union`, `union-all`

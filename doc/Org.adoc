@@ -1,4 +1,4 @@
-= How `seaquell` Namespaces are Organized (Draft)
+= How `seaquell` Namespaces are Organized
 ifdef::env-github,env-cljdoc[:outfilesuffix: .adoc]
 :idprefix:
 :idseparator: -
