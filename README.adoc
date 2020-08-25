@@ -55,7 +55,7 @@ We'll also pull in a dependency on SQLite so we can use an in-memory database.
 
 [source,bash]
 ----
-clj -Sdeps '{:deps {seaquell/seaquell {:mvn/version "0.5.0-SNAPSHOT"} org.xerial/sqlite-jdbc {:mvn/version "3.32.3"}}}'
+clj -Sdeps '{:deps {seaquell/seaquell {:mvn/version "0.5.0"} org.xerial/sqlite-jdbc {:mvn/version "3.32.3"}}}'
 Clojure 1.10.1
 user=>
 ----

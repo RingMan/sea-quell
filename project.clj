@@ -1,4 +1,4 @@
-(defproject seaquell "0.5.0-SNAPSHOT"
+(defproject seaquell "0.5.0"
   :description "Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements"
   :url "https://github.com/RingMan/sea-quell"
   :license {:name "Eclipse Public License"
