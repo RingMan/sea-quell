@@ -1,4 +1,4 @@
-(defproject seaquell "0.5.0"
+(defproject seaquell "0.5.1"
   :description "Tame the stormy seas of SQL with sea-quell, another DSL for generating SQL statements"
   :url "https://github.com/RingMan/sea-quell"
   :license {:name "Eclipse Public License"
@@ -17,9 +17,9 @@
                                   [org.hsqldb/hsqldb "2.2.9"]
                                   [clj-commons/fs "1.5.2"]]
                    :cloverage {:codecov? true, :runner :midje}
-                   :plugins [[lein-cloverage "1.1.2"]
+                   :plugins [[lein-cloverage "1.2.0"]
                              [lein-midje "3.2.2"]]}
-             :repl {:dependencies [[expound "0.8.4"]
+             :repl {:dependencies [[expound "0.8.5"]
                                    [integrant/repl "0.3.1"]
                                    [com.github.RingMan/zprint "dev-SNAPSHOT"]]
                     :source-paths ["dev"]}
