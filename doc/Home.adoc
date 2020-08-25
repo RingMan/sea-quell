@@ -201,73 +201,111 @@ See <<Representing Statements>> below to learn more about their structure.
 
 == Executing Statements
 
-To execute a statement, you'll need to supply a database spec or connection and possibly parameter values.
+You can call up to three functions to execute a statement: `sql!`, `do-sql`, or `<stmt>!` (e.g., `select!`).
+The first two work for all statements.
+The third is specific to one type of statement created with the core DSL.
+Regardless of which function you use, execution requires a database spec or connection and possibly parameter values.
 You may also want to supply additional execution options such as `row-fn`.
-As we saw above, the execution related properties can be mixed right in to the statement prior to execution.
-They don't affect how the statement renders.
+As we saw above, the execution-related properties can be mixed in when <<creating-statements>>.
+They don't affect how the statement renders, which is nice when working interactively.
+Here is a pattern I often use from the REPL.
 
-We'll only use the `db` and `params` properties in the following examples, but you can read more about the <<Engine.adoc#, execution engine>> and its other options.
-
-There are basically two approaches to 
-
-* Immediate execution
-* Deferred execution
-
-* Mixed into the statement
-* Supplied to the execution function
-
-I find this especially useful at the REPL.
-Let's look at a simple `select` assuming an existing database connection named `c`.
+For all these examples, assume an existing database connection named `c`.
 
 [source,clojure]
 ----
-(do-sql (select :* (from :user)))
+user=> (select  [:? (as :hi)] (db c) (params "hello")) ;;<1>
+{:db ...,
+ :fields [{:as :hi, :field :?}],
+ :params ["hello"],
+ :sql-stmt :select}
+
+user=> (select$ [:? (as :hi)] (db c) (params "hello")) ;;<2>
+"SELECT ? AS hi;"
+
+user=> (select! [:? (as :hi)] (db c) (params "hello")) ;;<3>
+({:hi "hello"})
 ----
+<1> Create the statement as data
+<2> Create it as data and render it
+<3> Create it as data, render it, and execute it
 
-To execute a statement just call `do-sql` passing it as an argument.
+Only one character changes between function invocations, which makes it very easy to use at the REPL, and very easy to remember.
+Depending on your workflow, you might try executing a statement first and showing it as a string or just data if there's a problem.
+For more complicated queries, I generally render as a string while I compose the statement and execute it when it looks right.
+Use steps 1 and 2 for inspecting or troubleshooting, and step 3 for doing.
+Switch between the steps as needed.
 
-[source,clojure]
+Here's the same example with SQL tokens and raw SQL strings.
+Again, only one character changes between function calls.
+
+[source, clojure]
 ----
-(do-sql (select :* (from :user)))
+user=> (sql  '[select ? as hi \;] (db c) (params "hello"))  ;;<1>
+{:db ...,
+ :params ["hello"],
+ :sql-stmt :sql,
+ :tokens ([select ? as hi \;])}
+
+user=> (sql$ '[select ? as hi \;] (db c) (params "hello"))  ;;<2>
+"SELECT ? AS hi ;"
+
+user=> (sql! '[select ? as hi \;] (db c) (params "hello"))  ;;<3>
+({:hi "hello"})
+
+user=> (sql  "select ? as hi;" (db c) (params "hello"))  ;;<1>
+{:db ...,
+ :params ["hello"],
+ :sql-stmt :sql,
+ :tokens ({:raw "select ? as hi;"})}
+
+user=> (sql$ "select ? as hi;" (db c) (params "hello"))  ;;<2>
+"select ? as hi;"
+
+user=> (sql! "select ? as hi;" (db c) (params "hello"))  ;;<3>
+({:hi "hello"})
 ----
+<1> Create the statement as data
+<2> Create it as data and render it
+<3> Create it as data, render it, and execute it
 
-`do-sql` will also accept one or more parameters after the SQL statement or SQL string.
+Sometimes, you `def` a SQL statement and then execute it later.
+In that case, you can supply the execution properties later as well.
+In the examples below, we've associated the connection with the query definition, but supplied the parameter at execution time.
 
-You can also `def` your statement and call `do-sql` later like this:
-
-[source,clojure]
+[source, clojure]
 ----
-(def q (select :* (from :user)))
-(do-sql q)
+user=> (def q1 (select [:? (as :hi)] (db c) (params "hello")))     ;;<1>
+#'user/q1
+
+user=> (def q2 (sql '[select ? as hi \;] (db c) (params "hello"))) ;;<1>
+#'user/q2
+
+user=> (def q3 (sql "select ? as hi;" (db c) (params "hello")))    ;;<1>
+#'user/q3
+
+user=> (sql! q1 (params "hello")) ;;<2>
+({:hi "hello"})
+
+user=> (sql! q2 (params "hello")) ;;<2>
+({:hi "hello"})
+
+user=> (sql! q3 (params "hello")) ;;<2>
+({:hi "hello"})
+
+user=> (do-sql q1 (params "hello"))  ;;<3>
+({:hi "hello"})
+
+user=> (select! q1 (params "hello")) ;;<4>
+({:hi "hello"})
 ----
+<1> Create the statement as data
+<2> Execute previously defined statement with supplied parameters
+<3> Same as <2>, but with `do-sql` instead of its alias `sql!`
+<4> Same as <2>, but with statement-specific execution function
 
-If you don't need to specify any parameters or save your query definition, the easiest way to create and then execute a select statment is this:
-
-[source,clojure]
-----
-(select! :* (from :user))
-----
-
-In practical usage, there are times when you want to execute a statement right away, such as in a REPL session.
-There are also times when you need to create a statement and then execute it later.
-Let's take a look at both use cases.
-
-Regardless of when you execute a statement, there are three ways: `sql!`, `do-sql`, `<stmt>!` (e.g., `select!`).
-Also, the database spec or connection and any parameters need to be provided.
-
-=== Immediate Execution
-
-For SQL statements you intend to execute immediately:
-
-[source,clojure]
-----
-(do-sql (select [:? (as :hi)]) (db c) (params "hello"))
-(do-sql (select [:? (as :hi)] (db c) (params "hello")))
-(sql! (select [:? (as :hi)]) (db c) (params "hello"))
-(sql! (select [:? (as :hi)] (db c) (params "hello")))
-----
-
-=== Deferred Execution
+We only used the `db` and `params` properties in the previous examples, but there are others available.
+You can read more about the <<Engine.adoc#, execution engine>> and its other options.
 
 == Parameterizing Statements
 
