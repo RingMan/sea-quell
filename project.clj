@@ -9,23 +9,23 @@
   :dependencies [[org.clojure/clojure "1.10.1"]
                  [org.clojure/java.jdbc "0.7.11"]
                  [diesel "0.2.0"]]
-  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.3.1"]
+  :profiles {:dev {:dependencies [[org.clojure/tools.namespace "1.0.0"]
                                   [integrant "0.8.0"]
                                   [midje "1.9.9"]
-                                  [org.xerial/sqlite-jdbc "3.32.3"]
-                                  [mysql/mysql-connector-java "5.1.23"]
-                                  [org.hsqldb/hsqldb "2.2.9"]
+                                  [org.xerial/sqlite-jdbc "3.32.3.2"]
+                                  [mysql/mysql-connector-java "8.0.21"]
+                                  [org.hsqldb/hsqldb "2.5.1"]
                                   [clj-commons/fs "1.5.2"]]
                    :cloverage {:codecov? true, :runner :midje}
-                   :plugins [[lein-cloverage "1.2.0"]
+                   :plugins [[lein-cloverage "1.2.1"]
                              [lein-midje "3.2.2"]]}
-             :repl {:dependencies [[expound "0.8.5"]
-                                   [integrant/repl "0.3.1"]
-                                   [com.github.RingMan/zprint "dev-SNAPSHOT"]]
+             :repl {:dependencies [[expound "0.8.6"]
+                                   [integrant/repl "0.3.2"]
+                                   [com.github.RingMan/zprint "ringman~v1.0.2"]]
                     :source-paths ["dev"]}
              :test {:dependencies [[clj-commons/fs "1.5.2"]
                                    [midje "1.9.9"]
-                                   [org.xerial/sqlite-jdbc "3.31.1"]]}
+                                   [org.xerial/sqlite-jdbc "3.32.3.2"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}}
   :aliases {
             ;"test-all" ["with-profile" "dev,1.7:dev,1.8:dev,1.9" "midje"]
