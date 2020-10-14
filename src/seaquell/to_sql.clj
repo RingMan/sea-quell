@@ -525,15 +525,16 @@
                 (sort set-c))))))
 
 (defmethod to-sql :update
-  ([{set-c :set :keys [op where order-by limit offset with] :as stmt}]
+  ([{set-c :set :keys [op from where order-by limit offset with] :as stmt}]
    (let [with (with-clause with)
          update (str (to-sql-keywords op) " " (join-src-to-sql stmt))
          set-c (set-clause set-c)
+         from (from-clause from)
          where (where-clause where)
          order-by (order-by-clause order-by)
          limit (limit-clause limit)
          offset (offset-clause offset)]
-     (query-clauses [with update set-c where order-by limit offset] ";"))))
+     (query-clauses [with update set-c from where order-by limit offset] ";"))))
 
 (defmethod to-sql :explain [stmt]
   (str "EXPLAIN " (to-sql (:statement stmt))))

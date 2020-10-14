@@ -19,7 +19,7 @@ What started as an experiment has grown into a fairly capable library.
 
 * Three representations of SQL statements
  ** A high-level DSL to create SQL statements as simple maps
-  *** Supports _all_ SQLite statements
+  *** Supports _all_ SQLite version 3.33.0 statements
   *** Easy to learn if you already know SQL
   *** Probably useful for other highly compliant SQL dialects
  ** A lower-level DSL with vectors of SQL tokens
@@ -55,7 +55,7 @@ We'll also pull in a dependency on SQLite so we can use an in-memory database.
 
 [source,bash]
 ----
-clj -Sdeps '{:deps {seaquell/seaquell {:mvn/version "0.5.0"} org.xerial/sqlite-jdbc {:mvn/version "3.32.3"}}}'
+clj -Sdeps '{:deps {seaquell/seaquell {:mvn/version "0.5.2"} org.xerial/sqlite-jdbc {:mvn/version "3.32.3.2"}}}'
 Clojure 1.10.1
 user=>
 ----

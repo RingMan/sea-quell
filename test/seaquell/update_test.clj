@@ -33,3 +33,15 @@
   (update (update :tbl (set {:a 1 :b 2}) (where {:c [> 5]})))
   => (update :tbl (set {:a 1 :b 2}) (where {:c [> 5]})))
 
+(fact "update supports FROM clause as documented at
+      https://www.sqlite.org/lang_update.html#update_from"
+  (update$ :inventory
+           (set {:quantity '(- quantity daily.amt)})
+           (from (select ['(sum quantity) (as :amt) :itemId]
+                         (from :sales) (group-by 2))
+                 (as :daily))
+           (where {:inventory.itemId :daily.itemId})) =>
+  (str
+    "UPDATE inventory SET quantity=quantity - daily.amt "
+    "FROM (SELECT SUM(quantity) AS amt, itemId FROM sales GROUP BY 2) AS daily "
+    "WHERE inventory.itemId = daily.itemId;"))

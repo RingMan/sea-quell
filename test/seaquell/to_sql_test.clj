@@ -348,7 +348,7 @@
 
 (fact
   (let [stmt {:sql-stmt :update :source -src- :indexed-by -ix- :op -op-
-              :set -s- :where -w- :order-by -ob- :limit -l- :offset -o-
+              :set -s- :from -f- :where -w- :order-by -ob- :limit -l- :offset -o-
               :with -wi-}]
     (to-sql stmt)
       => ...sql...
@@ -357,11 +357,12 @@
         (to-sql-keywords -op-) => "UPDATE"
         (join-src-to-sql stmt) => -src-
         (set-clause -s-) => -sc-
+        (from-clause -f-) => -fc-
         (where-clause -w-) => -wc-
         (order-by-clause -ob-) => -obc-
         (limit-clause -l-) => -lc-
         (offset-clause -o-) => -oc-
-        (query-clauses [-wic- "UPDATE -src-" -sc- -wc- -obc- -lc- -oc-] ";")
+        (query-clauses [-wic- "UPDATE -src-" -sc- -fc- -wc- -obc- -lc- -oc-] ";")
         => ...sql...)))
 
 (let [any-stmt {:sql-stmt :select :fields "or any other statement"}]
